@@ -2,8 +2,8 @@ import React from 'react';
 import { SafeAreaView, ScrollView } from 'react-native';
 import * as eva from '@eva-design/eva';
 import { ApplicationProvider, IconRegistry, Layout, Text } from '@ui-kitten/components';
-import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import Header from './components/Header'
+import { EvaIconsPack } from '@ui-kitten/eva-icons';
 
 const App = () => {
   return (
