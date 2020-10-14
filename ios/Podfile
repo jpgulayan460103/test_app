@@ -8,6 +8,8 @@ target 'uct_mobapp' do
 
   use_react_native!(:path => config["reactNativePath"])
 
+  pod 'RNFS', :path => '../node_modules/react-native-fs'
+
   target 'uct_mobappTests' do
     inherit! :complete
     # Pods for testing

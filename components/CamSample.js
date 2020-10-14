@@ -15,6 +15,7 @@ import { RNCamera } from 'react-native-camera';
 import Slider from '@react-native-community/slider';
 
 import { useCamera } from 'react-native-camera-hooks';
+var RNFS = require('react-native-fs');
 
 const landmarkSize = 2;
 
@@ -394,6 +395,26 @@ export const CameraScreen = () => {
                   setIsRecording(true);
                   const data = await takePicture();
                   console.warn(data);
+                  console.warn(data.uri);
+                  RNFS.exists(data.uri)
+                  .then(res => {
+                    console.log("exist");
+                    console.log(res);
+                    let destinationPath = "/storage/emulated/0/Pictures";
+                    RNFS.moveFile(data.uri,'/storage/emulated/0/Pictures/test2.jpg').then(console.log).catch(console.error)
+                    // RNFS.writeFile(path, 'Lorem ipsum dolor sit amet', 'utf8')
+                    // .then((success) => {
+                    //   console.log('FILE WRITTEN!');
+                    //   console.log(RNFS.DocumentDirectoryPath);
+                    //   console.log(RNFS.DownloadDirectoryPath );
+                    // })
+                    // .catch((err) => {
+                    //   console.log(err.message);
+                    // });
+                  })
+                  .catch(res => {
+                    console.log(res);
+                  })
                 } catch (e) {
                   console.warn(e);
                 } finally {
