@@ -394,14 +394,18 @@ export const CameraScreen = () => {
                 try {
                   setIsRecording(true);
                   const data = await takePicture();
-                  console.warn(data);
-                  console.warn(data.uri);
+                  // console.warn(data);
+                  // console.warn(data.uri);
                   RNFS.exists(data.uri)
                   .then(res => {
-                    console.log("exist");
-                    console.log(res);
+                    console.log(RNFS.DownloadDirectoryPath);
+                    console.log(RNFS.DocumentDirectoryPath);
+                    console.log(RNFS.ExternalDirectoryPath);
+                    console.log(RNFS.ExternalStorageDirectoryPath);
+                    // console.log("exist");
+                    // console.log(res);
                     let destinationPath = "/storage/emulated/0/Pictures";
-                    RNFS.moveFile(data.uri,'/storage/emulated/0/Pictures/test2.jpg').then(console.log).catch(console.error)
+                    RNFS.moveFile(data.uri,`${RNFS.DownloadDirectoryPath}/test2.jpg`).then(console.log).catch(console.error)
                     // RNFS.writeFile(path, 'Lorem ipsum dolor sit amet', 'utf8')
                     // .then((success) => {
                     //   console.log('FILE WRITTEN!');
