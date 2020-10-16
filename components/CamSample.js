@@ -164,7 +164,7 @@ const renderBarcode = ({ bounds = {}, data, type }) => (
   </React.Fragment>
 );
 
-export const CameraScreen = () => {
+export const CameraScreen = ({navigation}) => {
   const [
     {
       cameraRef,
@@ -393,7 +393,8 @@ export const CameraScreen = () => {
               onPress={async () => {
                 try {
                   setIsRecording(true);
-                  const data = await takePicture();
+                  let options = { fixOrientation: true };
+                  const data = await takePicture(options);
                   // console.warn(data);
                   // console.warn(data.uri);
                   RNFS.exists(data.uri)
@@ -405,7 +406,9 @@ export const CameraScreen = () => {
                     // console.log("exist");
                     // console.log(res);
                     let destinationPath = "/storage/emulated/0/Pictures";
-                    RNFS.moveFile(data.uri,`${RNFS.DownloadDirectoryPath}/test2.jpg`).then(console.log).catch(console.error)
+                    RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/1122`);
+                    RNFS.copyFile(data.uri,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/1122/test2.jpg`).then(console.log).catch(console.error)
+                    // navigation.navigate('ImageView');
                     // RNFS.writeFile(path, 'Lorem ipsum dolor sit amet', 'utf8')
                     // .then((success) => {
                     //   console.log('FILE WRITTEN!');
