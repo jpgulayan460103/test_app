@@ -198,7 +198,6 @@ export const CameraScreen = ({navigation}) => {
       zoomOut,
       setIsRecording,
       takePicture,
-      recordVideo,
     },
   ] = useCamera(initialState);
 
@@ -328,36 +327,6 @@ export const CameraScreen = ({navigation}) => {
               flexDirection: 'row',
               alignSelf: 'flex-end',
             }}>
-            <TouchableOpacity
-              style={[
-                styles.flipButton,
-                {
-                  flex: 0.3,
-                  alignSelf: 'flex-end',
-                  backgroundColor: isRecording ? 'white' : 'darkred',
-                },
-              ]}
-              onPress={
-                isRecording
-                  ? () => {}
-                  : async () => {
-                      try {
-                        setIsRecording(true);
-                        const data = await recordVideo(recordOptions);
-                        console.warn(data);
-                      } catch (error) {
-                        console.warn(error);
-                      } finally {
-                        setIsRecording(false);
-                      }
-                    }
-              }>
-              {isRecording ? (
-                <Text style={styles.flipText}> ☕ </Text>
-              ) : (
-                <Text style={styles.flipText}> REC </Text>
-              )}
-            </TouchableOpacity>
           </View>
           {zoom !== 0 && (
             <Text style={[styles.flipText, styles.zoomText]}>Zoom: {zoom}</Text>
@@ -399,6 +368,19 @@ export const CameraScreen = ({navigation}) => {
                   // console.warn(data.uri);
                   RNFS.exists(data.uri)
                   .then(res => {
+                    let date = new Date();
+                    let year = date.getFullYear();
+                    let month = date.getMonth()+1;
+                    let dt = date.getDate();
+                    
+                    if (dt < 10) {
+                      dt = '0' + dt;
+                    }
+                    if (month < 10) {
+                      month = '0' + month;
+                    }
+                    let dir = `${year}-${month}-${dt}`
+                    let filename = Math.floor(Math.random() * 100);
                     console.log(RNFS.DownloadDirectoryPath);
                     console.log(RNFS.DocumentDirectoryPath);
                     console.log(RNFS.ExternalDirectoryPath);
@@ -406,8 +388,8 @@ export const CameraScreen = ({navigation}) => {
                     // console.log("exist");
                     // console.log(res);
                     let destinationPath = "/storage/emulated/0/Pictures";
-                    RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/1122`);
-                    RNFS.copyFile(data.uri,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/1122/test2.jpg`).then(console.log).catch(console.error)
+                    RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}`);
+                    RNFS.moveFile(data.uri,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${filename}.jpg`).then(console.log).catch(console.error)
                     // navigation.navigate('ImageView');
                     // RNFS.writeFile(path, 'Lorem ipsum dolor sit amet', 'utf8')
                     // .then((success) => {
