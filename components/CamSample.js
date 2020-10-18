@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
 import React, { useMemo } from 'react';
+import Marker from "react-native-image-marker"
 import {
   StyleSheet,
   Text,
@@ -381,15 +382,37 @@ export const CameraScreen = ({navigation}) => {
                     }
                     let dir = `${year}-${month}-${dt}`
                     let filename = Math.floor(Math.random() * 100);
-                    console.log(RNFS.DownloadDirectoryPath);
-                    console.log(RNFS.DocumentDirectoryPath);
-                    console.log(RNFS.ExternalDirectoryPath);
-                    console.log(RNFS.ExternalStorageDirectoryPath);
+                    // console.log(RNFS.DownloadDirectoryPath);
+                    // console.log(RNFS.DocumentDirectoryPath);
+                    // console.log(RNFS.ExternalDirectoryPath);
+                    // console.log(RNFS.ExternalStorageDirectoryPath);
+                    Marker.markText({
+                      src: data.uri,
+                      text: `text marker\nmuiltline text`, 
+                      X: 30,
+                      Y: 10, 
+                      color: '#000000',
+                      fontName: 'Arial-BoldItalicMT',
+                      fontSize: 30,
+                      textBackgroundStyle: {
+                        type: 'stretchX',
+                        paddingX: 10,
+                        paddingY: 10,
+                        color: '#FFFFFF'
+                      },
+                      scale: 1, 
+                      quality: 100
+                   }).then((res) => {
+                      console.log("the path is"+res)
+                      RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}`);
+                      RNFS.moveFile(res,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${filename}.jpg`).then(console.log).catch(console.error)
+                      RNFS.unlink(data.uri);
+                   }).catch((err) => {
+                      console.log(err)
+                   })
                     // console.log("exist");
                     // console.log(res);
                     let destinationPath = "/storage/emulated/0/Pictures";
-                    RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}`);
-                    RNFS.moveFile(data.uri,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${filename}.jpg`).then(console.log).catch(console.error)
                     // navigation.navigate('ImageView');
                     // RNFS.writeFile(path, 'Lorem ipsum dolor sit amet', 'utf8')
                     // .then((success) => {
