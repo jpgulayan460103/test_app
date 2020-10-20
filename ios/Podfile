@@ -10,6 +10,8 @@ target 'uct_mobapp' do
 
   pod 'RNFS', :path => '../node_modules/react-native-fs'
 
+  pod 'react-native-sqlite-storage', :path => '../node_modules/react-native-sqlite-storage'
+
   target 'uct_mobappTests' do
     inherit! :complete
     # Pods for testing

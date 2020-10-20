@@ -3,6 +3,7 @@ import { View, Text, Button, PermissionsAndroid } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import CamSample from './components/CamSample';
+import { openDatabase } from 'react-native-sqlite-storage';
 
 const requestCameraPermission = async () => {
   try {
@@ -60,12 +61,39 @@ function HomeScreen({ navigation, extraData }) {
 }
 
 const Stack = createStackNavigator();
+const errorCB = (err)=>  {
+  console.log(err);
+}
+
+const successCB = () => {
+  console.log("SQL executed fine");
+}
+
+const openCB = () => {
+  console.log("Database OPENED");
+}
 
 
 
+var db = openDatabase({
+  name: 'SQLite',
+  location: 'default',
+  createFromLocation: '~data.db',
+},  openCB, errorCB);
 
 function App() {
-  
+  const getData = () => {
+    db.transaction((trans) => {
+      trans.executeSql("select * from potential_beneficiaries limit 1", [], (trans, results) => {
+        console.log(results.rows.item);
+        resolve(results);
+      },
+        (error) => {
+          reject(error);
+        });
+    });
+  }  
+  // https://medium.com/infinitbility/react-native-sqlite-storage-422503634dd2
   return (
     <NavigationContainer>
       <Stack.Navigator screenOptions={{headerShown: false}}>
@@ -79,6 +107,7 @@ function App() {
           {props => <DetailsScreen {...props} />}
         </Stack.Screen>
       </Stack.Navigator>
+      <Button title="request permissions" onPress={() => {getData()}} />
     </NavigationContainer>
   );
 }
