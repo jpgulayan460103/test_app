@@ -165,7 +165,7 @@ const renderBarcode = ({ bounds = {}, data, type }) => (
   </React.Fragment>
 );
 
-export const CameraScreen = ({navigation}) => {
+export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
   const [
     {
       cameraRef,
@@ -212,6 +212,40 @@ export const CameraScreen = ({navigation}) => {
   const canDetectBarcode = useMemo(() => cameraState['canDetectBarcode'], [
     cameraState,
   ]);
+  const currentDate = () => {
+    let date = new Date();
+    let year = date.getFullYear();
+    let month = date.getMonth()+1;
+    let dt = date.getDate();
+    
+    if (dt < 10) {
+      dt = '0' + dt;
+    }
+    if (month < 10) {
+      month = '0' + month;
+    }
+    let dir = `${year}-${month}-${dt}`
+    return dir;
+  }
+  const waterMark = (data, type) => {
+    return  Marker.markText({
+      src: data.uri,
+      text: `HHID: ${beneficiary.hhid}\nName: ${beneficiary.fullname}\nImage: ${type}`, 
+      X: 30,
+      Y: 10, 
+      color: '#000000',
+      fontName: 'Arial-BoldItalicMT',
+      fontSize: 30,
+      textBackgroundStyle: {
+        type: 'stretchX',
+        paddingX: 10,
+        paddingY: 10,
+        color: '#FFFFFF'
+      },
+      scale: 1, 
+      quality: 100
+   })
+  }
 
   return (
     <View style={styles.container}>
@@ -229,10 +263,6 @@ export const CameraScreen = ({navigation}) => {
         whiteBalance={whiteBalance}
         ratio={ratio}
         focusDepth={focusDepth}
-        permissionDialogTitle={'Permission to use camera'}
-        permissionDialogMessage={
-          'We need your permission to use your camera phone'
-        }
         faceDetectionLandmarks={
           RNCamera.Constants.FaceDetection.Landmarks
             ? RNCamera.Constants.FaceDetection.Landmarks.all
@@ -283,27 +313,27 @@ export const CameraScreen = ({navigation}) => {
               flexDirection: 'row',
               justifyContent: 'space-around',
             }}>
-            <TouchableOpacity
+            {/* <TouchableOpacity
               onPress={() => toggleCameraState('canDetectFaces')}
               style={styles.flipButton}>
               <Text style={styles.flipText}>
                 {!canDetectFaces ? 'Detect Faces' : 'Detecting Faces'}
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </TouchableOpacity> */}
+            {/* <TouchableOpacity
               onPress={() => toggleCameraState('canDetectText')}
               style={styles.flipButton}>
               <Text style={styles.flipText}>
                 {!canDetectText ? 'Detect Text' : 'Detecting Text'}
               </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
+            </TouchableOpacity> */}
+            {/* <TouchableOpacity
               onPress={() => toggleCameraState('canDetectBarcode')}
               style={styles.flipButton}>
               <Text style={styles.flipText}>
                 {!canDetectBarcode ? 'Detect Barcode' : 'Detecting Barcode'}
               </Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </View>
         <View style={{ bottom: 0 }}>
@@ -329,30 +359,53 @@ export const CameraScreen = ({navigation}) => {
               alignSelf: 'flex-end',
             }}>
           </View>
-          {zoom !== 0 && (
+          {/* {zoom !== 0 && (
             <Text style={[styles.flipText, styles.zoomText]}>Zoom: {zoom}</Text>
-          )}
+          )} */}
           <View
             style={{
               height: 56,
               backgroundColor: 'transparent',
               flexDirection: 'row',
-              alignSelf: 'flex-end',
+              justifyContent: "space-evenly",
             }}>
             <TouchableOpacity
-              style={[styles.flipButton, { flex: 0.1, alignSelf: 'flex-end' }]}
-              onPress={zoomIn}>
-              <Text style={styles.flipText}> + </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.flipButton, { flex: 0.1, alignSelf: 'flex-end' }]}
-              onPress={zoomOut}>
-              <Text style={styles.flipText}> - </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={[styles.flipButton, { flex: 0.25, alignSelf: 'flex-end' }]}
-              onPress={toggleAutoFocus}>
-              <Text style={styles.flipText}> AF : {autoFocus} </Text>
+              style={[
+                styles.flipButton,
+                styles.picButton,
+                { flex: 0.3, alignSelf: 'flex-end' },
+              ]}
+              onPress={async () => {
+                try {
+                  // https://stackoverflow.com/questions/42167094/react-native-image-upload
+                  setIsRecording(true);
+                  let options = { fixOrientation: true };
+                  const data = await takePicture(options);
+                  RNFS.exists(data.uri)
+                  .then(res => {
+                    let dir = currentDate();
+                    waterMark(data, "Photo")
+                    .then((res) => {
+                      // console.log("the path is"+res)
+                      pictureTaken(res, "image_photo");
+                      navigation.navigate("Beneficiary Information");
+                      // RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}`);
+                      // RNFS.moveFile(res,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${filename}.jpg`).then(console.log).catch(console.error)
+                      RNFS.unlink(data.uri);
+                    }).catch((err) => {
+                      console.log(err)
+                    })
+                  })
+                  .catch(res => {
+                    console.log(res);
+                  })
+                } catch (e) {
+                  // console.warn(e);
+                } finally {
+                  setIsRecording(false);
+                }
+              }}>
+              <Text style={styles.flipText}> PHOTO </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={[
@@ -362,78 +415,157 @@ export const CameraScreen = ({navigation}) => {
               ]}
               onPress={async () => {
                 try {
+                  // https://stackoverflow.com/questions/42167094/react-native-image-upload
                   setIsRecording(true);
                   let options = { fixOrientation: true };
                   const data = await takePicture(options);
-                  // console.warn(data);
-                  // console.warn(data.uri);
                   RNFS.exists(data.uri)
                   .then(res => {
-                    let date = new Date();
-                    let year = date.getFullYear();
-                    let month = date.getMonth()+1;
-                    let dt = date.getDate();
-                    
-                    if (dt < 10) {
-                      dt = '0' + dt;
-                    }
-                    if (month < 10) {
-                      month = '0' + month;
-                    }
-                    let dir = `${year}-${month}-${dt}`
-                    let filename = Math.floor(Math.random() * 100);
-                    // console.log(RNFS.DownloadDirectoryPath);
-                    // console.log(RNFS.DocumentDirectoryPath);
-                    // console.log(RNFS.ExternalDirectoryPath);
-                    // console.log(RNFS.ExternalStorageDirectoryPath);
-                    Marker.markText({
-                      src: data.uri,
-                      text: `text marker\nmuiltline text`, 
-                      X: 30,
-                      Y: 10, 
-                      color: '#000000',
-                      fontName: 'Arial-BoldItalicMT',
-                      fontSize: 30,
-                      textBackgroundStyle: {
-                        type: 'stretchX',
-                        paddingX: 10,
-                        paddingY: 10,
-                        color: '#FFFFFF'
-                      },
-                      scale: 1, 
-                      quality: 100
-                   }).then((res) => {
-                      console.log("the path is"+res)
-                      RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}`);
-                      RNFS.moveFile(res,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${filename}.jpg`).then(console.log).catch(console.error)
+                    let dir = currentDate();
+                    waterMark(data, "VALID ID")
+                    .then((res) => {
+                      // console.log("the path is"+res)
+                      pictureTaken(res, "image_valid_id");
+                      navigation.navigate("Beneficiary Information");
+                      // RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}`);
+                      // RNFS.moveFile(res,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${filename}.jpg`).then(console.log).catch(console.error)
                       RNFS.unlink(data.uri);
-                   }).catch((err) => {
+                    }).catch((err) => {
                       console.log(err)
-                   })
-                    // console.log("exist");
-                    // console.log(res);
-                    let destinationPath = "/storage/emulated/0/Pictures";
-                    // navigation.navigate('ImageView');
-                    // RNFS.writeFile(path, 'Lorem ipsum dolor sit amet', 'utf8')
-                    // .then((success) => {
-                    //   console.log('FILE WRITTEN!');
-                    //   console.log(RNFS.DocumentDirectoryPath);
-                    //   console.log(RNFS.DownloadDirectoryPath );
-                    // })
-                    // .catch((err) => {
-                    //   console.log(err.message);
-                    // });
+                    })
                   })
                   .catch(res => {
                     console.log(res);
                   })
                 } catch (e) {
-                  console.warn(e);
+                  // console.warn(e);
                 } finally {
                   setIsRecording(false);
                 }
               }}>
-              <Text style={styles.flipText}> SNAP </Text>
+              <Text style={styles.flipText}> VALID ID </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.flipButton,
+                styles.picButton,
+                { flex: 0.3, alignSelf: 'flex-end' },
+              ]}
+              onPress={async () => {
+                try {
+                  // https://stackoverflow.com/questions/42167094/react-native-image-upload
+                  setIsRecording(true);
+                  let options = { fixOrientation: true };
+                  const data = await takePicture(options);
+                  RNFS.exists(data.uri)
+                  .then(res => {
+                    let dir = currentDate();
+                    waterMark(data, "House")
+                    .then((res) => {
+                      // console.log("the path is"+res)
+                      pictureTaken(res, "image_house");
+                      navigation.navigate("Beneficiary Information");
+                      // RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}`);
+                      // RNFS.moveFile(res,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${filename}.jpg`).then(console.log).catch(console.error)
+                      RNFS.unlink(data.uri);
+                    }).catch((err) => {
+                      console.log(err)
+                    })
+                  })
+                  .catch(res => {
+                    console.log(res);
+                  })
+                } catch (e) {
+                  // console.warn(e);
+                } finally {
+                  setIsRecording(false);
+                }
+              }}>
+              <Text style={styles.flipText}> HOUSE </Text>
+            </TouchableOpacity>
+          </View>
+          <View
+            style={{
+              height: 56,
+              backgroundColor: 'transparent',
+              flexDirection: 'row',
+              justifyContent: "space-evenly",
+            }}>
+            <TouchableOpacity
+              style={[
+                styles.flipButton,
+                styles.picButton,
+                { flex: 0.46, alignSelf: 'flex-end' },
+              ]}
+              onPress={async () => {
+                try {
+                  // https://stackoverflow.com/questions/42167094/react-native-image-upload
+                  setIsRecording(true);
+                  let options = { fixOrientation: true };
+                  const data = await takePicture(options);
+                  RNFS.exists(data.uri)
+                  .then(res => {
+                    let dir = currentDate();
+                    waterMark(data, "Birth Certificate")
+                    .then((res) => {
+                      // console.log("the path is"+res)
+                      pictureTaken(res, "image_birth");
+                      navigation.navigate("Beneficiary Information");
+                      // RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}`);
+                      // RNFS.moveFile(res,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${filename}.jpg`).then(console.log).catch(console.error)
+                      RNFS.unlink(data.uri);
+                    }).catch((err) => {
+                      console.log(err)
+                    })
+                  })
+                  .catch(res => {
+                    console.log(res);
+                  })
+                } catch (e) {
+                  // console.warn(e);
+                } finally {
+                  setIsRecording(false);
+                }
+              }}>
+              <Text style={styles.flipText}> BIRTH CERTIFICATE </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={[
+                styles.flipButton,
+                styles.picButton,
+                { flex: 0.46, alignSelf: 'flex-end' },
+              ]}
+              onPress={async () => {
+                try {
+                  // https://stackoverflow.com/questions/42167094/react-native-image-upload
+                  setIsRecording(true);
+                  let options = { fixOrientation: true };
+                  const data = await takePicture(options);
+                  RNFS.exists(data.uri)
+                  .then(res => {
+                    let dir = currentDate();
+                    waterMark(data, "Other Document")
+                    .then((res) => {
+                      // console.log("the path is"+res)
+                      pictureTaken(res, "image_others");
+                      navigation.navigate("Beneficiary Information");
+                      // RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}`);
+                      // RNFS.moveFile(res,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${filename}.jpg`).then(console.log).catch(console.error)
+                      RNFS.unlink(data.uri);
+                    }).catch((err) => {
+                      console.log(err)
+                    })
+                  })
+                  .catch(res => {
+                    console.log(res);
+                  })
+                } catch (e) {
+                  // console.warn(e);
+                } finally {
+                  setIsRecording(false);
+                }
+              }}>
+              <Text style={styles.flipText}> OTHERS </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -488,7 +620,7 @@ const styles = StyleSheet.create({
   },
   picButton: {
     zIndex: 150,
-    backgroundColor: 'darkseagreen',
+    backgroundColor: 'crimson',
   },
   facesContainer: {
     position: 'absolute',

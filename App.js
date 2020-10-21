@@ -1,9 +1,15 @@
 import React, {useState, useEffect} from 'react';
-import { View, Text, Button, PermissionsAndroid } from 'react-native';
+import { View, Text, Button, PermissionsAndroid, StyleSheet, Image  } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import CamSample from './components/CamSample';
+import * as eva from '@eva-design/eva';
 import { openDatabase } from 'react-native-sqlite-storage';
+import { ApplicationProvider, Icon, List, ListItem, IconRegistry } from '@ui-kitten/components';
+import { EvaIconsPack } from '@ui-kitten/eva-icons';
+import Beneficiaries from './components/Beneficiaries'
+import Information from './components/Information'
+import ImageView from './components/ImageView'
 
 const requestCameraPermission = async () => {
   try {
@@ -31,15 +37,21 @@ const requestCameraPermission = async () => {
   }
 };
 
-function DetailsScreen() {
-  return (
-    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
-      <Text>Details Screen</Text>
-    </View>
-  );
-}
+const styles = StyleSheet.create({
+  container: {
+    paddingTop: 50,
+  },
+  tinyLogo: {
+    width: 50,
+    height: 50,
+  },
+  logo: {
+    width: 66,
+    height: 58,
+  },
+});
 
-function HomeScreen({ navigation, extraData }) {
+function HomeScreen({ navigation, extraData, getData }) {
   useEffect(() => {
     requestCameraPermission();
     return () => {
@@ -52,10 +64,13 @@ function HomeScreen({ navigation, extraData }) {
       <Text>Home Screen</Text>
       <Button
         title="Go to Details"
-        onPress={() => navigation.navigate('Details')}
+        onPress={() => navigation.navigate('Camera')}
         />
         <Text>{varTest}</Text>
-        <Button title="request permissions" onPress={requestCameraPermission} />
+        <Button title="request permissions" onPress={() => {
+          getData();
+          navigation.navigate('Beneficiaries');
+          }} />
     </View>
   );
 }
@@ -81,33 +96,69 @@ var db = openDatabase({
   createFromLocation: '~data.db',
 },  openCB, errorCB);
 
+
+
 function App() {
+  const [beneficiaries, setBeneficiaries] = useState([]);
+  const [provinces, setProvinces] = useState([]);
+  const [cities, setCities] = useState([]);
+  const [barangays, setBarangays] = useState([]);
+  const [beneficiary, setBeneficiary] = useState({});
+  const [capturedImage, setCapturedImage] = useState('./assets/images/no-image.png');
   const getData = () => {
     db.transaction((trans) => {
-      trans.executeSql("select * from potential_beneficiaries limit 1", [], (trans, results) => {
-        console.log(results.rows.item);
-        resolve(results);
+      trans.executeSql("select * from potential_beneficiaries limit 20", [], (trans, results) => {
+        let items = [];
+        let rows = results.rows;
+        for (let i = 0; i < rows.length; i++) {
+          var item = rows.item(i);
+          items.push(item);
+        }
+        setBeneficiaries(items);
       },
-        (error) => {
-          reject(error);
-        });
+      (error) => {
+        console.log(error);
+      });
     });
-  }  
+  }
+  const insertImage = async (field, imgPath) => {
+    db.transaction((trans) => {
+      trans.executeSql(`UPDATE potential_beneficiaries set ${field} = ? where hhid = ?`, [imgPath, beneficiary.hhid], (trans, results) => {
+        console.log("success");
+      },
+      (error) => {
+        console.log(error);
+      });
+    });
+  }
+  const selectBeneficiary = (data) => {
+    setBeneficiary(data);
+    console.log(data);
+  }
+  const pictureTaken = (data, type) => {
+    setCapturedImage(`file://${data}`);
+    // insertImage('image_photo',data)
+  }
   // https://medium.com/infinitbility/react-native-sqlite-storage-422503634dd2
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{headerShown: false}}>
+      <Stack.Navigator>
         <Stack.Screen name="Home">
-          {props => <HomeScreen {...props} extraData="asdasdanskd" />}
+          {props => <HomeScreen {...props} extraData="asdasdanskd"  getData={getData} />}
         </Stack.Screen>
-        <Stack.Screen name="Details">
-          {props => <CamSample {...props} />}
+        <Stack.Screen name="Camera" options={{headerShown: false}}>
+          {props => <CamSample {...props} pictureTaken={pictureTaken} beneficiary={beneficiary} />}
         </Stack.Screen>
-        <Stack.Screen name="ImageView">
-          {props => <DetailsScreen {...props} />}
+        <Stack.Screen name="Beneficiary Information">
+          {props => <Information {...props} capturedImage={capturedImage} beneficiary={beneficiary} />}
+        </Stack.Screen>
+        <Stack.Screen name="Beneficiaries">
+          {props => <Beneficiaries {...props} beneficiaries={beneficiaries} selectBeneficiary={selectBeneficiary} />}
+        </Stack.Screen>
+        <Stack.Screen name="Image Preview">
+          {props => <ImageView {...props} capturedImage={capturedImage} beneficiary={beneficiary} />}
         </Stack.Screen>
       </Stack.Navigator>
-      <Button title="request permissions" onPress={() => {getData()}} />
     </NavigationContainer>
   );
 }

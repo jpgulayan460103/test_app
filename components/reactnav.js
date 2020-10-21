@@ -72,7 +72,7 @@ function App() {
         <Stack.Screen name="Details">
           {props => <CamSample {...props} />}
         </Stack.Screen>
-        <Stack.Screen name="ImageView">
+        <Stack.Screen name="Beneficiary Information">
           {props => <DetailsScreen {...props} />}
         </Stack.Screen>
       </Stack.Navigator>
