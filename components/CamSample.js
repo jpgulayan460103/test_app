@@ -286,21 +286,25 @@ export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
             backgroundColor: 'transparent',
             justifyContent: 'space-around',
           }}>
+            <View style={{position: "absolute", backgroundColor: "white",top: -10, width: "100%"}}>
+              <Text style={{padding: 10, paddingBottom: 5, paddingTop: 5}}>{`HHID: ${beneficiary.hhid}\nName: ${beneficiary.fullname}\nImage: `}</Text>
+            </View>
           <View
             style={{
               backgroundColor: 'transparent',
               flexDirection: 'row',
               justifyContent: 'space-around',
+              marginTop: 65
             }}>
-            <TouchableOpacity
-              style={styles.flipButton}
-              onPress={() => toggleFacing()}>
-              <Text style={styles.flipText}> FLIP </Text>
-            </TouchableOpacity>
             <TouchableOpacity
               style={styles.flipButton}
               onPress={() => toggleFlash()}>
               <Text style={styles.flipText}> FLASH: {flash} </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.flipButton}
+              onPress={() => toggleFacing()}>
+              <Text style={styles.flipText}> {type.toUpperCase()} CAM </Text>
             </TouchableOpacity>
             <TouchableOpacity
               style={styles.flipButton}

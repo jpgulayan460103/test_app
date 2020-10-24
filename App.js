@@ -154,7 +154,7 @@ function App() {
     // setLoading(true);
     setBeneficiaries([]);
     db.transaction((trans) => {
-      trans.executeSql("select * from potential_beneficiaries limit 50", [], (trans, results) => {
+      trans.executeSql("select * from potential_beneficiaries limit 10", [], (trans, results) => {
         let items = [];
         let rows = results.rows;
         for (let i = 0; i < rows.length; i++) {
