@@ -255,6 +255,7 @@ export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
           flex: 1,
           justifyContent: 'space-between',
         }}
+        captureAudio={false}
         type={type}
         flashMode={flash}
         autoFocus={autoFocus}
@@ -388,7 +389,7 @@ export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
                     .then((res) => {
                       // console.log("the path is"+res)
                       pictureTaken(res, "image_photo");
-                      navigation.navigate("Beneficiary Information");
+                      navigation.navigate("Image Preview", {isViewOnly: false});
                       // RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}`);
                       // RNFS.moveFile(res,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${filename}.jpg`).then(console.log).catch(console.error)
                       RNFS.unlink(data.uri);
@@ -426,7 +427,7 @@ export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
                     .then((res) => {
                       // console.log("the path is"+res)
                       pictureTaken(res, "image_valid_id");
-                      navigation.navigate("Beneficiary Information");
+                      navigation.navigate("Image Preview", {isViewOnly: false});
                       // RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}`);
                       // RNFS.moveFile(res,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${filename}.jpg`).then(console.log).catch(console.error)
                       RNFS.unlink(data.uri);
@@ -464,7 +465,7 @@ export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
                     .then((res) => {
                       // console.log("the path is"+res)
                       pictureTaken(res, "image_house");
-                      navigation.navigate("Beneficiary Information");
+                      navigation.navigate("Image Preview", {isViewOnly: false});
                       // RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}`);
                       // RNFS.moveFile(res,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${filename}.jpg`).then(console.log).catch(console.error)
                       RNFS.unlink(data.uri);
@@ -510,7 +511,7 @@ export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
                     .then((res) => {
                       // console.log("the path is"+res)
                       pictureTaken(res, "image_birth");
-                      navigation.navigate("Beneficiary Information");
+                      navigation.navigate("Image Preview", {isViewOnly: false});
                       // RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}`);
                       // RNFS.moveFile(res,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${filename}.jpg`).then(console.log).catch(console.error)
                       RNFS.unlink(data.uri);
@@ -548,7 +549,7 @@ export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
                     .then((res) => {
                       // console.log("the path is"+res)
                       pictureTaken(res, "image_others");
-                      navigation.navigate("Beneficiary Information");
+                      navigation.navigate("Image Preview", {isViewOnly: false});
                       // RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}`);
                       // RNFS.moveFile(res,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${filename}.jpg`).then(console.log).catch(console.error)
                       RNFS.unlink(data.uri);

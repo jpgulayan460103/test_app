@@ -36,7 +36,7 @@ const Header = () => {
 
   const renderRightActions = () => (
     <React.Fragment>
-      <TopNavigationAction icon={EditIcon}/>
+      {/* <TopNavigationAction icon={EditIcon}/> */}
       <OverflowMenu
         anchor={renderMenuAction}
         visible={menuVisible}
@@ -56,7 +56,6 @@ const Header = () => {
         alignment='center'
         title='My App'
         subtitle='Test app'
-        accessoryLeft={renderBackAction}
         accessoryRight={renderRightActions}
       />
   );

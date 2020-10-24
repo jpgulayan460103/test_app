@@ -1,16 +1,14 @@
-import React from 'react';
-import { SafeAreaView, ScrollView, Image, StyleSheet, Dimensions, TouchableHighlight  } from 'react-native';
-import * as eva from '@eva-design/eva';
-import { ApplicationProvider, IconRegistry, Layout, Text } from '@ui-kitten/components';
-import { EvaIconsPack } from '@ui-kitten/eva-icons';
+import React, {useEffect} from 'react';
+import { ScrollView, Image, StyleSheet, Dimensions, TouchableHighlight, View  } from 'react-native';
+import { Layout, Text, Divider } from '@ui-kitten/components';
 
 const styles = StyleSheet.create({
     container: {
       paddingTop: 50,
     },
     tinyLogo: {
-      width: Dimensions.get('window').width / 3,
-      height: Dimensions.get('window').width / 3,
+      width: Dimensions.get('window').width * 0.45,
+      height: Dimensions.get('window').width * 0.45,
       margin: 2
     },
     logo: {
@@ -18,39 +16,52 @@ const styles = StyleSheet.create({
       height: 58,
     },
   });
-const Information = ({beneficiary, capturedImage, navigation}) => {
+const Information = ({beneficiary, changePicture, navigation}) => {
   const viewFullImage = () => {
-    navigation.navigate("Image Preview");
+    navigation.navigate("Image Preview", {isViewOnly: true});
   }
-  const ImagePreview = ({image}) => {
+  const ImagePreview = ({image, desc}) => {
     return (
-      <TouchableHighlight onPress={() => viewFullImage()}>
-      <Image
-        style={styles.tinyLogo}
-        source={{uri:image}}
-      />
-    </TouchableHighlight>
+      <TouchableHighlight
+        onPress={() => {
+          viewFullImage();
+          changePicture(image)
+        }}>
+      <View style={{paddingLeft: 10}}>
+        <Text>{desc}</Text>
+        <Image
+          style={styles.tinyLogo}
+          source={{uri:`file://${image}`}}
+        />
+      </View>
+      </TouchableHighlight>
     )
   }
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <IconRegistry icons={EvaIconsPack} />
-      <ApplicationProvider {...eva} theme={eva.dark}>
-        <Layout style={{flex: 1}}>
+  <Layout style={{flex: 1}}>
+        <View style={{padding: 10}}>
+          <Text>HHID: {beneficiary.hhid}</Text>
+          <Text>Name: {beneficiary.fullname}</Text>
+          <Text>Birthdate: {beneficiary.birthday}</Text>
+          <Text>Barangay: {beneficiary.barangay_name}</Text>
+          <Text>City/Municipality: {beneficiary.city_name}</Text>
+          <Text>Province: {beneficiary.province_name}</Text>
+        </View>
+        <Divider />
         <ScrollView>
-          <Text category='h1'>Hello World</Text>
-          <Text>{beneficiary.fullname}</Text>
-            <Text>{beneficiary.province_name}</Text>
-            <Text>{capturedImage}</Text>
-            <Layout style={{flex: 1, flexDirection: "row"}}>
-              <ImagePreview image={capturedImage} />
-              <ImagePreview image={capturedImage} />
-              <ImagePreview image={capturedImage} />
-            </Layout>
-        </ScrollView>
+        <Layout style={{flex: 1, flexDirection: "row",marginTop: 20}}>
+          {beneficiary.image_photo ? (<ImagePreview desc="PHOTO" image={beneficiary.image_photo} />) : (<></>)}
+          {beneficiary.image_valid_id ? (<ImagePreview desc="VALID ID" image={beneficiary.image_valid_id} />) : (<></>)}
         </Layout>
-      </ApplicationProvider>
-    </SafeAreaView>
+        <Layout style={{flex: 1, flexDirection: "row",marginTop: 20}}>
+          {beneficiary.image_house ? (<ImagePreview desc="HOUSE" image={beneficiary.image_house} />) : (<></>)}
+          {beneficiary.image_birth ? (<ImagePreview desc="BIRTH CERTIFICATE" image={beneficiary.image_birth} />) : (<></>)}
+        </Layout>
+        <Layout style={{flex: 1, flexDirection: "row",marginTop: 20}}>
+          {beneficiary.image_others ? (<ImagePreview desc="OTHERS" image={beneficiary.image_others} />) : (<></>)}
+        </Layout>
+    </ScrollView>
+    </Layout>
   );
 }
 
