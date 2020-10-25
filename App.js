@@ -17,27 +17,25 @@ var RNFS = require('react-native-fs');
 const height = Dimensions.get('window').height; 
 const width = Dimensions.get('window').width; 
 
-const requestCameraPermission = async () => {
+const requestPermissions = async () => {
+  let validPermissions = true;
   try {
-    PermissionsAndroid.requestMultiple(
-      [PermissionsAndroid.PERMISSIONS.CAMERA, 
-      PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-      PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE]
-      ).then((result) => {
-        if (result['android.permission.CAMERA']
-        && result['android.permission.READ_EXTERNAL_STORAGE']
-        && result['android.permission.WRITE_EXTERNAL_STORAGE'] === 'granted') {
-          console.log("You can use the camera");
-        } else if (
-         result['android.permission.CAMERA']
-        || result['android.permission.READ_EXTERNAL_STORAGE']
-        || result['android.permission.WRITE_EXTERNAL_STORAGE'] === 'never_ask_again') {
-          console.log("Camera permission denied");
-        }
-      });
+    const granted = await PermissionsAndroid.requestMultiple(
+      [
+        PermissionsAndroid.PERMISSIONS.CAMERA,
+        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+      ]
+    );
+    _forEach(granted, function(value, key) {
+      if(PermissionsAndroid.RESULTS.GRANTED != value){
+        validPermissions = false;
+      }
+    })
   } catch (err) {
     console.warn(err);
   }
+  return validPermissions;
 };
 
 const styles = StyleSheet.create({
@@ -60,7 +58,7 @@ const styles = StyleSheet.create({
   },
 });
 
-function HomeScreen({ navigation }) {
+function HomeScreen({ navigation, validPermissions }) {
   return (
     <Layout style={{ flex: 1 }}>
       {/* <Header /> */}
@@ -74,39 +72,45 @@ function HomeScreen({ navigation }) {
         
       </Layout>
       <Divider />
-      <Layout style={{ flex: 1, alignItems: 'center', justifyContent: 'space-evenly', flexDirection: "row" }}>
-      <View style={{
-              borderColor: "rgba(255,255,255,0.4)",
-              borderStyle: "dotted",
-              borderRadius: 50,
-              borderWidth: 3,
-              padding: 10,
-        }}>
-          <Text style={{textAlignVertical:"center", textAlign: "center"}}>Reports</Text>
-          <Icon
-          style={styles.icon}
-          fill='#8F9BB3'
-          name='calendar'
-        />
-        </View>
-        <TouchableWithoutFeedback  onPress={() => navigation.navigate('Beneficiaries')}>
-          <View style={{
+      {validPermissions ? (
+        <Layout style={{ flex: 1, alignItems: 'center', justifyContent: 'space-evenly', flexDirection: "row" }}>
+        <View style={{
                 borderColor: "rgba(255,255,255,0.4)",
                 borderStyle: "dotted",
                 borderRadius: 50,
                 borderWidth: 3,
                 padding: 10,
           }}>
-            <Text style={{textAlignVertical:"center", textAlign: "center"}}>Take Photo</Text>
+            <Text style={{textAlignVertical:"center", textAlign: "center"}}>Reports</Text>
             <Icon
             style={styles.icon}
             fill='#8F9BB3'
-            name='camera-outline'
+            name='calendar'
           />
           </View>
-        </TouchableWithoutFeedback >
-        {/* <Button onPress={() => navigation.navigate('Beneficiaries') }>request permissions</Button> */}
-      </Layout>
+          <TouchableWithoutFeedback  onPress={() => navigation.navigate('Beneficiaries')}>
+            <View style={{
+                  borderColor: "rgba(255,255,255,0.4)",
+                  borderStyle: "dotted",
+                  borderRadius: 50,
+                  borderWidth: 3,
+                  padding: 10,
+            }}>
+              <Text style={{textAlignVertical:"center", textAlign: "center"}}>Take Photo</Text>
+              <Icon
+              style={styles.icon}
+              fill='#8F9BB3'
+              name='camera-outline'
+            />
+            </View>
+          </TouchableWithoutFeedback >
+        </Layout>
+      ) : (
+        <Layout style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
+            <Button onPress={() => requestPermissions() }>Exit Application</Button>
+            {/* <Text>Insufficient permission.</Text> */}
+          </Layout>
+      )}
     </Layout>
   );
 }
@@ -147,11 +151,16 @@ function App() {
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [selectedCity, setSelectedCity] = useState(null);
   const [selectedBarangay, setSelectedBarangay] = useState(null);
+  const [validPermissions, setValidPermissions] = useState(false);
 
   useEffect(() => {
     getProvinces();
-    // getBeneficiaries();
-    requestCameraPermission();
+    requestPermissions().then(res => {
+      setValidPermissions(res);
+      if(!res){
+        ToastAndroid.show("Insufficient Permissions", ToastAndroid.SHORT)
+      }
+    });
     return () => {
       
     };
@@ -352,8 +361,8 @@ function App() {
     <ApplicationProvider {...eva} theme={eva.dark}>
         <NavigationContainer>
           <Stack.Navigator>
-            <Stack.Screen name="Home" options={{headerShown: false}}>
-              {props => <HomeScreen {...props} />}
+            <Stack.Screen name="Home" options={{headerShown: false}} >
+              {props => <HomeScreen {...props} validPermissions={validPermissions} />}
             </Stack.Screen>
             <Stack.Screen name="Camera" options={{headerShown: false}}>
               {props => <CamSample {...props} pictureTaken={pictureTaken} beneficiary={beneficiary} />}
