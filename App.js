@@ -65,10 +65,10 @@ function HomeScreen({ navigation, validPermissions }) {
       <Divider />
       <Layout style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         {/* <Button onPress={() => navigation.navigate('Camera')}>Go to Details</Button> */}
-        {/* <Image
+        <Image
           style={styles.tinyLogo}
           source={require('./assets/images/logo.png')}
-          /> */}
+          />
         
       </Layout>
       <Divider />
