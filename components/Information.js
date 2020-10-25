@@ -1,5 +1,5 @@
 import React, {useEffect} from 'react';
-import { ScrollView, Image, StyleSheet, Dimensions, TouchableHighlight, View  } from 'react-native';
+import { ScrollView, Image, StyleSheet, Dimensions, TouchableOpacity, View  } from 'react-native';
 import { Layout, Text, Divider } from '@ui-kitten/components';
 
 const styles = StyleSheet.create({
@@ -22,7 +22,7 @@ const Information = ({beneficiary, changePicture, navigation}) => {
   }
   const ImagePreview = ({image, desc}) => {
     return (
-      <TouchableHighlight
+      <TouchableOpacity
         onPress={() => {
           viewFullImage();
           changePicture(image)
@@ -34,7 +34,7 @@ const Information = ({beneficiary, changePicture, navigation}) => {
           source={{uri:`file://${image}`}}
         />
       </View>
-      </TouchableHighlight>
+      </TouchableOpacity>
     )
   }
   return (

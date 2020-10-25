@@ -11,6 +11,7 @@ import Beneficiaries from './components/Beneficiaries'
 import Information from './components/Information'
 import ImageView from './components/ImageView'
 import Header from './components/Header'
+import _forEach from 'lodash/forEach'
 var RNFS = require('react-native-fs');
 
 const height = Dimensions.get('window').height; 
@@ -59,24 +60,17 @@ const styles = StyleSheet.create({
   },
 });
 
-function HomeScreen({ navigation, getBeneficiaries }) {
-  useEffect(() => {
-    requestCameraPermission();
-    getBeneficiaries()
-    return () => {
-      
-    };
-  }, []);
+function HomeScreen({ navigation }) {
   return (
     <Layout style={{ flex: 1 }}>
       {/* <Header /> */}
       <Divider />
       <Layout style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         {/* <Button onPress={() => navigation.navigate('Camera')}>Go to Details</Button> */}
-        <Image
+        {/* <Image
           style={styles.tinyLogo}
           source={require('./assets/images/logo.png')}
-          />
+          /> */}
         
       </Layout>
       <Divider />
@@ -149,12 +143,44 @@ function App() {
   const [capturedImage, setCapturedImage] = useState('./assets/images/no-image.png');
   const [capturedImageType, setCapturedImageType] = useState('');
   const [loading, setLoading] = useState(false);
+  const [beneficiaryFormData, setBeneficiaryFormData] = useState({searchString: ""});
+  const [selectedProvince, setSelectedProvince] = useState(null);
+  const [selectedCity, setSelectedCity] = useState(null);
+  const [selectedBarangay, setSelectedBarangay] = useState(null);
+
+  useEffect(() => {
+    getProvinces();
+    // getBeneficiaries();
+    requestCameraPermission();
+    return () => {
+      
+    };
+  }, []);
 
   const getBeneficiaries = () => {
     // setLoading(true);
     setBeneficiaries([]);
     db.transaction((trans) => {
-      trans.executeSql("select * from potential_beneficiaries limit 10", [], (trans, results) => {
+      let sql = "select * from potential_beneficiaries";
+      let params = [];
+      let iter = 0;
+      _forEach(beneficiaryFormData, function(value, key) {
+        if(iter == 0){
+          sql = `${sql} where`;
+        }else{
+          sql = `${sql} and `;
+        }
+        if(key == "searchString"){
+          
+          sql = `${sql} fullname like '%${value}%'`;
+        }else{
+          sql = `${sql} ${key} = '${value}'`;
+        }
+        iter++;
+      })
+      sql = `${sql} order by fullname limit 20`;
+      // console.log(sql);
+      trans.executeSql(sql, params, (trans, results) => {
         let items = [];
         let rows = results.rows;
         for (let i = 0; i < rows.length; i++) {
@@ -162,6 +188,57 @@ function App() {
           items.push(item);
         }
         setBeneficiaries(items);
+      },
+      (error) => {
+        console.log(error);
+      });
+    });
+  }
+  const getProvinces = () => {
+    setProvinces([]);
+    db.transaction((trans) => {
+      trans.executeSql("select distinct province_name from potential_beneficiaries order by province_name", [], (trans, results) => {
+        let items = [];
+        let rows = results.rows;
+        for (let i = 0; i < rows.length; i++) {
+          var item = rows.item(i);
+          items.push(item.province_name);
+        }
+        setProvinces(items);
+      },
+      (error) => {
+        console.log(error);
+      });
+    });
+  }
+  const getCities = (prov) => {
+    setCities([]);
+    db.transaction((trans) => {
+      trans.executeSql("select distinct city_name from potential_beneficiaries where province_name = ? order by city_name", [prov], (trans, results) => {
+        let items = [];
+        let rows = results.rows;
+        for (let i = 0; i < rows.length; i++) {
+          var item = rows.item(i);
+          items.push(item.city_name);
+        }
+        setCities(items);
+      },
+      (error) => {
+        console.log(error);
+      });
+    });
+  }
+  const getBarangays = (prov, cit) => {
+    setBarangays([]);
+    db.transaction((trans) => {
+      trans.executeSql("select distinct barangay_name from potential_beneficiaries where province_name = ? and city_name = ? order by barangay_name", [prov, cit], (trans, results) => {
+        let items = [];
+        let rows = results.rows;
+        for (let i = 0; i < rows.length; i++) {
+          var item = rows.item(i);
+          items.push(item.barangay_name);
+        }
+        setBarangays(items);
       },
       (error) => {
         console.log(error);
@@ -236,6 +313,38 @@ function App() {
   const changePicture = (img) => {
     setCapturedImage(img);
   }
+  const updateAddressFilter = (filter, value) => {
+    let newValue = {[filter]: value};
+    switch (filter) {
+      case 'province_name':
+        setBeneficiaryFormData(prev => {
+          delete prev.city_name;
+          delete prev.barangay_name;
+          return {...prev, ...newValue}
+        });
+        getCities(value);
+        setSelectedProvince(value);
+        break;
+      case 'city_name':
+        setBeneficiaryFormData(prev => {
+          delete prev.barangay_name;
+          return {...prev, ...newValue}
+        });
+        setSelectedCity(value);
+        getBarangays(selectedProvince,value);
+        break;
+      case 'barangay_name':
+        setBeneficiaryFormData(prev => {
+          return {...prev, ...newValue}
+        });
+        break;
+      default:
+        setBeneficiaryFormData(prev => {
+          return {...prev, ...newValue}
+        });
+        break;
+    }
+  }
   // https://medium.com/infinitbility/react-native-sqlite-storage-422503634dd2
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -244,7 +353,7 @@ function App() {
         <NavigationContainer>
           <Stack.Navigator>
             <Stack.Screen name="Home" options={{headerShown: false}}>
-              {props => <HomeScreen {...props} extraData="asdasdanskd"  getBeneficiaries={getBeneficiaries} />}
+              {props => <HomeScreen {...props} />}
             </Stack.Screen>
             <Stack.Screen name="Camera" options={{headerShown: false}}>
               {props => <CamSample {...props} pictureTaken={pictureTaken} beneficiary={beneficiary} />}
@@ -253,7 +362,15 @@ function App() {
               {props => <Information {...props} changePicture={changePicture} beneficiary={beneficiary} />}
             </Stack.Screen>
             <Stack.Screen name="Beneficiaries">
-              {props => <Beneficiaries {...props} beneficiaries={beneficiaries} selectBeneficiary={selectBeneficiary} getBeneficiaries={getBeneficiaries} />}
+              {props => <Beneficiaries
+                {...props}
+                beneficiaries={beneficiaries}
+                addresses={{provinces, cities, barangays}}
+                selectBeneficiary={selectBeneficiary}
+                updateAddressFilter={updateAddressFilter}
+                beneficiaryFormData={beneficiaryFormData}
+                getBeneficiaries={getBeneficiaries}
+                />}
             </Stack.Screen>
             <Stack.Screen name="Image Preview" initialParams={{ isViewOnly: true }} options={{headerShown: false}}>
               {props => <ImageView {...props} capturedImage={capturedImage} beneficiary={beneficiary} savePicture={savePicture} deletePicture={deletePicture} />}

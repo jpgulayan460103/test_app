@@ -1,6 +1,6 @@
-import React, {useEffect} from 'react';
-import { StyleSheet } from 'react-native';
-import { Layout, Text, Icon, List, ListItem, Button } from '@ui-kitten/components';
+import React, {useEffect, useState} from 'react';
+import { StyleSheet, TouchableOpacity, View, Dimensions } from 'react-native';
+import { Layout, Text, Icon, List, ListItem, Button, IndexPath, Select, SelectItem, Divider, Input } from '@ui-kitten/components';
 
 const styles = StyleSheet.create({
     container: {
@@ -8,25 +8,58 @@ const styles = StyleSheet.create({
     },
 });
 
+const listWidth = Dimensions.get('window').width;
 
-const Beneficiaries = ({beneficiaries, navigation, selectBeneficiary, getBeneficiaries}) => {
-
+const Beneficiaries = ({beneficiaries, navigation, selectBeneficiary, addresses: {provinces, cities, barangays}, updateAddressFilter, beneficiaryFormData, getBeneficiaries }) => {
+    useEffect(() => {
+        // console.log(provinces);
+        return () => {
+            
+        };
+    }, []);
+    
+    const [selectedIndex, setSelectedIndex] = useState(new IndexPath(0));
+    const [provinceValue, setProvinceValue] = useState(null);
+    const [cityValue, setCityValue] = useState(null);
+    const [barangayValue, setBarangayValue] = useState(null);
+    const [showFilter, setShowFilter] = useState(true);
+    const [value, setValue] = useState('');
     const renderItemIcon = (props) => (
         <Icon {...props} name='person'/>
     );
 
+    const renderIcon = (props) => (
+        <TouchableOpacity onPress={() => {
+            getBeneficiaries();
+            // console.log(beneficiaryFormData);
+        }}>
+          <Icon {...props} name="search"/>
+        </TouchableOpacity>
+      );
+
 
     const renderItem = ({ item, index }) => (
-    <ListItem
-        onPress={() => {
-            selectBeneficiary(item);
-            navigation.navigate("Beneficiary Information")
-        } }
-        title={`${item.fullname}`}
-        description={`${item.barangay_name}, ${item.city_name}\n${item.province_name}`}
-        accessoryLeft={renderItemIcon}
-        accessoryRight={() => {
-            return (
+        <View style={
+            {
+                width:"100%",
+                backgroundColor: "#222b44",
+                padding: 5,
+                paddingLeft: 10,
+                borderColor: "black",
+                borderBottomWidth: 1,
+                flexDirection: "row"
+            }
+        }>
+            <TouchableOpacity onPress={() => {
+                selectBeneficiary(item);
+                navigation.navigate("Beneficiary Information")
+            }}>
+            <View style={{ width: (listWidth - 120), paddingRight: 4}}>
+                <Text category='c1' style={{fontWeight: "bold", fontSize: 14}}>{`${item.fullname}`}</Text>
+                <Text category='c1'>{`${item.barangay_name}, ${item.city_name}\n${item.province_name}`}</Text>
+            </View>
+            </TouchableOpacity>
+            <View style={{ width: 100, justifyContent: 'center', alignItems: 'center'}}>
                 <Button
                     size='tiny'
                     onPress={() => {
@@ -34,18 +67,104 @@ const Beneficiaries = ({beneficiaries, navigation, selectBeneficiary, getBenefic
                         navigation.navigate("Camera");
                     }
                 }>TAKE PICTURE</Button>
-            )
-        }}
-    />
+            </View>
+        </View>
     );
+    
+
     return (
-
-
         <Layout style={{flex: 1}}>
-        <List
-            data={beneficiaries}
-            renderItem={renderItem}
-        />
+            {showFilter ? (
+                <Layout style={{flex: 0, paddingTop: 10, flexDirection: "row", justifyContent: "space-evenly"}}>
+                <Layout style={{width: "45%"}}>
+                    <Select
+                        label='Province'
+                        placeholder="Select Province"
+                        onSelect={(item) => {
+                            setProvinceValue(provinces[item.row]);
+                            setCityValue(null);
+                            setBarangayValue(null);
+                            updateAddressFilter('province_name', provinces[item.row]);
+                        }}
+                        value={provinceValue}>
+                        {
+                            provinces.map((item, index) => {
+                                return (<SelectItem title={item} key={`prov_${index}`}/>)
+                            })
+                        }
+                    </Select>
+                </Layout>
+                <Layout style={{width: "45%"}}>
+                    <Select
+                        label='City/Municipality'
+                        placeholder="Select City/Municipality"
+                        onSelect={(item) => {
+                            setCityValue(cities[item.row]);
+                            setBarangayValue(null);
+                            updateAddressFilter('city_name', cities[item.row]);
+                        }}
+                        value={cityValue}>
+                        {
+                            cities.map((item, index) => {
+                                return (<SelectItem title={item} key={`city_${index}`}/>)
+                            })
+                        }
+                    </Select>
+                </Layout>
+            </Layout>
+            ) : (<></>) }
+
+            {showFilter ? (
+                <Layout style={{flex: 0, paddingTop: 10, flexDirection: "row", justifyContent: "space-evenly"}}>
+                    <Layout style={{width: "93%"}}>
+                        <Select
+                            label='Barangay'
+                            placeholder="Select Barangay"
+                            onSelect={(item) => {
+                                setBarangayValue(barangays[item.row]);
+                                updateAddressFilter('barangay_name', barangays[item.row]);
+                            }}
+                            value={barangayValue}>
+                            {
+                                barangays.map((item, index) => {
+                                    return (<SelectItem title={item} key={`brgy_${index}`}/>)
+                                })
+                            }
+                        </Select>
+                    </Layout>
+                </Layout>
+            ) : (<></>)}
+            <TouchableOpacity
+                onPress={
+                    () => {
+                        setShowFilter(prev => {
+                            return !prev;
+                        })
+                    }
+                }>
+                <Text style={{textAlign: "center", paddingTop: 10}}>{showFilter ? "HIDE" : "SHOW"} SEARCH FILTERS</Text>
+            </TouchableOpacity>
+            <Layout style={{flex: 0, flexDirection: "row", justifyContent: "space-evenly"}}>
+                <Layout style={{width: "93%"}}>
+                <Input
+                    value={value}
+                    label='Search'
+                    placeholder='Enter Name'
+                    accessoryRight={renderIcon}
+                    onChangeText={nextValue => {
+                        setValue(nextValue);
+                        updateAddressFilter('searchString', nextValue);
+                    }}
+                />
+                </Layout>
+            </Layout>
+            <Divider style={{marginTop: 20}} />
+            <Layout style={{flex: 1}}>
+                <List
+                data={beneficiaries}
+                renderItem={renderItem}
+                />
+            </Layout>
         </Layout>
     );
 }
