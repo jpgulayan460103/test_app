@@ -10,9 +10,9 @@ const styles = StyleSheet.create({
 
 const listWidth = Dimensions.get('window').width;
 
-const Beneficiaries = ({beneficiaries, navigation, selectBeneficiary, addresses: {provinces, cities, barangays}, updateAddressFilter, beneficiaryFormData, getBeneficiaries }) => {
+const Beneficiaries = ({beneficiaries, navigation, addresses: {provinces, cities, barangays}, updateAddressFilter, beneficiaryFormData, getBeneficiaries }) => {
     useEffect(() => {
-        // console.log(provinces);
+        getBeneficiaries();
         return () => {
             
         };
@@ -51,8 +51,7 @@ const Beneficiaries = ({beneficiaries, navigation, selectBeneficiary, addresses:
             }
         }>
             <TouchableOpacity onPress={() => {
-                selectBeneficiary(item);
-                navigation.navigate("Beneficiary Information")
+                navigation.navigate("Beneficiary Information", {beneficiary: item})
             }}>
             <View style={{ width: (listWidth - 120), paddingRight: 4}}>
                 <Text category='c1' style={{fontWeight: "bold", fontSize: 14}}>{`${item.fullname}`}</Text>
@@ -63,8 +62,7 @@ const Beneficiaries = ({beneficiaries, navigation, selectBeneficiary, addresses:
                 <Button
                     size='tiny'
                     onPress={() => {
-                        selectBeneficiary(item);
-                        navigation.navigate("Camera");
+                        navigation.navigate("Camera", {beneficiary: item});
                     }
                 }>TAKE PICTURE</Button>
             </View>

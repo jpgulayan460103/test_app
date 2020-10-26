@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import React, { useMemo } from 'react';
+import React, { useMemo, useEffect } from 'react';
 import Marker from "react-native-image-marker"
 import {
   StyleSheet,
@@ -165,7 +165,11 @@ const renderBarcode = ({ bounds = {}, data, type }) => (
   </React.Fragment>
 );
 
-export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
+export const CameraScreen = ({navigation, route, setBeneficiary}) => {
+  const { beneficiary } = route.params;
+  useEffect(() => {
+    setBeneficiary(beneficiary);
+  }, []);
   const [
     {
       cameraRef,
@@ -280,21 +284,15 @@ export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
             <View style={{ flex: 1 }} />
           </TouchableWithoutFeedback>
         </View>
-        <View
-          style={{
-            height: 72,
-            backgroundColor: 'transparent',
-            justifyContent: 'space-around',
-          }}>
-            <View style={{position: "absolute", backgroundColor: "white",top: -10, width: "100%"}}>
+        <View style={{position: "absolute", backgroundColor: "white",top: -10, width: "100%"}}>
               <Text style={{padding: 10, paddingBottom: 5, paddingTop: 5}}>{`HHID: ${beneficiary.hhid}\nName: ${beneficiary.fullname}\nImage: `}</Text>
             </View>
-          <View
+        <View
             style={{
               backgroundColor: 'transparent',
               flexDirection: 'row',
               justifyContent: 'space-around',
-              marginTop: 65
+              marginTop: 50
             }}>
             <TouchableOpacity
               style={styles.flipButton}
@@ -312,6 +310,13 @@ export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
               <Text style={styles.flipText}> WB: {whiteBalance} </Text>
             </TouchableOpacity>
           </View>
+        <View
+          style={{
+            height: 72,
+            backgroundColor: 'transparent',
+            justifyContent: 'space-around',
+          }}>
+            
           <View
             style={{
               backgroundColor: 'transparent',
@@ -382,7 +387,6 @@ export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
               ]}
               onPress={async () => {
                 try {
-                  // https://stackoverflow.com/questions/42167094/react-native-image-upload
                   setIsRecording(true);
                   let options = { fixOrientation: true };
                   const data = await takePicture(options);
@@ -391,11 +395,7 @@ export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
                     let dir = currentDate();
                     waterMark(data, "Photo")
                     .then((res) => {
-                      // console.log("the path is"+res)
-                      pictureTaken(res, "image_photo");
-                      navigation.navigate("Image Preview", {isViewOnly: false});
-                      // RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}`);
-                      // RNFS.moveFile(res,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${filename}.jpg`).then(console.log).catch(console.error)
+                      navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: res, capturedImageType: "image_photo"});
                       RNFS.unlink(data.uri);
                     }).catch((err) => {
                       console.log(err)
@@ -420,7 +420,6 @@ export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
               ]}
               onPress={async () => {
                 try {
-                  // https://stackoverflow.com/questions/42167094/react-native-image-upload
                   setIsRecording(true);
                   let options = { fixOrientation: true };
                   const data = await takePicture(options);
@@ -429,11 +428,7 @@ export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
                     let dir = currentDate();
                     waterMark(data, "VALID ID")
                     .then((res) => {
-                      // console.log("the path is"+res)
-                      pictureTaken(res, "image_valid_id");
-                      navigation.navigate("Image Preview", {isViewOnly: false});
-                      // RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}`);
-                      // RNFS.moveFile(res,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${filename}.jpg`).then(console.log).catch(console.error)
+                      navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: res, capturedImageType: "image_valid_id"});
                       RNFS.unlink(data.uri);
                     }).catch((err) => {
                       console.log(err)
@@ -458,7 +453,6 @@ export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
               ]}
               onPress={async () => {
                 try {
-                  // https://stackoverflow.com/questions/42167094/react-native-image-upload
                   setIsRecording(true);
                   let options = { fixOrientation: true };
                   const data = await takePicture(options);
@@ -467,11 +461,7 @@ export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
                     let dir = currentDate();
                     waterMark(data, "House")
                     .then((res) => {
-                      // console.log("the path is"+res)
-                      pictureTaken(res, "image_house");
-                      navigation.navigate("Image Preview", {isViewOnly: false});
-                      // RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}`);
-                      // RNFS.moveFile(res,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${filename}.jpg`).then(console.log).catch(console.error)
+                      navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: res, capturedImageType: "image_house"});
                       RNFS.unlink(data.uri);
                     }).catch((err) => {
                       console.log(err)
@@ -504,7 +494,6 @@ export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
               ]}
               onPress={async () => {
                 try {
-                  // https://stackoverflow.com/questions/42167094/react-native-image-upload
                   setIsRecording(true);
                   let options = { fixOrientation: true };
                   const data = await takePicture(options);
@@ -513,11 +502,7 @@ export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
                     let dir = currentDate();
                     waterMark(data, "Birth Certificate")
                     .then((res) => {
-                      // console.log("the path is"+res)
-                      pictureTaken(res, "image_birth");
-                      navigation.navigate("Image Preview", {isViewOnly: false});
-                      // RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}`);
-                      // RNFS.moveFile(res,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${filename}.jpg`).then(console.log).catch(console.error)
+                      navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: res, capturedImageType: "image_birth"});
                       RNFS.unlink(data.uri);
                     }).catch((err) => {
                       console.log(err)
@@ -542,7 +527,6 @@ export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
               ]}
               onPress={async () => {
                 try {
-                  // https://stackoverflow.com/questions/42167094/react-native-image-upload
                   setIsRecording(true);
                   let options = { fixOrientation: true };
                   const data = await takePicture(options);
@@ -551,11 +535,7 @@ export const CameraScreen = ({navigation, pictureTaken, beneficiary}) => {
                     let dir = currentDate();
                     waterMark(data, "Other Document")
                     .then((res) => {
-                      // console.log("the path is"+res)
-                      pictureTaken(res, "image_others");
-                      navigation.navigate("Image Preview", {isViewOnly: false});
-                      // RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}`);
-                      // RNFS.moveFile(res,`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${filename}.jpg`).then(console.log).catch(console.error)
+                      navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: res, capturedImageType: "image_others"});
                       RNFS.unlink(data.uri);
                     }).catch((err) => {
                       console.log(err)

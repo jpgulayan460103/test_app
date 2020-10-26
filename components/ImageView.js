@@ -18,9 +18,10 @@ const styles = StyleSheet.create({
       height: 58,
     },
   });
-const ImageView = ({beneficiary, capturedImage, savePicture, deletePicture, route, navigation}) => {
-  const { isViewOnly } = route.params;
+const ImageView = ({savePicture, pictureTaken, deletePicture, route, navigation}) => {
+  const { isViewOnly, capturedImage, capturedImageType } = route.params;
   useEffect(() => {
+    pictureTaken(capturedImage,capturedImageType)
     const backAction = () => {
       if(isViewOnly){
         navigation.goBack()

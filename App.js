@@ -65,10 +65,10 @@ function HomeScreen({ navigation, validPermissions }) {
       <Divider />
       <Layout style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         {/* <Button onPress={() => navigation.navigate('Camera')}>Go to Details</Button> */}
-        <Image
+        {/* <Image
           style={styles.tinyLogo}
           source={require('./assets/images/logo.png')}
-          />
+          /> */}
         
       </Layout>
       <Divider />
@@ -365,10 +365,10 @@ function App() {
               {props => <HomeScreen {...props} validPermissions={validPermissions} />}
             </Stack.Screen>
             <Stack.Screen name="Camera" options={{headerShown: false}}>
-              {props => <CamSample {...props} pictureTaken={pictureTaken} beneficiary={beneficiary} />}
+              {props => <CamSample {...props} setBeneficiary={setBeneficiary} />}
             </Stack.Screen>
             <Stack.Screen name="Beneficiary Information">
-              {props => <Information {...props} changePicture={changePicture} beneficiary={beneficiary} />}
+              {props => <Information {...props} changePicture={changePicture} setBeneficiary={setBeneficiary} />}
             </Stack.Screen>
             <Stack.Screen name="Beneficiaries">
               {props => <Beneficiaries
@@ -382,7 +382,7 @@ function App() {
                 />}
             </Stack.Screen>
             <Stack.Screen name="Image Preview" initialParams={{ isViewOnly: true }} options={{headerShown: false}}>
-              {props => <ImageView {...props} capturedImage={capturedImage} beneficiary={beneficiary} savePicture={savePicture} deletePicture={deletePicture} />}
+              {props => <ImageView {...props} pictureTaken={pictureTaken} savePicture={savePicture} deletePicture={deletePicture} />}
             </Stack.Screen>
           </Stack.Navigator>
           {/* <View style={{position:"absolute"}}>

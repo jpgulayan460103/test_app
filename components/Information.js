@@ -16,16 +16,19 @@ const styles = StyleSheet.create({
       height: 58,
     },
   });
-const Information = ({beneficiary, changePicture, navigation}) => {
-  const viewFullImage = () => {
-    navigation.navigate("Image Preview", {isViewOnly: true});
+const Information = ({navigation, setBeneficiary, route}) => {
+  const { beneficiary, capturedImage, capturedImageType } = route.params;
+  useEffect(() => {
+    setBeneficiary(beneficiary);
+  }, []);
+  const viewFullImage = (image) => {
+    navigation.navigate("Image Preview", {isViewOnly: true, capturedImage: image, capturedImageType: "image_photo"});
   }
   const ImagePreview = ({image, desc}) => {
     return (
       <TouchableOpacity
         onPress={() => {
-          viewFullImage();
-          changePicture(image)
+          viewFullImage(image);
         }}>
       <View style={{paddingLeft: 10}}>
         <Text>{desc}</Text>
