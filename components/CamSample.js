@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import React, { useMemo, useEffect } from 'react';
+import React, { useMemo, useEffect, useState } from 'react';
 import Marker from "react-native-image-marker"
 import {
   StyleSheet,
@@ -14,6 +14,7 @@ import {
 import { RNCamera } from 'react-native-camera';
 // eslint-disable-next-line
 import Slider from '@react-native-community/slider';
+import Geolocation from '@react-native-community/geolocation';
 
 import { useCamera } from 'react-native-camera-hooks';
 var RNFS = require('react-native-fs');
@@ -206,6 +207,8 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
     },
   ] = useCamera(initialState);
 
+  const [location, setLocation] = useState({});
+
   //TODO: [mr] useEffect?
   const canDetectFaces = useMemo(() => cameraState['canDetectFaces'], [
     cameraState,
@@ -216,25 +219,11 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
   const canDetectBarcode = useMemo(() => cameraState['canDetectBarcode'], [
     cameraState,
   ]);
-  const currentDate = () => {
-    let date = new Date();
-    let year = date.getFullYear();
-    let month = date.getMonth()+1;
-    let dt = date.getDate();
-    
-    if (dt < 10) {
-      dt = '0' + dt;
-    }
-    if (month < 10) {
-      month = '0' + month;
-    }
-    let dir = `${year}-${month}-${dt}`
-    return dir;
-  }
-  const waterMark = (data, type) => {
+
+  const waterMark = async (data, type, location) => {
     return  Marker.markText({
       src: data.uri,
-      text: `HHID: ${beneficiary.hhid}\nName: ${beneficiary.fullname}\nImage: ${type}`, 
+      text: `HHID: ${beneficiary.hhid}\nName: ${beneficiary.fullname}\nImage: ${type}\nLocation: ${location.latitude}, ${location.longitude}`, 
       X: 30,
       Y: 10, 
       color: '#000000',
@@ -285,7 +274,7 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
           </TouchableWithoutFeedback>
         </View>
         <View style={{position: "absolute", backgroundColor: "white",top: -10, width: "100%"}}>
-              <Text style={{padding: 10, paddingBottom: 5, paddingTop: 5}}>{`HHID: ${beneficiary.hhid}\nName: ${beneficiary.fullname}\nImage: `}</Text>
+              <Text style={{ fontSize: 11,padding: 10, paddingBottom: 5, paddingTop: 5}}>{`HHID: ${beneficiary.hhid}\nName: ${beneficiary.fullname}\nImage:\nLocation: `}</Text>
             </View>
         <View
             style={{
@@ -387,25 +376,25 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
               ]}
               onPress={async () => {
                 try {
+
                   setIsRecording(true);
-                  let options = { fixOrientation: true };
-                  const data = await takePicture(options);
-                  RNFS.exists(data.uri)
-                  .then(res => {
-                    let dir = currentDate();
-                    waterMark(data, "Photo")
-                    .then((res) => {
-                      navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: res, capturedImageType: "image_photo"});
+                  Geolocation.getCurrentPosition(async ({ coords }) => {
+                    let options = { fixOrientation: true };
+                    let data = await takePicture(options);
+                    let dirExist = await RNFS.exists(data.uri);
+                    if(dirExist){
+                      let markedImage = await waterMark(data, "Photo", coords)
                       RNFS.unlink(data.uri);
-                    }).catch((err) => {
-                      console.log(err)
-                    })
-                  })
-                  .catch(res => {
-                    console.log(res);
-                  })
+                      navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: markedImage, capturedImageType: "image_photo"});
+                    }else{
+                      console.log("err");
+                    }
+                  }, (err) => {
+                    console.log(err);
+                  });
+
                 } catch (e) {
-                  // console.warn(e);
+                  console.warn(e);
                 } finally {
                   setIsRecording(false);
                 }
@@ -420,23 +409,22 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
               ]}
               onPress={async () => {
                 try {
+
                   setIsRecording(true);
-                  let options = { fixOrientation: true };
-                  const data = await takePicture(options);
-                  RNFS.exists(data.uri)
-                  .then(res => {
-                    let dir = currentDate();
-                    waterMark(data, "VALID ID")
-                    .then((res) => {
-                      navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: res, capturedImageType: "image_valid_id"});
+                  Geolocation.getCurrentPosition(async ({ coords }) => {
+                    let options = { fixOrientation: true };
+                    let data = await takePicture(options);
+                    let dirExist = await RNFS.exists(data.uri);
+                    if(dirExist){
+                      let markedImage = await waterMark(data, "VALID ID", coords)
                       RNFS.unlink(data.uri);
-                    }).catch((err) => {
-                      console.log(err)
-                    })
-                  })
-                  .catch(res => {
-                    console.log(res);
-                  })
+                      navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: markedImage, capturedImageType: "image_valid_id"});
+                    }else{
+                      console.log("err");
+                    }
+                  }, (err) => {
+                    console.log(err);
+                  });
                 } catch (e) {
                   // console.warn(e);
                 } finally {
@@ -453,23 +441,23 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
               ]}
               onPress={async () => {
                 try {
+
                   setIsRecording(true);
-                  let options = { fixOrientation: true };
-                  const data = await takePicture(options);
-                  RNFS.exists(data.uri)
-                  .then(res => {
-                    let dir = currentDate();
-                    waterMark(data, "House")
-                    .then((res) => {
-                      navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: res, capturedImageType: "image_house"});
+                  Geolocation.getCurrentPosition(async ({ coords }) => {
+                    let options = { fixOrientation: true };
+                    let data = await takePicture(options);
+                    let dirExist = await RNFS.exists(data.uri);
+                    if(dirExist){
+                      let markedImage = await waterMark(data, "House", coords)
                       RNFS.unlink(data.uri);
-                    }).catch((err) => {
-                      console.log(err)
-                    })
-                  })
-                  .catch(res => {
-                    console.log(res);
-                  })
+                      navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: markedImage, capturedImageType: "image_house"});
+                    }else{
+                      console.log("err");
+                    }
+                  }, (err) => {
+                    console.log(err);
+                  });
+
                 } catch (e) {
                   // console.warn(e);
                 } finally {
@@ -494,23 +482,23 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
               ]}
               onPress={async () => {
                 try {
+
                   setIsRecording(true);
-                  let options = { fixOrientation: true };
-                  const data = await takePicture(options);
-                  RNFS.exists(data.uri)
-                  .then(res => {
-                    let dir = currentDate();
-                    waterMark(data, "Birth Certificate")
-                    .then((res) => {
-                      navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: res, capturedImageType: "image_birth"});
+                  Geolocation.getCurrentPosition(async ({ coords }) => {
+                    let options = { fixOrientation: true };
+                    let data = await takePicture(options);
+                    let dirExist = await RNFS.exists(data.uri);
+                    if(dirExist){
+                      let markedImage = await waterMark(data, "Birth Certificate", coords)
                       RNFS.unlink(data.uri);
-                    }).catch((err) => {
-                      console.log(err)
-                    })
-                  })
-                  .catch(res => {
-                    console.log(res);
-                  })
+                      navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: markedImage, capturedImageType: "image_birth"});
+                    }else{
+                      console.log("err");
+                    }
+                  }, (err) => {
+                    console.log(err);
+                  });
+
                 } catch (e) {
                   // console.warn(e);
                 } finally {
@@ -527,23 +515,23 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
               ]}
               onPress={async () => {
                 try {
+
                   setIsRecording(true);
-                  let options = { fixOrientation: true };
-                  const data = await takePicture(options);
-                  RNFS.exists(data.uri)
-                  .then(res => {
-                    let dir = currentDate();
-                    waterMark(data, "Other Document")
-                    .then((res) => {
-                      navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: res, capturedImageType: "image_others"});
+                  Geolocation.getCurrentPosition(async ({ coords }) => {
+                    let options = { fixOrientation: true };
+                    let data = await takePicture(options);
+                    let dirExist = await RNFS.exists(data.uri);
+                    if(dirExist){
+                      let markedImage = await waterMark(data, "Other Document", coords)
                       RNFS.unlink(data.uri);
-                    }).catch((err) => {
-                      console.log(err)
-                    })
-                  })
-                  .catch(res => {
-                    console.log(res);
-                  })
+                      navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: markedImage, capturedImageType: "image_others"});
+                    }else{
+                      console.log("err");
+                    }
+                  }, (err) => {
+                    console.log(err);
+                  });
+
                 } catch (e) {
                   // console.warn(e);
                 } finally {

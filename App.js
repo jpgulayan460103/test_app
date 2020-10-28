@@ -12,6 +12,7 @@ import Information from './components/Information'
 import ImageView from './components/ImageView'
 import Header from './components/Header'
 import _forEach from 'lodash/forEach'
+
 var RNFS = require('react-native-fs');
 
 const height = Dimensions.get('window').height; 
@@ -24,7 +25,8 @@ const requestPermissions = async () => {
       [
         PermissionsAndroid.PERMISSIONS.CAMERA,
         PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE
+        PermissionsAndroid.PERMISSIONS.WRITE_EXTERNAL_STORAGE,
+        PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
       ]
     );
     _forEach(granted, function(value, key) {
@@ -74,6 +76,9 @@ function HomeScreen({ navigation, validPermissions }) {
       <Divider />
       {validPermissions ? (
         <Layout style={{ flex: 1, alignItems: 'center', justifyContent: 'space-evenly', flexDirection: "row" }}>
+        <TouchableWithoutFeedback  onPress={() => {
+          
+        }}>
         <View style={{
                 borderColor: "rgba(255,255,255,0.4)",
                 borderStyle: "dotted",
@@ -88,6 +93,7 @@ function HomeScreen({ navigation, validPermissions }) {
             name='calendar'
           />
           </View>
+          </TouchableWithoutFeedback>
           <TouchableWithoutFeedback  onPress={() => navigation.navigate('Beneficiaries')}>
             <View style={{
                   borderColor: "rgba(255,255,255,0.4)",
