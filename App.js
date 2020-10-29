@@ -267,9 +267,9 @@ function App() {
       });
     });
   }
-  const insertImage = (field, imgPath) => {
+  const insertImage = (field, imgPath, dir, validatedDate) => {
     db.transaction((trans) => {
-      trans.executeSql(`UPDATE potential_beneficiaries set ${field} = ? where hhid = ?`, [imgPath, beneficiary.hhid], (trans, results) => {
+      trans.executeSql(`UPDATE potential_beneficiaries set ${field} = ?, images_path = ?, validated_date = ? where hhid = ?`, [imgPath, dir, validatedDate, beneficiary.hhid], (trans, results) => {
         
       },
       (error) => {
@@ -301,10 +301,19 @@ function App() {
     return dir;
   }
   const savePicture = () => {
-    let dir = currentDate();
-    let filename = `${beneficiary.hhid}_${capturedImageType}`
-    RNFS.mkdir(`${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${beneficiary.hhid}`);
-    let imagePath = `${RNFS.ExternalStorageDirectoryPath}/Pictures/uct/${dir}/${beneficiary.hhid}/${filename}.jpg`;
+    let datenow = currentDate();
+    let filename = `${beneficiary.hhid}_${capturedImageType}.jpg`
+    let dir;
+    let validatedDate;
+    if(beneficiary.images_path){
+      dir = beneficiary.images_path;
+      validatedDate = beneficiary.validated_date;
+    }else{
+      dir = `${RNFS.ExternalStorageDirectoryPath}/UCT/${datenow}/${beneficiary.hhid}`;
+      validatedDate = datenow;
+    }
+    RNFS.mkdir(`${dir}`);
+    let imagePath = `${dir}/${filename}`;
     RNFS.moveFile(capturedImage,imagePath).then( res => {
       ToastAndroid.show("Image saved.", ToastAndroid.SHORT)
     }).catch( err => {
@@ -317,8 +326,8 @@ function App() {
         { text: "YES", onPress: () => {} }
       ]);
     });
-    insertImage(capturedImageType,imagePath);
-    let updatedBeneficiary = { ...beneficiary, ...{ [capturedImageType]: imagePath } }
+    insertImage(capturedImageType,filename, dir, validatedDate);
+    let updatedBeneficiary = { ...beneficiary, ...{ [capturedImageType]: filename, images_path: dir, validated_date: validatedDate} }
     setBeneficiary(updatedBeneficiary);
     let selectedBeneficiaryIndex = beneficiaries.findIndex(item => item.hhid === updatedBeneficiary.hhid);
     let updatedBeneficiaries = beneficiaries;
