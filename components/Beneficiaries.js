@@ -54,8 +54,10 @@ const Beneficiaries = ({beneficiaries, navigation, addresses: {provinces, cities
                 navigation.navigate("Beneficiary Information", {beneficiary: item})
             }}>
             <View style={{ width: (listWidth - 120), paddingRight: 4}}>
-                <Text category='c1' style={{fontWeight: "bold", fontSize: 14}}>{`${item.fullname}`}</Text>
-                <Text category='c1'>{`${item.barangay_name}, ${item.city_name}\n${item.province_name}`}</Text>
+                <Text category='c1' style={{fontWeight: "bold", fontSize: 14}}>
+                    {`${item.lastname ? item.lastname : ""}, ${item.firstname ? item.firstname : ""} ${item.middlename ? item.middlename : ""} ${item.extname ? item.extname : ""}`}
+                </Text>
+                <Text category='c1'>{`${item.barangay_name}, ${item.city_name}\n${item.province_name}, ${item.region}`}</Text>
             </View>
             </TouchableOpacity>
             <View style={{ width: 100, justifyContent: 'center', alignItems: 'center'}}>

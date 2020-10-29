@@ -94,7 +94,7 @@ function HomeScreen({ navigation, validPermissions }) {
           />
           </View>
           </TouchableWithoutFeedback>
-          <TouchableWithoutFeedback  onPress={() => navigation.navigate('Beneficiaries')}>
+          <TouchableWithoutFeedback  onPress={() => navigation.navigate('Potential Beneficiaries')}>
             <View style={{
                   borderColor: "rgba(255,255,255,0.4)",
                   borderStyle: "dotted",
@@ -181,19 +181,26 @@ function App() {
       let iter = 0;
       _forEach(beneficiaryFormData, function(value, key) {
         if(iter == 0){
-          sql = `${sql} where`;
+          sql += ` where`;
         }else{
-          sql = `${sql} and `;
+          sql += ` and `;
         }
         if(key == "searchString"){
           
-          sql = `${sql} fullname like '%${value}%'`;
+          // sql += `fullname like '%${value}%'`;
+          value = value.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+          let keywords = value.split(",");
+          let mappedKeywords = keywords.map(item => {
+            return `fullname like '%${item.trim()}%'`;
+          });
+          let keywordQuery = mappedKeywords.join(" and ");
+          sql += ` ${keywordQuery}`;
         }else{
-          sql = `${sql} ${key} = '${value}'`;
+          sql += ` ${key} = '${value}'`;
         }
         iter++;
       })
-      sql = `${sql} order by fullname limit 20`;
+      sql += ` order by fullname limit 20`;
       // console.log(sql);
       trans.executeSql(sql, params, (trans, results) => {
         let items = [];
@@ -376,7 +383,7 @@ function App() {
             <Stack.Screen name="Beneficiary Information">
               {props => <Information {...props} changePicture={changePicture} setBeneficiary={setBeneficiary} />}
             </Stack.Screen>
-            <Stack.Screen name="Beneficiaries">
+            <Stack.Screen name="Potential Beneficiaries">
               {props => <Beneficiaries
                 {...props}
                 beneficiaries={beneficiaries}
