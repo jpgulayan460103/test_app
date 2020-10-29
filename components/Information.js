@@ -1,6 +1,9 @@
 import React, {useEffect} from 'react';
 import { ScrollView, Image, StyleSheet, Dimensions, TouchableOpacity, View  } from 'react-native';
 import { Layout, Text, Divider } from '@ui-kitten/components';
+import axios from 'axios';
+import FormData from 'form-data';
+
 
 const styles = StyleSheet.create({
     container: {
@@ -28,7 +31,43 @@ const Information = ({navigation, setBeneficiary, route}) => {
     return (
       <TouchableOpacity
         onPress={() => {
-          viewFullImage(image);
+          // viewFullImage(image);
+          let data = {
+            test: "sadasdasd",
+          };
+          const formData = new FormData();
+          formData.append('test', data.test);
+          let images = [
+            {uri: `file://${beneficiary.image_photo}`},
+            {uri: `file://${beneficiary.image_valid_id}`},
+            {uri: `file://${beneficiary.image_house}`},
+            {uri: `file://${beneficiary.image_birth}`},
+            {uri: `file://${beneficiary.image_others}`},
+          ];
+          images.forEach((image, i) => {
+            formData.append('images', {
+              ...image,
+              uri: Platform.OS === 'android' ? image.uri : image.uri.replace('file://', ''),
+              name: `image-${i}`,
+              type: 'image/jpeg', // it may be necessary in Android. 
+            });
+          });
+          console.log(formData);
+          const client = axios.create({
+              baseURL: 'http://10.0.2.2:8000/',
+          });
+          const headers = {
+              // Authorization: `Bearer ${token}`,
+              'Content-Type': 'multipart/form-data'
+          }
+          client.post('/api/test-upload', formData, headers)
+          .then(res => {
+              console.log(res.data);
+          })
+          .catch(err => {
+              console.log(err);
+          });
+          // client.post('/api/test-upload', formData, headers);
         }}>
       <View style={{paddingLeft: 10}}>
         <Text>{desc}</Text>
