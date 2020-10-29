@@ -4,7 +4,7 @@ import { Layout, Text, Divider } from '@ui-kitten/components';
 import axios from 'axios';
 import FormData from 'form-data';
 import ImgToBase64 from 'react-native-image-base64';
-var RNFS = require('react-native-fs');
+import RNFS from 'react-native-fs';
 
 
 const styles = StyleSheet.create({
@@ -26,9 +26,9 @@ const Information = ({navigation, setBeneficiary, route}) => {
   const [images, setImages] = useState([]);
   useEffect(() => {
     setBeneficiary(beneficiary);
-    navigation.setOptions({
-      title: `Your Updated Title`,
-    })
+    // navigation.setOptions({
+    //   title: `Your Updated Title`,
+    // })
     setImages({
 
     });

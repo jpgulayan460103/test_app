@@ -13,8 +13,8 @@ import ImageView from './components/ImageView'
 import Reports from './components/Reports'
 import Header from './components/Header'
 import _forEach from 'lodash/forEach'
+import RNFS from 'react-native-fs';
 
-var RNFS = require('react-native-fs');
 
 const height = Dimensions.get('window').height; 
 const width = Dimensions.get('window').width; 
@@ -414,7 +414,7 @@ function App() {
             <Stack.Screen name="Camera" options={{headerShown: false}}>
               {props => <CamSample {...props} setBeneficiary={setBeneficiary} />}
             </Stack.Screen>
-            <Stack.Screen name="Beneficiary Information">
+            <Stack.Screen name="Beneficiary Information" options={{title: "Information"}}>
               {props => <Information {...props} changePicture={changePicture} setBeneficiary={setBeneficiary} />}
             </Stack.Screen>
             <Stack.Screen name="Potential Beneficiaries">

@@ -17,7 +17,8 @@ import Slider from '@react-native-community/slider';
 import Geolocation from '@react-native-community/geolocation';
 
 import { useCamera } from 'react-native-camera-hooks';
-var RNFS = require('react-native-fs');
+import RNFS from 'react-native-fs';
+import { Icon } from '@ui-kitten/components';
 
 const landmarkSize = 2;
 
@@ -240,6 +241,21 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
    })
   }
 
+  const flashText = (flash) => {
+    switch (flash) {
+      case "on":
+        return <Text><Icon style={{width: 30, height: 30 }} fill='black' name='flash-outline'/></Text>;
+      case "off":
+        return <Text><Icon style={{width: 30, height: 30 }} fill='black' name='flash-off-outline'/></Text>;
+      case "auto":
+        return <Text>A<Icon style={{width: 30, height: 30 }} fill='black' name='flash-outline'/></Text>;
+      case "torch":
+        return <Text><Icon style={{width: 30, height: 30 }} fill='black' name='flash'/></Text>;
+      default:
+        return <Text><Icon style={{width: 30, height: 30 }} fill='black' name='flash-outline'/></Text>;
+    }
+  }
+
   return (
     <View style={styles.container}>
       <RNCamera
@@ -280,23 +296,18 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
             style={{
               backgroundColor: 'transparent',
               flexDirection: 'row',
-              justifyContent: 'space-around',
-              marginTop: 50
+              justifyContent: 'flex-end',
+              marginTop: 5,
+              marginRight: 20,
             }}>
             <TouchableOpacity
-              style={styles.flipButton}
               onPress={() => toggleFlash()}>
-              <Text style={styles.flipText}> FLASH: {flash} </Text>
+              { flashText(flash) }
             </TouchableOpacity>
             <TouchableOpacity
-              style={styles.flipButton}
+              style={{marginLeft: 10}}
               onPress={() => toggleFacing()}>
-              <Text style={styles.flipText}> {type.toUpperCase()} CAM </Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.flipButton}
-              onPress={() => toggleWB()}>
-              <Text style={styles.flipText}> WB: {whiteBalance} </Text>
+              <Icon style={{width: 30, height: 30 }} fill='black' name='flip-2-outline'/>
             </TouchableOpacity>
           </View>
         <View
