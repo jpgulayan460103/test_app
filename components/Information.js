@@ -26,6 +26,9 @@ const Information = ({navigation, setBeneficiary, route}) => {
   const [images, setImages] = useState([]);
   useEffect(() => {
     setBeneficiary(beneficiary);
+    navigation.setOptions({
+      title: `Your Updated Title`,
+    })
     setImages({
 
     });

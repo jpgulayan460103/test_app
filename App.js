@@ -10,6 +10,7 @@ import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import Beneficiaries from './components/Beneficiaries'
 import Information from './components/Information'
 import ImageView from './components/ImageView'
+import Reports from './components/Reports'
 import Header from './components/Header'
 import _forEach from 'lodash/forEach'
 
@@ -77,7 +78,7 @@ function HomeScreen({ navigation, validPermissions }) {
       {validPermissions ? (
         <Layout style={{ flex: 1, alignItems: 'center', justifyContent: 'space-evenly', flexDirection: "row" }}>
         <TouchableWithoutFeedback  onPress={() => {
-          
+          navigation.navigate('Reports')
         }}>
         <View style={{
                 borderColor: "rgba(255,255,255,0.4)",
@@ -158,6 +159,7 @@ function App() {
   const [selectedCity, setSelectedCity] = useState(null);
   const [selectedBarangay, setSelectedBarangay] = useState(null);
   const [validPermissions, setValidPermissions] = useState(false);
+  const [reportDates, setReportDates] = useState([]);
 
   useEffect(() => {
     getProvinces();
@@ -277,6 +279,29 @@ function App() {
       });
     });
   }
+  
+  const getReportDates = () => {
+    setReportDates([]);
+    db.transaction((trans) => {
+      let sql = "";
+      sql += `(count(image_photo) + count(image_valid_id) + count(image_house) + count(image_birth) + count(image_others)) as total_images, `;
+      sql += `(count(image_photo_status) + count(image_valid_id_status) + count(image_house_status) + count(image_birth_status) + count(image_others_status)) as total_uploaded, `;
+      sql += `count(hhid) as count_hhid, `;
+      trans.executeSql(`select ${sql} validated_date from potential_beneficiaries where validated_date is not null group by validated_date order by validated_date`, [], (trans, results) => {
+        let items = [];
+        let rows = results.rows;
+        for (let i = 0; i < rows.length; i++) {
+          var item = rows.item(i);
+          items.push(item);
+        }
+        setReportDates(items);
+        // console.log(items);
+      },
+      (error) => {
+        console.log(error);
+      });
+    });
+  }
   const selectBeneficiary = (data) => {
     setBeneficiary(data);
   }
@@ -368,6 +393,7 @@ function App() {
         setBeneficiaryFormData(prev => {
           return {...prev, ...newValue}
         });
+        setSelectedBarangay(value);
         break;
       default:
         setBeneficiaryFormData(prev => {
@@ -376,7 +402,6 @@ function App() {
         break;
     }
   }
-  // https://medium.com/infinitbility/react-native-sqlite-storage-422503634dd2
   return (
     <SafeAreaView style={{ flex: 1 }}>
     <IconRegistry icons={EvaIconsPack} />
@@ -397,6 +422,7 @@ function App() {
                 {...props}
                 beneficiaries={beneficiaries}
                 addresses={{provinces, cities, barangays}}
+                selectedAddresses={{selectedProvince, selectedCity, selectedBarangay}}
                 selectBeneficiary={selectBeneficiary}
                 updateAddressFilter={updateAddressFilter}
                 beneficiaryFormData={beneficiaryFormData}
@@ -405,6 +431,17 @@ function App() {
             </Stack.Screen>
             <Stack.Screen name="Image Preview" initialParams={{ isViewOnly: true }} options={{headerShown: false}}>
               {props => <ImageView {...props} pictureTaken={pictureTaken} savePicture={savePicture} deletePicture={deletePicture} />}
+            </Stack.Screen>
+            <Stack.Screen name="Reports">
+              {props => <Reports
+                {...props}
+                reportDates={reportDates}
+                addresses={{provinces, cities, barangays}}
+                selectBeneficiary={selectBeneficiary}
+                updateAddressFilter={updateAddressFilter}
+                beneficiaryFormData={beneficiaryFormData}
+                getReportDates={getReportDates}
+                />}
             </Stack.Screen>
           </Stack.Navigator>
           {/* <View style={{position:"absolute"}}>

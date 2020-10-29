@@ -10,9 +10,19 @@ const styles = StyleSheet.create({
 
 const listWidth = Dimensions.get('window').width;
 
-const Beneficiaries = ({beneficiaries, navigation, addresses: {provinces, cities, barangays}, updateAddressFilter, beneficiaryFormData, getBeneficiaries }) => {
+const Beneficiaries = ({
+        beneficiaries,
+        navigation,
+        updateAddressFilter,
+        addresses: {provinces, cities, barangays},
+        selectedAddresses: {selectedProvince, selectedCity, selectedBarangay},
+        getBeneficiaries
+    }) => {
     useEffect(() => {
-        getBeneficiaries();
+        // getBeneficiaries();
+        setProvinceValue(selectedProvince);
+        setCityValue(selectedCity);
+        setBarangayValue(selectedBarangay);
         return () => {
             
         };
@@ -31,7 +41,6 @@ const Beneficiaries = ({beneficiaries, navigation, addresses: {provinces, cities
     const renderIcon = (props) => (
         <TouchableOpacity onPress={() => {
             getBeneficiaries();
-            // console.log(beneficiaryFormData);
         }}>
           <Icon {...props} name="search"/>
         </TouchableOpacity>
