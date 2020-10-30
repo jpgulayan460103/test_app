@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import { ScrollView, Image, StyleSheet, Dimensions, TouchableOpacity, View  } from 'react-native';
-import { Layout, Text, Divider } from '@ui-kitten/components';
+import { Layout, Text, Divider, Button, Icon } from '@ui-kitten/components';
 import axios from 'axios';
 import FormData from 'form-data';
 import ImgToBase64 from 'react-native-image-base64';
@@ -21,11 +21,12 @@ const styles = StyleSheet.create({
       height: 58,
     },
   });
-const Information = ({navigation, setBeneficiary, route}) => {
-  const { beneficiary, capturedImage, capturedImageType } = route.params;
+const Information = ({navigation, setBeneficiary, route, beneficiary}) => {
   const [images, setImages] = useState([]);
   useEffect(() => {
-    setBeneficiary(beneficiary);
+    if(route.params.beneficiary){
+      setBeneficiary(route.params.beneficiary);
+    }
     // navigation.setOptions({
     //   title: `Your Updated Title`,
     // })
@@ -72,7 +73,6 @@ const Information = ({navigation, setBeneficiary, route}) => {
         <TouchableOpacity
           onPress={async () => {
             viewFullImage(image);
-          // client.post('/api/test-upload', formData, headers);
         }}>
         <Image
           style={styles.tinyLogo}
@@ -93,18 +93,34 @@ const Information = ({navigation, setBeneficiary, route}) => {
           <Text>City/Municipality: {beneficiary.city_name}</Text>
           <Text>Province: {beneficiary.province_name}</Text>
           <Text>Date Validated: {beneficiary.validated_date}</Text>
+          <View>
+            <Button>Update Information</Button>
+          </View>
         </View>
         <Divider />
         <ScrollView>
         <Layout style={{flex: 1, flexDirection: "row",marginTop: 20}}>
+          <View style={{paddingLeft: 10}}>
+          <Text>ADD PHOTO</Text>
+          <TouchableOpacity
+            onPress={async () => {
+              navigation.navigate("Camera", {beneficiary: beneficiary});
+          }}>
+            <Icon
+              style={styles.tinyLogo}
+              fill='#8F9BB3'
+              name='image-outline'
+            />
+          </TouchableOpacity>
+        </View>
           {beneficiary.image_photo ? (<ImagePreview desc="PHOTO" image={`${beneficiary.images_path}/${beneficiary.image_photo}`} />) : (<></>)}
+        </Layout>
+        <Layout style={{flex: 1, flexDirection: "row",marginTop: 20}}>
           {beneficiary.image_valid_id ? (<ImagePreview desc="VALID ID" image={`${beneficiary.images_path}/${beneficiary.image_valid_id}`} />) : (<></>)}
-        </Layout>
-        <Layout style={{flex: 1, flexDirection: "row",marginTop: 20}}>
           {beneficiary.image_house ? (<ImagePreview desc="HOUSE" image={`${beneficiary.images_path}/${beneficiary.image_house}`} />) : (<></>)}
-          {beneficiary.image_birth ? (<ImagePreview desc="BIRTH CERTIFICATE" image={`${beneficiary.images_path}/${beneficiary.image_birth}`} />) : (<></>)}
         </Layout>
         <Layout style={{flex: 1, flexDirection: "row",marginTop: 20}}>
+          {beneficiary.image_birth ? (<ImagePreview desc="BIRTH CERTIFICATE" image={`${beneficiary.images_path}/${beneficiary.image_birth}`} />) : (<></>)}
           {beneficiary.image_others ? (<ImagePreview desc="OTHERS" image={`${beneficiary.images_path}/${beneficiary.image_others}`} />) : (<></>)}
         </Layout>
     </ScrollView>

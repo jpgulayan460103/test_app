@@ -16,7 +16,8 @@ const Beneficiaries = ({
         updateAddressFilter,
         addresses: {provinces, cities, barangays},
         selectedAddresses: {selectedProvince, selectedCity, selectedBarangay},
-        getBeneficiaries
+        getBeneficiaries,
+        setBeneficiary
     }) => {
     useEffect(() => {
         // getBeneficiaries();
@@ -59,23 +60,20 @@ const Beneficiaries = ({
                 flexDirection: "row"
             }
         }>
-            <TouchableOpacity onPress={() => {
-                navigation.navigate("Beneficiary Information", {beneficiary: item})
-            }}>
-            <View style={{ width: (listWidth - 120), paddingRight: 4}}>
+            <View style={{ width: (listWidth - 140), paddingRight: 4}}>
                 <Text category='c1' style={{fontWeight: "bold", fontSize: 14}}>
                     {`${item.lastname ? item.lastname : ""}, ${item.firstname ? item.firstname : ""} ${item.middlename ? item.middlename : ""} ${item.extname ? item.extname : ""}`}
                 </Text>
                 <Text category='c1'>{`${item.barangay_name}, ${item.city_name}\n${item.province_name}, ${item.region}`}</Text>
             </View>
-            </TouchableOpacity>
-            <View style={{ width: 100, justifyContent: 'center', alignItems: 'center'}}>
+            <View style={{ width: 120, justifyContent: 'center', alignItems: 'center'}}>
                 <Button
                     size='tiny'
                     onPress={() => {
-                        navigation.navigate("Camera", {beneficiary: item});
+                        navigation.navigate("Beneficiary Information", {beneficiary: item});
+                        // setBeneficiary(item);
                     }
-                }>TAKE PICTURE</Button>
+                }>View Information</Button>
             </View>
         </View>
     );

@@ -68,10 +68,10 @@ function HomeScreen({ navigation, validPermissions }) {
       <Divider />
       <Layout style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         {/* <Button onPress={() => navigation.navigate('Camera')}>Go to Details</Button> */}
-        {/* <Image
+        <Image
           style={styles.tinyLogo}
           source={require('./assets/images/logo.png')}
-          /> */}
+          />
         
       </Layout>
       <Divider />
@@ -83,7 +83,7 @@ function HomeScreen({ navigation, validPermissions }) {
         <View style={{
                 borderColor: "rgba(255,255,255,0.4)",
                 borderStyle: "dotted",
-                borderRadius: 50,
+                borderRadius: 40,
                 borderWidth: 3,
                 padding: 10,
           }}>
@@ -91,7 +91,7 @@ function HomeScreen({ navigation, validPermissions }) {
             <Icon
             style={styles.icon}
             fill='#8F9BB3'
-            name='calendar'
+            name='calendar-outline'
           />
           </View>
           </TouchableWithoutFeedback>
@@ -99,15 +99,15 @@ function HomeScreen({ navigation, validPermissions }) {
             <View style={{
                   borderColor: "rgba(255,255,255,0.4)",
                   borderStyle: "dotted",
-                  borderRadius: 50,
+                  borderRadius: 40,
                   borderWidth: 3,
                   padding: 10,
             }}>
-              <Text style={{textAlignVertical:"center", textAlign: "center"}}>Take Photo</Text>
+              <Text style={{textAlignVertical:"center", textAlign: "center"}}>Beneficiaries</Text>
               <Icon
               style={styles.icon}
               fill='#8F9BB3'
-              name='camera-outline'
+              name='people'
             />
             </View>
           </TouchableWithoutFeedback >
@@ -202,7 +202,7 @@ function App() {
         }
         iter++;
       })
-      sql += ` order by fullname limit 20`;
+      sql += ` order by fullname limit 30`;
       // console.log(sql);
       trans.executeSql(sql, params, (trans, results) => {
         let items = [];
@@ -334,7 +334,7 @@ function App() {
       dir = beneficiary.images_path;
       validatedDate = beneficiary.validated_date;
     }else{
-      dir = `${RNFS.ExternalStorageDirectoryPath}/UCT/${datenow}/${beneficiary.hhid}`;
+      dir = `${RNFS.ExternalStorageDirectoryPath}/UCT/Images/${datenow}/${beneficiary.hhid}`;
       validatedDate = datenow;
     }
     RNFS.mkdir(`${dir}`);
@@ -414,8 +414,8 @@ function App() {
             <Stack.Screen name="Camera" options={{headerShown: false}}>
               {props => <CamSample {...props} setBeneficiary={setBeneficiary} />}
             </Stack.Screen>
-            <Stack.Screen name="Beneficiary Information" options={{title: "Information"}}>
-              {props => <Information {...props} changePicture={changePicture} setBeneficiary={setBeneficiary} />}
+            <Stack.Screen name="Beneficiary Information">
+              {props => <Information {...props} changePicture={changePicture} setBeneficiary={setBeneficiary} beneficiary={beneficiary} />}
             </Stack.Screen>
             <Stack.Screen name="Potential Beneficiaries">
               {props => <Beneficiaries
@@ -427,6 +427,7 @@ function App() {
                 updateAddressFilter={updateAddressFilter}
                 beneficiaryFormData={beneficiaryFormData}
                 getBeneficiaries={getBeneficiaries}
+                setBeneficiary={setBeneficiary}
                 />}
             </Stack.Screen>
             <Stack.Screen name="Image Preview" initialParams={{ isViewOnly: true }} options={{headerShown: false}}>
