@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { StyleSheet, TouchableOpacity, View, Dimensions } from 'react-native';
+import { StyleSheet, TouchableHighlight, View, Dimensions } from 'react-native';
 import { Layout, Text, Icon, List, ListItem, Button, IndexPath, Select, SelectItem, Divider, Input } from '@ui-kitten/components';
 
 const styles = StyleSheet.create({
@@ -15,6 +15,9 @@ const Reports = ({navigation, reportDates, getReportDates}) => {
         getReportDates();
     }, []);
     const renderItem = ({ item, index }) => (
+        <TouchableHighlight onPress={() => {
+            // navigation.navigate("Beneficiary Information", {beneficiary: item})
+        }}>
         <View style={
             {
                 width:"100%",
@@ -26,15 +29,13 @@ const Reports = ({navigation, reportDates, getReportDates}) => {
                 flexDirection: "row"
             }
         }>
-            <TouchableOpacity onPress={() => {
-                // navigation.navigate("Beneficiary Information", {beneficiary: item})
-            }}>
+            
                 <View style={{ width: (listWidth * 0.25), paddingRight: 4}}>
                     <Text category='c1' style={{fontWeight: "bold", fontSize: 14}}>
                         {item.validated_date}
                     </Text>
                 </View>
-            </TouchableOpacity>
+            
             <View style={{ width: (listWidth * 0.7), flex: 1, flexDirection: "row"}}>
                 <View style={{flex: 1/3}}>
                     <Text category='c1' style={{textAlign: "center", fontSize: 14}}>
@@ -53,6 +54,7 @@ const Reports = ({navigation, reportDates, getReportDates}) => {
                 </View>
             </View>
         </View>
+        </TouchableHighlight>
     );
     
 

@@ -40,6 +40,8 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
     }, []);
 
     const validateBeneficiary = _debounce(() => {
+        let newData = formData;
+        newData.validated_date = currentDate();
         let updatedBeneficiary = { ...beneficiary, ...formData }
         updateBeneficiaries(updatedBeneficiary);
         updateBeneficiary(updatedBeneficiary, currentDate());
@@ -152,8 +154,8 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
     
     
     return (
-        <ScrollView>
-        <Layout style={{flex: 1, padding: 10}}>
+        <Layout style={{flex: 1, padding: 20}}>
+            <ScrollView>
             <Input
                 label="Last Name"
                 placeholder="Enter Last Name"
@@ -323,8 +325,8 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
             <Button style={{marginTop: 10}} onPress={() => validateBeneficiary()}>
             VALIDATE BENEFICIARY
             </Button>
+            </ScrollView>
         </Layout>
-        </ScrollView>
     );
 }
 

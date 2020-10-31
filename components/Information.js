@@ -102,7 +102,6 @@ const Information = ({navigation, setBeneficiary, route, beneficiary, db, update
           <Text>City/Municipality: {beneficiary.city_name}</Text>
           <Text>Province: {beneficiary.province_name}</Text>
           <Text>Date Validated: {beneficiary.validated_date}</Text>
-          <Text>Updated Last: {beneficiary.updated_lastname}</Text>
           <View>
             <Button onPress={() => navigation.navigate("Validate Information")}>Validate Information</Button>
           </View>
