@@ -11,12 +11,10 @@ import Beneficiaries from './components/Beneficiaries'
 import Information from './components/Information'
 import ImageView from './components/ImageView'
 import Reports from './components/Reports'
-import Header from './components/Header'
 import _forEach from 'lodash/forEach'
 import RNFS from 'react-native-fs';
 
 
-const height = Dimensions.get('window').height; 
 const width = Dimensions.get('window').width; 
 
 const requestPermissions = async () => {
@@ -30,7 +28,7 @@ const requestPermissions = async () => {
         PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
       ]
     );
-    _forEach(granted, function(value, key) {
+    _forEach(granted, function(value) {
       if(PermissionsAndroid.RESULTS.GRANTED != value){
         validPermissions = false;
       }
@@ -127,9 +125,6 @@ const errorCB = (err)=>  {
   console.log(err);
 }
 
-const successCB = () => {
-  console.log("SQL executed fine");
-}
 
 const openCB = () => {
   console.log("Database OPENED");
@@ -153,7 +148,7 @@ function App() {
   const [beneficiary, setBeneficiary] = useState({});
   const [capturedImage, setCapturedImage] = useState('./assets/images/no-image.png');
   const [capturedImageType, setCapturedImageType] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [] = useState(false);
   const [beneficiaryFormData, setBeneficiaryFormData] = useState({searchString: ""});
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [selectedCity, setSelectedCity] = useState(null);
@@ -163,6 +158,7 @@ function App() {
 
   useEffect(() => {
     getProvinces();
+    // console.log(VersionInfo.appVersion);
     requestPermissions().then(res => {
       setValidPermissions(res);
       if(!res){
@@ -271,10 +267,10 @@ function App() {
   }
   const insertImage = (field, imgPath, dir, validatedDate) => {
     db.transaction((trans) => {
-      trans.executeSql(`UPDATE potential_beneficiaries set ${field} = ?, images_path = ?, validated_date = ? where hhid = ?`, [imgPath, dir, validatedDate, beneficiary.hhid], (trans, results) => {
+      trans.executeSql(`UPDATE potential_beneficiaries set ${field} = ?, images_path = ?, validated_date = ? where hhid = ?`, [imgPath, dir, validatedDate, beneficiary.hhid], () => {
         
       },
-      (error) => {
+      () => {
         
       });
     });
@@ -339,7 +335,7 @@ function App() {
     }
     RNFS.mkdir(`${dir}`);
     let imagePath = `${dir}/${filename}`;
-    RNFS.moveFile(capturedImage,imagePath).then( res => {
+    RNFS.moveFile(capturedImage,imagePath).then( () => {
       ToastAndroid.show("Image saved.", ToastAndroid.SHORT)
     }).catch( err => {
       Alert.alert("Error!", err, [

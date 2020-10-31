@@ -14,6 +14,8 @@ target 'uct_mobapp' do
 
   pod 'react-native-image-base64', :path => '../node_modules/react-native-image-base64'
 
+  pod 'react-native-version-info', :path => '../node_modules/react-native-version-info'
+
   target 'uct_mobappTests' do
     inherit! :complete
     # Pods for testing

@@ -140,7 +140,7 @@ const Information = ({navigation, setBeneficiary, route, beneficiary, db}) => {
         <View style={{flex: 1}}>
             <Card disabled={true} style={{width: (width-20), height: (height*0.75)}}>
               <ScrollView>
-                  <UpdateInformation setVisible={setVisible} db={db} />
+                  <UpdateInformation setVisible={setVisible} db={db} beneficiary={beneficiary} />
               </ScrollView>
             </Card>
         </View>

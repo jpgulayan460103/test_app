@@ -10,7 +10,7 @@ const styles = StyleSheet.create({
 
 const listWidth = Dimensions.get('window').width;
 
-const UpdateInformation = ({navigation, reportDates, setVisible, db}) => {
+const UpdateInformation = ({navigation, beneficiary, setVisible, db}) => {
     const [provinces, setProvinces] = useState([]);
     const [cities, setCities] = useState([]);
     const [barangays, setBarangays] = useState([]);
@@ -18,9 +18,12 @@ const UpdateInformation = ({navigation, reportDates, setVisible, db}) => {
     const [provinceValue, setProvinceValue] = useState(null);
     const [cityValue, setCityValue] = useState(null);
     const [barangayValue, setBarangayValue] = useState(null);
+    const [genders, setGenders] = useState(['1 - MALE','2 - FEMALE']);
+    const [sexValue, setSexValue] = useState(null);
 
     useEffect(() => {
         getProvinces();
+        console.log(beneficiary);
     }, []);
 
     const getProvinces = () => {
@@ -178,6 +181,24 @@ const UpdateInformation = ({navigation, reportDates, setVisible, db}) => {
                     />
                 </Layout>
             </Layout>
+
+            <Select
+                label='Sex'
+                placeholder="Select Sex"
+                onSelect={(item) => {
+                    setSexValue(genders[item.row]);
+                    setFormData(prev => {
+                        let data = {updated_sex: genders[item.row]};
+                        return {...prev, ...data};
+                    });
+                }}
+                value={sexValue}>
+                {
+                    genders.map((item, index) => {
+                        return (<SelectItem title={item} key={`sex_${index}`}/>)
+                    })
+                }
+            </Select>
             <Select
                 label='Province'
                 placeholder="Select Province"
@@ -191,7 +212,6 @@ const UpdateInformation = ({navigation, reportDates, setVisible, db}) => {
                         let data = {updated_province_name: provinces[item.row]};
                         return {...prev, ...data};
                     });
-                    // updateAddressFilter('province_name', provinces[item.row]);
                 }}
                 value={provinceValue}>
                 {
@@ -212,7 +232,6 @@ const UpdateInformation = ({navigation, reportDates, setVisible, db}) => {
                         let data = {updated_city_name: cities[item.row]};
                         return {...prev, ...data};
                     });
-                    // updateAddressFilter('city_name', cities[item.row]);
                 }}
                 value={cityValue}>
                 {
@@ -239,7 +258,7 @@ const UpdateInformation = ({navigation, reportDates, setVisible, db}) => {
                     })
                 }
             </Select>
-            <Button onPress={() => {
+            <Button style={{marginTop: 10}} onPress={() => {
                 console.log(formData);
                 setVisible(false)
             }}>

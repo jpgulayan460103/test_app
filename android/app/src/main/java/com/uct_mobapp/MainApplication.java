@@ -4,6 +4,7 @@ import android.app.Application;
 import android.content.Context;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactApplication;
+import cx.evermeet.versioninfo.RNVersionInfoPackage;
 import fr.snapp.imagebase64.RNImgToBase64Package;
 import org.pgsqlite.SQLitePluginPackage;
 import org.pgsqlite.SQLitePluginPackage;
