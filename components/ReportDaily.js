@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import { StyleSheet, TouchableHighlight, View, Dimensions } from 'react-native';
+import { StyleSheet, ToastAndroid, View, Dimensions } from 'react-native';
 import { Layout, Text, Icon, List, ListItem, Button, IndexPath, Select, SelectItem, Divider, Input } from '@ui-kitten/components';
 import RNFetchBlob from 'rn-fetch-blob'
 import Share from 'react-native-share';
 import { zip, unzip, unzipAssets, subscribe } from 'react-native-zip-archive'
 import RNFS from 'react-native-fs';
+import _debounce  from 'lodash/debounce'
 
 const styles = StyleSheet.create({
     container: {
@@ -17,6 +18,8 @@ const listWidth = Dimensions.get('window').width;
 const ReportDaily = ({navigation, route, db}) => {
     const { validated_date, total_images, total_uploaded } = route.params.report;
     const [validatedBeneficiaries, setValidatedBeneficiaries] = useState([]);
+    const [generatedReportPath, setGeneratedReportPath] = useState("");
+    const [loading, setLoading] = useState(false);
     useEffect(() => {
         navigation.setOptions({
           title: `Validated (${validated_date})`,
@@ -46,15 +49,10 @@ const ReportDaily = ({navigation, route, db}) => {
     }
 
     const shareFile = async () => {
-        // /storage/emulated/0/Download/data.csv
-        let url = 'https://awesome.contents.com/';
-        let title = 'Awesome Contents';
-        let message = 'Please check this out.';
-
         const shareOptions = {
             title: 'Share file',
             failOnCancel: false,
-            url: "file:///storage/emulated/0/Download/data.csv",
+            url: `file://${generatedReportPath}`,
           };
       
           // If you want, you can use a try catch, to parse
@@ -68,17 +66,52 @@ const ReportDaily = ({navigation, route, db}) => {
           }
     }
 
-    const compileReport = () => {
-        const targetPath = `${RNFS.ExternalStorageDirectoryPath}/UCT/Images/${validated_date}/uct-validation-${validated_date}.zip`
-        const sourcePath = `${RNFS.ExternalStorageDirectoryPath}/UCT/Images/${validated_date}`
+    const generateReport = _debounce(async () => {
+        setLoading(true);
+        let dirExist = await RNFS.exists(`${RNFS.ExternalStorageDirectoryPath}/UCT/Images/${validated_date}`);
+        let fileExist = await RNFS.exists(`${RNFS.ExternalStorageDirectoryPath}/UCT/Images/${validated_date}/uct-validation-${validated_date}.zip`);
+        if(fileExist){
+            await RNFS.unlink(`${RNFS.ExternalStorageDirectoryPath}/UCT/Images/${validated_date}/uct-validation-${validated_date}.zip`);
+        }
+        if(dirExist){
+            makeCsv();
+        }
+    }, 250);
+
+    const makeZip = () => {
+        const targetPath = `${RNFS.ExternalStorageDirectoryPath}/UCT/Images/${validated_date}/uct-validation-${validated_date}.zip`;
+        const sourcePath = `${RNFS.ExternalStorageDirectoryPath}/UCT/Images/${validated_date}`;
 
         zip(sourcePath, targetPath)
         .then((path) => {
             console.log(`zip completed at ${path}`)
+            setGeneratedReportPath(path);
+            setLoading(false);
+            ToastAndroid.show(`Report generated`, ToastAndroid.SHORT);
         })
         .catch((error) => {
         console.error(error)
         })
+    }
+
+    const makeCsv = () => {
+        let headerString = 'region,province_name,city_name,barangay_name,fullname,lastname,firstname,middlename,extname,birthday,hhid,psgc,sex,validated_date,remarks,updated_province_name,updated_city_name,updated_barangay_name,updated_lastname,updated_firstname,updated_middlename,updated_extname,updated_birthday,updated_sex\n';
+        let rowString = validatedBeneficiaries.map(item => {
+            return `${item.region},${item.province_name},${item.city_name},${item.barangay_name},${item.fullname},${item.lastname},${item.firstname},${item.middlename},${item.extname},${item.birthday},${item.hhid},${item.psgc},${item.sex},${item.validated_date},${item.remarks},${item.updated_province_name},${item.updated_city_name},${item.updated_barangay_name},${item.updated_lastname},${item.updated_firstname},${item.updated_middlename},${item.updated_extname},${item.updated_birthday},${item.updated_sex},\n`;
+        }).join('');
+        const csvString = `${headerString}${rowString}`;
+
+        // write the current list of answers to a local csv file
+        const pathToWrite = `${RNFS.ExternalStorageDirectoryPath}/UCT/Images/${validated_date}/uct-validation-${validated_date}.csv`;
+        // console.log('pathToWrite', pathToWrite);
+        // pathToWrite /storage/emulated/0/Download/data.csv
+        RNFetchBlob.fs.writeFile(pathToWrite, csvString, 'utf8')
+        .then(() => {
+            console.log(`wrote file ${pathToWrite}`);
+            makeZip();
+            // wrote file /storage/emulated/0/Download/data.csv
+        })
+        .catch(error => console.error(error));
     }
 
     const renderItem = ({ item, index }) => (
@@ -114,7 +147,19 @@ const ReportDaily = ({navigation, route, db}) => {
             <Text>Validation Date: {validated_date}</Text>
             <Text>Total Images: {total_images}</Text>
             <Text>Uploaded Images: {total_uploaded}</Text>
-            <Button onPress={() => {compileReport()}}>Share</Button>
+            { generatedReportPath == "" ? (
+                <Button onPress={() => {generateReport()}} disabled={loading}>{loading ? "Generating Report" : "Generate Report"} </Button>
+            ) : (
+                <Button onPress={() => {shareFile()}}>Share File</Button>
+            ) }
+            { generatedReportPath != "" ? (
+                <View>
+                    <Text>Generated Report:</Text>
+                    <Text>{generatedReportPath}</Text>
+                </View>
+            ) : (<></>) }
+            
+            
             <View style={
                 {
                     width:"100%",

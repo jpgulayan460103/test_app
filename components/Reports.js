@@ -22,12 +22,14 @@ const Reports = ({navigation, reportDates, getReportDates}) => {
         <View style={
             {
                 width:"100%",
+                height: 40,
                 backgroundColor: "#222b44",
                 padding: 5,
                 paddingLeft: 10,
                 borderColor: "black",
                 borderBottomWidth: 1,
-                flexDirection: "row"
+                flexDirection: "row",
+                alignItems: "center"
             }
         }>
             
