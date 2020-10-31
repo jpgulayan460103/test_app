@@ -415,7 +415,7 @@ function App() {
               {props => <CamSample {...props} setBeneficiary={setBeneficiary} />}
             </Stack.Screen>
             <Stack.Screen name="Beneficiary Information">
-              {props => <Information {...props} changePicture={changePicture} setBeneficiary={setBeneficiary} beneficiary={beneficiary} />}
+              {props => <Information {...props} changePicture={changePicture} setBeneficiary={setBeneficiary} beneficiary={beneficiary} db={db} />}
             </Stack.Screen>
             <Stack.Screen name="Potential Beneficiaries">
               {props => <Beneficiaries

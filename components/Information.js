@@ -1,10 +1,14 @@
 import React, {useEffect, useState} from 'react';
 import { ScrollView, Image, StyleSheet, Dimensions, TouchableOpacity, View  } from 'react-native';
-import { Layout, Text, Divider, Button, Icon } from '@ui-kitten/components';
+import { Layout, Text, Divider, Button, Icon, Modal, Card, Input } from '@ui-kitten/components';
 import axios from 'axios';
 import FormData from 'form-data';
 import ImgToBase64 from 'react-native-image-base64';
 import RNFS from 'react-native-fs';
+import UpdateInformation from './UpdateInformation'
+
+const width = Dimensions.get('window').width;
+const height = Dimensions.get('window').height;
 
 
 const styles = StyleSheet.create({
@@ -21,8 +25,12 @@ const styles = StyleSheet.create({
       height: 58,
     },
   });
-const Information = ({navigation, setBeneficiary, route, beneficiary}) => {
+
+
+const Information = ({navigation, setBeneficiary, route, beneficiary, db}) => {
   const [images, setImages] = useState([]);
+  const [visible, setVisible] = useState(false);
+  
   useEffect(() => {
     if(route.params.beneficiary){
       setBeneficiary(route.params.beneficiary);
@@ -34,6 +42,7 @@ const Information = ({navigation, setBeneficiary, route, beneficiary}) => {
 
     });
   }, []);
+
   const testedUpload = async () => {
     let image_photo = await ImgToBase64.getBase64String(`file://${beneficiary.image_photo}`);
     let image_valid_id = await ImgToBase64.getBase64String(`file://${beneficiary.image_valid_id}`);
@@ -92,9 +101,9 @@ const Information = ({navigation, setBeneficiary, route, beneficiary}) => {
           <Text>Barangay: {beneficiary.barangay_name}</Text>
           <Text>City/Municipality: {beneficiary.city_name}</Text>
           <Text>Province: {beneficiary.province_name}</Text>
-          <Text>Date Validated: {beneficiary.validated_date}</Text>
+          <Text>Photo Added: {beneficiary.validated_date}</Text>
           <View>
-            <Button>Update Information</Button>
+            <Button onPress={() => setVisible(true)}>Validate Information</Button>
           </View>
         </View>
         <Divider />
@@ -124,6 +133,18 @@ const Information = ({navigation, setBeneficiary, route, beneficiary}) => {
           {beneficiary.image_others ? (<ImagePreview desc="OTHERS" image={`${beneficiary.images_path}/${beneficiary.image_others}`} />) : (<></>)}
         </Layout>
     </ScrollView>
+    <Modal
+        visible={visible}
+        backdropStyle={{backgroundColor: 'rgba(0, 0, 0, 0.5)'}}
+        onBackdropPress={() => setVisible(false)}>
+        <View style={{flex: 1}}>
+            <Card disabled={true} style={{width: (width-20), height: (height*0.75)}}>
+              <ScrollView>
+                  <UpdateInformation setVisible={setVisible} db={db} />
+              </ScrollView>
+            </Card>
+        </View>
+      </Modal>
     </Layout>
   );
 }
