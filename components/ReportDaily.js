@@ -2,6 +2,7 @@ import React, {useEffect, useState} from 'react';
 import { StyleSheet, TouchableHighlight, View, Dimensions } from 'react-native';
 import { Layout, Text, Icon, List, ListItem, Button, IndexPath, Select, SelectItem, Divider, Input } from '@ui-kitten/components';
 import RNFetchBlob from 'rn-fetch-blob'
+import Share from 'react-native-share';
 
 const styles = StyleSheet.create({
     container: {
@@ -42,6 +43,29 @@ const ReportDaily = ({navigation, route, db}) => {
         });
     }
 
+    const shareFile = async () => {
+        // /storage/emulated/0/Download/data.csv
+        let url = 'https://awesome.contents.com/';
+        let title = 'Awesome Contents';
+        let message = 'Please check this out.';
+
+        const shareOptions = {
+            title: 'Share file',
+            failOnCancel: false,
+            url: "file:///storage/emulated/0/Download/data.csv",
+          };
+      
+          // If you want, you can use a try catch, to parse
+          // the share response. If the user cancels, etc.
+          try {
+            const ShareResponse = await Share.open(shareOptions);
+            console.log(JSON.stringify(ShareResponse, null, 2));
+          } catch (error) {
+            console.log('Error =>', error);
+            console.log('error: '.concat(getErrorString(error)));
+          }
+    }
+
     const renderItem = ({ item, index }) => (
         <View style={
             {
@@ -75,6 +99,7 @@ const ReportDaily = ({navigation, route, db}) => {
             <Text>Validation Date: {validated_date}</Text>
             <Text>Total Images: {total_images}</Text>
             <Text>Uploaded Images: {total_uploaded}</Text>
+            <Button onPress={() => {shareFile()}}>Share</Button>
             <View style={
                 {
                     width:"100%",
