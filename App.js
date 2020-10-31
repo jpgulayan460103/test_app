@@ -12,6 +12,7 @@ import Information from './components/Information'
 import UpdateInformation from './components/UpdateInformation'
 import ImageView from './components/ImageView'
 import Reports from './components/Reports'
+import ReportDaily from './components/ReportDaily'
 import _forEach from 'lodash/forEach'
 import RNFS from 'react-native-fs';
 
@@ -443,15 +444,10 @@ function App() {
               {props => <ImageView {...props} pictureTaken={pictureTaken} savePicture={savePicture} deletePicture={deletePicture} />}
             </Stack.Screen>
             <Stack.Screen name="Reports">
-              {props => <Reports
-                {...props}
-                reportDates={reportDates}
-                addresses={{provinces, cities, barangays}}
-                selectBeneficiary={selectBeneficiary}
-                updateAddressFilter={updateAddressFilter}
-                beneficiaryFormData={beneficiaryFormData}
-                getReportDates={getReportDates}
-                />}
+              {props => <Reports {...props} reportDates={reportDates} getReportDates={getReportDates} />}
+            </Stack.Screen>
+            <Stack.Screen name="Daily Report">
+              {props => <ReportDaily {...props} db={db} />}
             </Stack.Screen>
           </Stack.Navigator>
           {/* <View style={{position:"absolute"}}>

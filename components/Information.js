@@ -35,9 +35,6 @@ const Information = ({navigation, setBeneficiary, route, beneficiary, db, update
     if(route.params.beneficiary){
       setBeneficiary(route.params.beneficiary);
     }
-    // navigation.setOptions({
-    //   title: `Your Updated Title`,
-    // })
     setImages({
 
     });

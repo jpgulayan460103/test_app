@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import { StyleSheet, TouchableHighlight, View, Dimensions } from 'react-native';
 import { Layout, Text, Icon, List, ListItem, Button, IndexPath, Select, SelectItem, Divider, Input } from '@ui-kitten/components';
+import RNFetchBlob from 'rn-fetch-blob'
 
 const styles = StyleSheet.create({
     container: {
@@ -16,7 +17,7 @@ const Reports = ({navigation, reportDates, getReportDates}) => {
     }, []);
     const renderItem = ({ item, index }) => (
         <TouchableHighlight onPress={() => {
-            // navigation.navigate("Beneficiary Information", {beneficiary: item})
+            navigation.navigate("Daily Report", {report: item});
         }}>
         <View style={
             {
