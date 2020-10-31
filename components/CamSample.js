@@ -279,7 +279,10 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
       let dirExist = await RNFS.exists(data.uri);
       if(dirExist){
         let markedImage = await waterMark(data, label, lastPosition)
-        RNFS.unlink(data.uri);
+        let fileExists = await RNFS.exists(data.uri);
+        if(fileExists){
+          RNFS.unlink(data.uri);
+        }
         navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: markedImage, capturedImageType: type});
       }else{
         console.log("err");

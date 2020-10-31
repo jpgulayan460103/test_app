@@ -326,9 +326,9 @@ function App() {
     let filename = `${beneficiary.hhid}_${capturedImageType}.jpg`
     let dir;
     let validatedDate;
-    if(beneficiary.images_path){
-      dir = beneficiary.images_path;
+    if(beneficiary.validated_date){
       validatedDate = beneficiary.validated_date;
+      dir = `${RNFS.ExternalStorageDirectoryPath}/UCT/Images/${beneficiary.validated_date}/${beneficiary.hhid}`;
     }else{
       dir = `${RNFS.ExternalStorageDirectoryPath}/UCT/Images/${datenow}/${beneficiary.hhid}`;
       validatedDate = datenow;
