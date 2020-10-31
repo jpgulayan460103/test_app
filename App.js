@@ -355,10 +355,13 @@ function App() {
     updatedBeneficiaries[selectedBeneficiaryIndex] = updatedBeneficiary;
     setBeneficiaries(updatedBeneficiaries);
   }
-  const deletePicture = (data, isViewOnly) => {
+  const deletePicture = async (data, isViewOnly) => {
     if(!isViewOnly){
-      RNFS.unlink(data);
-      ToastAndroid.show("Image deleted.", ToastAndroid.SHORT)
+      let fileExists = await RNFS.exists(data);
+      if(fileExists){
+        RNFS.unlink(data);
+        ToastAndroid.show("Image deleted.", ToastAndroid.SHORT)
+      }
     }
   }
 

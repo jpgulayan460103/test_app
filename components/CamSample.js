@@ -19,6 +19,7 @@ import Geolocation from '@react-native-community/geolocation';
 import { useCamera } from 'react-native-camera-hooks';
 import RNFS from 'react-native-fs';
 import { Icon } from '@ui-kitten/components';
+import _debounce from 'lodash/debounce'
 
 const landmarkSize = 2;
 
@@ -169,8 +170,20 @@ const renderBarcode = ({ bounds = {}, data, type }) => (
 
 export const CameraScreen = ({navigation, route, setBeneficiary}) => {
   const { beneficiary } = route.params;
+  const [lastPosition, setLastPosition] = useState({
+    longitude: "",
+    latitude: "",
+  });
   useEffect(() => {
-    setBeneficiary(beneficiary);
+    // setBeneficiary(beneficiary);
+    const watchId = Geolocation.watchPosition(position => {
+      setLastPosition({
+        longitude: position.coords.longitude,
+        latitude: position.coords.latitude,
+      });
+    },(error) => console.log(JSON.stringify(error)),
+    {enableHighAccuracy: true, distanceFilter: 0});
+    return () => Geolocation.clearWatch(watchId);
   }, []);
   const [
     {
@@ -209,6 +222,7 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
   ] = useCamera(initialState);
 
   const [location, setLocation] = useState({});
+  const [loading, setLoading] = useState(false);
 
   //TODO: [mr] useEffect?
   const canDetectFaces = useMemo(() => cameraState['canDetectFaces'], [
@@ -256,6 +270,29 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
     }
   }
 
+  const delayedTakePicture =  _debounce(async (label, type) => {
+    try {
+      setLoading(true);
+      setIsRecording(true);
+      let options = { fixOrientation: true };
+      let data = await takePicture(options);
+      let dirExist = await RNFS.exists(data.uri);
+      if(dirExist){
+        let markedImage = await waterMark(data, label, lastPosition)
+        RNFS.unlink(data.uri);
+        navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: markedImage, capturedImageType: type});
+      }else{
+        console.log("err");
+      }
+
+    } catch (e) {
+      console.warn(e);
+    } finally {
+      setIsRecording(false);
+      setLoading(false);
+    }
+  }, 250);
+
   return (
     <View style={styles.container}>
       <RNCamera
@@ -290,7 +327,7 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
           </TouchableWithoutFeedback>
         </View>
         <View style={{position: "absolute", backgroundColor: "white",top: -10, width: "100%"}}>
-              <Text style={{ fontSize: 11,padding: 10, paddingBottom: 5, paddingTop: 5}}>{`HHID: ${beneficiary.hhid}\nName: ${beneficiary.fullname}\nImage:\nLocation: `}</Text>
+              <Text style={{ fontSize: 11,padding: 10, paddingBottom: 5, paddingTop: 5}}>{`HHID: ${beneficiary.hhid}\nName: ${beneficiary.fullname}\nImage:\nLocation:  ${lastPosition.latitude}, ${lastPosition.longitude}`}</Text>
             </View>
         <View
             style={{
@@ -385,31 +422,8 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
                 styles.picButton,
                 { flex: 0.3, alignSelf: 'flex-end' },
               ]}
-              onPress={async () => {
-                try {
-
-                  setIsRecording(true);
-                  Geolocation.getCurrentPosition(async ({ coords }) => {
-                    let options = { fixOrientation: true };
-                    let data = await takePicture(options);
-                    let dirExist = await RNFS.exists(data.uri);
-                    if(dirExist){
-                      let markedImage = await waterMark(data, "Photo", coords)
-                      RNFS.unlink(data.uri);
-                      navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: markedImage, capturedImageType: "image_photo"});
-                    }else{
-                      console.log("err");
-                    }
-                  }, (err) => {
-                    console.log(err);
-                  });
-
-                } catch (e) {
-                  console.warn(e);
-                } finally {
-                  setIsRecording(false);
-                }
-              }}>
+              disabled={loading}
+              onPress={() => { delayedTakePicture("PHOTO","image_photo") }}>
               <Text style={styles.flipText}> PHOTO </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -418,30 +432,7 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
                 styles.picButton,
                 { flex: 0.3, alignSelf: 'flex-end' },
               ]}
-              onPress={async () => {
-                try {
-
-                  setIsRecording(true);
-                  Geolocation.getCurrentPosition(async ({ coords }) => {
-                    let options = { fixOrientation: true };
-                    let data = await takePicture(options);
-                    let dirExist = await RNFS.exists(data.uri);
-                    if(dirExist){
-                      let markedImage = await waterMark(data, "VALID ID", coords)
-                      RNFS.unlink(data.uri);
-                      navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: markedImage, capturedImageType: "image_valid_id"});
-                    }else{
-                      console.log("err");
-                    }
-                  }, (err) => {
-                    console.log(err);
-                  });
-                } catch (e) {
-                  // console.warn(e);
-                } finally {
-                  setIsRecording(false);
-                }
-              }}>
+              onPress={() => { delayedTakePicture("VALID","image_valid_id") }}>
               <Text style={styles.flipText}> VALID ID </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -450,31 +441,7 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
                 styles.picButton,
                 { flex: 0.3, alignSelf: 'flex-end' },
               ]}
-              onPress={async () => {
-                try {
-
-                  setIsRecording(true);
-                  Geolocation.getCurrentPosition(async ({ coords }) => {
-                    let options = { fixOrientation: true };
-                    let data = await takePicture(options);
-                    let dirExist = await RNFS.exists(data.uri);
-                    if(dirExist){
-                      let markedImage = await waterMark(data, "House", coords)
-                      RNFS.unlink(data.uri);
-                      navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: markedImage, capturedImageType: "image_house"});
-                    }else{
-                      console.log("err");
-                    }
-                  }, (err) => {
-                    console.log(err);
-                  });
-
-                } catch (e) {
-                  // console.warn(e);
-                } finally {
-                  setIsRecording(false);
-                }
-              }}>
+              onPress={() => { delayedTakePicture("House","image_house") }}>
               <Text style={styles.flipText}> HOUSE </Text>
             </TouchableOpacity>
           </View>
@@ -491,31 +458,7 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
                 styles.picButton,
                 { flex: 0.46, alignSelf: 'flex-end' },
               ]}
-              onPress={async () => {
-                try {
-
-                  setIsRecording(true);
-                  Geolocation.getCurrentPosition(async ({ coords }) => {
-                    let options = { fixOrientation: true };
-                    let data = await takePicture(options);
-                    let dirExist = await RNFS.exists(data.uri);
-                    if(dirExist){
-                      let markedImage = await waterMark(data, "Birth Certificate", coords)
-                      RNFS.unlink(data.uri);
-                      navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: markedImage, capturedImageType: "image_birth"});
-                    }else{
-                      console.log("err");
-                    }
-                  }, (err) => {
-                    console.log(err);
-                  });
-
-                } catch (e) {
-                  // console.warn(e);
-                } finally {
-                  setIsRecording(false);
-                }
-              }}>
+              onPress={() => { delayedTakePicture("Birth Certificate","image_birth") }}>
               <Text style={styles.flipText}> BIRTH CERTIFICATE </Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -524,31 +467,7 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
                 styles.picButton,
                 { flex: 0.46, alignSelf: 'flex-end' },
               ]}
-              onPress={async () => {
-                try {
-
-                  setIsRecording(true);
-                  Geolocation.getCurrentPosition(async ({ coords }) => {
-                    let options = { fixOrientation: true };
-                    let data = await takePicture(options);
-                    let dirExist = await RNFS.exists(data.uri);
-                    if(dirExist){
-                      let markedImage = await waterMark(data, "Other Document", coords)
-                      RNFS.unlink(data.uri);
-                      navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: markedImage, capturedImageType: "image_others"});
-                    }else{
-                      console.log("err");
-                    }
-                  }, (err) => {
-                    console.log(err);
-                  });
-
-                } catch (e) {
-                  // console.warn(e);
-                } finally {
-                  setIsRecording(false);
-                }
-              }}>
+              onPress={() => { delayedTakePicture("Other Document","image_others") }}>
               <Text style={styles.flipText}> OTHERS </Text>
             </TouchableOpacity>
           </View>

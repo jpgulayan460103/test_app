@@ -1,5 +1,6 @@
 import React, {useState, useEffect} from 'react';
 import { ScrollView, Image, StyleSheet, View, Dimensions, Text, Button, BackHandler, Alert  } from 'react-native';
+import _debounce from 'lodash/debounce';
 
 const height = Dimensions.get('window').height; 
 const width = Dimensions.get('window').width; 
@@ -20,6 +21,7 @@ const styles = StyleSheet.create({
   });
 const ImageView = ({savePicture, pictureTaken, deletePicture, route, navigation}) => {
   const { isViewOnly, capturedImage, capturedImageType } = route.params;
+  const [loading, setLoading] = useState(false);
   useEffect(() => {
     pictureTaken(capturedImage,capturedImageType)
     const backAction = () => {
@@ -48,21 +50,25 @@ const ImageView = ({savePicture, pictureTaken, deletePicture, route, navigation}
 
     return () => backHandler.remove();
   }, []);
+  const delayedSavePicture = _debounce(()=>{
+    setLoading(true);
+    navigation.goBack();
+    savePicture();
+  }, 250);
+  const delayedDeletePicture = _debounce(() => {
+    setLoading(true);
+    navigation.goBack();
+    deletePicture(capturedImage, isViewOnly);
+  },250);
   return (
     <View style={{ flex: 1 }}>
       {!isViewOnly ? (
         <View style={{ justifyContent: "space-evenly", flexDirection: "row", padding: 10 }}>
           <View style={{width:120}}>
-              <Button title="Save" onPress={()=>{
-                savePicture();
-                navigation.goBack();
-              }} disabled={isViewOnly} />
+              <Button title="Save" onPress={delayedSavePicture} disabled={isViewOnly || loading} />
           </View>
           <View style={{width:120}}>
-              <Button title="Delete" color="#ff0000" onPress={() => {
-                deletePicture(capturedImage, isViewOnly);
-                navigation.goBack();
-              }} />
+              <Button disabled={loading} title="Delete" color="#ff0000" onPress={delayedDeletePicture} />
           </View>
       </View>
       ) : (<></>)}
