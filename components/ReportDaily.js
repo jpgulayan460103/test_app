@@ -3,6 +3,8 @@ import { StyleSheet, TouchableHighlight, View, Dimensions } from 'react-native';
 import { Layout, Text, Icon, List, ListItem, Button, IndexPath, Select, SelectItem, Divider, Input } from '@ui-kitten/components';
 import RNFetchBlob from 'rn-fetch-blob'
 import Share from 'react-native-share';
+import { zip, unzip, unzipAssets, subscribe } from 'react-native-zip-archive'
+import RNFS from 'react-native-fs';
 
 const styles = StyleSheet.create({
     container: {
@@ -66,6 +68,19 @@ const ReportDaily = ({navigation, route, db}) => {
           }
     }
 
+    const compileReport = () => {
+        const targetPath = `${RNFS.ExternalStorageDirectoryPath}/UCT/Images/${validated_date}/uct-validation-${validated_date}.zip`
+        const sourcePath = `${RNFS.ExternalStorageDirectoryPath}/UCT/Images/${validated_date}`
+
+        zip(sourcePath, targetPath)
+        .then((path) => {
+            console.log(`zip completed at ${path}`)
+        })
+        .catch((error) => {
+        console.error(error)
+        })
+    }
+
     const renderItem = ({ item, index }) => (
         <View style={
             {
@@ -99,7 +114,7 @@ const ReportDaily = ({navigation, route, db}) => {
             <Text>Validation Date: {validated_date}</Text>
             <Text>Total Images: {total_images}</Text>
             <Text>Uploaded Images: {total_uploaded}</Text>
-            <Button onPress={() => {shareFile()}}>Share</Button>
+            <Button onPress={() => {compileReport()}}>Share</Button>
             <View style={
                 {
                     width:"100%",
