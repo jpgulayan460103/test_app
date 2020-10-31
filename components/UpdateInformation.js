@@ -40,11 +40,15 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
     }, []);
 
     const validateBeneficiary = _debounce(() => {
+        let valDate = currentDate();
+        if(beneficiary.validated_date){
+            valDate = beneficiary.validated_date;
+        }
         let newData = formData;
-        newData.validated_date = currentDate();
+        newData.validated_date = valDate;
         let updatedBeneficiary = { ...beneficiary, ...formData }
         updateBeneficiaries(updatedBeneficiary);
-        updateBeneficiary(updatedBeneficiary, currentDate());
+        updateBeneficiary(updatedBeneficiary, valDate);
     }, 250);
 
     const updateBeneficiary = (updatedBeneficiary, validatedDate) => {
