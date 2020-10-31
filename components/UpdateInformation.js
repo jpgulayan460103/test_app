@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
-import { StyleSheet, TouchableOpacity, View, Dimensions } from 'react-native';
+import { StyleSheet, ToastAndroid, View, Dimensions, ScrollView } from 'react-native';
 import { Layout, Text, Icon, Datepicker, Button, IndexPath, Select, SelectItem, Divider, Input } from '@ui-kitten/components';
+import _debounce from 'lodash/debounce'
 
 const styles = StyleSheet.create({
     container: {
@@ -10,7 +11,7 @@ const styles = StyleSheet.create({
 
 const listWidth = Dimensions.get('window').width;
 
-const UpdateInformation = ({navigation, beneficiary, setVisible, db}) => {
+const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, currentDate}) => {
     const [provinces, setProvinces] = useState([]);
     const [cities, setCities] = useState([]);
     const [barangays, setBarangays] = useState([]);
@@ -21,10 +22,80 @@ const UpdateInformation = ({navigation, beneficiary, setVisible, db}) => {
     const [genders, setGenders] = useState(['1 - MALE','2 - FEMALE']);
     const [sexValue, setSexValue] = useState(null);
 
+    const [formData, setFormData] = useState({
+        updated_province_name: "",
+        updated_city_name: "",
+        updated_barangay_name: "",
+        updated_lastname: "",
+        updated_firstname: "",
+        updated_middlename: "",
+        updated_extname: "",
+        updated_birthday: "",
+        updated_sex: "",
+    });
+
     useEffect(() => {
         getProvinces();
-        console.log(beneficiary);
+        setFormData(beneficiary);
     }, []);
+
+    const validateBeneficiary = _debounce(() => {
+        let updatedBeneficiary = { ...beneficiary, ...formData }
+        updateBeneficiaries(updatedBeneficiary);
+        updateBeneficiary(updatedBeneficiary, currentDate());
+    }, 250);
+
+    const updateBeneficiary = (updatedBeneficiary, validatedDate) => {
+        let {
+            updated_province_name,
+            updated_city_name,
+            updated_barangay_name,
+            updated_lastname,
+            updated_firstname,
+            updated_middlename,
+            updated_extname,
+            updated_birthday,
+            updated_sex,
+            hhid,
+        } = updatedBeneficiary;
+        let sql = "";
+        sql += `UPDATE potential_beneficiaries set`;
+        sql += ` updated_province_name= ?,`;
+        sql += ` updated_city_name = ?,`;
+        sql += ` updated_barangay_name = ?,`;
+        sql += ` updated_lastname = ?,`;
+        sql += ` updated_firstname = ?,`;
+        sql += ` updated_middlename = ?,`;
+        sql += ` updated_extname = ?,`;
+        sql += ` updated_birthday = ?,`;
+        sql += ` updated_sex = ?,`;
+        sql += ` validated_date = ?`;
+        sql += ` where hhid = ?`;
+
+        let params = [
+            updated_province_name,
+            updated_city_name,
+            updated_barangay_name,
+            updated_lastname,
+            updated_firstname,
+            updated_middlename,
+            updated_extname,
+            updated_birthday,
+            updated_sex,
+            validatedDate,
+            hhid,
+        ];
+        db.transaction((trans) => {
+            trans.executeSql(sql, params, (trans, results) => {
+                ToastAndroid.show("Validated.", ToastAndroid.SHORT)
+                navigation.goBack();
+                // console.log("asdaskjdnkasdnjasd");
+            },
+            (error) => {
+                console.log(error);
+            });
+        });
+    }
 
     const getProvinces = () => {
         setProvinces([]);
@@ -79,19 +150,10 @@ const UpdateInformation = ({navigation, beneficiary, setVisible, db}) => {
       }
 
     
-    const [formData, setFormData] = useState({
-        updated_province_name: "",
-        updated_city_name: "",
-        updated_barangay_name: "",
-        updated_lastname: "",
-        updated_firstname: "",
-        updated_middlename: "",
-        updated_extname: "",
-        updated_birthday: "",
-        updated_sex: "",
-      });
+    
     return (
-        <View>
+        <ScrollView>
+        <Layout style={{flex: 1, padding: 10}}>
             <Input
                 label="Last Name"
                 placeholder="Enter Last Name"
@@ -258,13 +320,11 @@ const UpdateInformation = ({navigation, beneficiary, setVisible, db}) => {
                     })
                 }
             </Select>
-            <Button style={{marginTop: 10}} onPress={() => {
-                console.log(formData);
-                setVisible(false)
-            }}>
-            DISMISS
+            <Button style={{marginTop: 10}} onPress={() => validateBeneficiary()}>
+            VALIDATE BENEFICIARY
             </Button>
-        </View>
+        </Layout>
+        </ScrollView>
     );
 }
 

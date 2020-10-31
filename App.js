@@ -9,6 +9,7 @@ import { ApplicationProvider, Text, Button, Divider, IconRegistry, Layout, Icon 
 import { EvaIconsPack } from '@ui-kitten/eva-icons';
 import Beneficiaries from './components/Beneficiaries'
 import Information from './components/Information'
+import UpdateInformation from './components/UpdateInformation'
 import ImageView from './components/ImageView'
 import Reports from './components/Reports'
 import _forEach from 'lodash/forEach'
@@ -267,7 +268,7 @@ function App() {
   }
   const insertImage = (field, imgPath, dir, validatedDate) => {
     db.transaction((trans) => {
-      trans.executeSql(`UPDATE potential_beneficiaries set ${field} = ?, images_path = ?, validated_date = ? where hhid = ?`, [imgPath, dir, validatedDate, beneficiary.hhid], () => {
+      trans.executeSql(`UPDATE potential_beneficiaries set ${field} = ?, images_path = ? where hhid = ?`, [imgPath, dir, beneficiary.hhid], () => {
         
       },
       () => {
@@ -350,11 +351,17 @@ function App() {
     insertImage(capturedImageType,filename, dir, validatedDate);
     let updatedBeneficiary = { ...beneficiary, ...{ [capturedImageType]: filename, images_path: dir, validated_date: validatedDate} }
     setBeneficiary(updatedBeneficiary);
+    updateBeneficiaries(updatedBeneficiary);
+  }
+
+  const updateBeneficiaries = (updatedBeneficiary) => {
+    setBeneficiary(updatedBeneficiary);
     let selectedBeneficiaryIndex = beneficiaries.findIndex(item => item.hhid === updatedBeneficiary.hhid);
     let updatedBeneficiaries = beneficiaries;
     updatedBeneficiaries[selectedBeneficiaryIndex] = updatedBeneficiary;
     setBeneficiaries(updatedBeneficiaries);
   }
+
   const deletePicture = async (data, isViewOnly) => {
     if(!isViewOnly){
       let fileExists = await RNFS.exists(data);
@@ -414,7 +421,10 @@ function App() {
               {props => <CamSample {...props} setBeneficiary={setBeneficiary} />}
             </Stack.Screen>
             <Stack.Screen name="Beneficiary Information">
-              {props => <Information {...props} changePicture={changePicture} setBeneficiary={setBeneficiary} beneficiary={beneficiary} db={db} />}
+              {props => <Information {...props} changePicture={changePicture} setBeneficiary={setBeneficiary} beneficiary={beneficiary} db={db} updateBeneficiaries={updateBeneficiaries} />}
+            </Stack.Screen>
+            <Stack.Screen name="Validate Information">
+              {props => <UpdateInformation {...props} db={db} currentDate={currentDate} beneficiary={beneficiary} updateBeneficiaries={updateBeneficiaries} />}
             </Stack.Screen>
             <Stack.Screen name="Potential Beneficiaries">
               {props => <Beneficiaries

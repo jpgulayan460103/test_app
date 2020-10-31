@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { ScrollView, Image, StyleSheet, Dimensions, TouchableOpacity, View  } from 'react-native';
+import { ScrollView, Image, StyleSheet, Dimensions, TouchableOpacity, View, ToastAndroid  } from 'react-native';
 import { Layout, Text, Divider, Button, Icon, Modal, Card, Input } from '@ui-kitten/components';
 import axios from 'axios';
 import FormData from 'form-data';
@@ -27,7 +27,7 @@ const styles = StyleSheet.create({
   });
 
 
-const Information = ({navigation, setBeneficiary, route, beneficiary, db}) => {
+const Information = ({navigation, setBeneficiary, route, beneficiary, db, updateBeneficiaries}) => {
   const [images, setImages] = useState([]);
   const [visible, setVisible] = useState(false);
   
@@ -101,9 +101,10 @@ const Information = ({navigation, setBeneficiary, route, beneficiary, db}) => {
           <Text>Barangay: {beneficiary.barangay_name}</Text>
           <Text>City/Municipality: {beneficiary.city_name}</Text>
           <Text>Province: {beneficiary.province_name}</Text>
-          <Text>Photo Added: {beneficiary.validated_date}</Text>
+          <Text>Date Validated: {beneficiary.validated_date}</Text>
+          <Text>Updated Last: {beneficiary.updated_lastname}</Text>
           <View>
-            <Button onPress={() => setVisible(true)}>Validate Information</Button>
+            <Button onPress={() => navigation.navigate("Validate Information")}>Validate Information</Button>
           </View>
         </View>
         <Divider />
@@ -112,8 +113,13 @@ const Information = ({navigation, setBeneficiary, route, beneficiary, db}) => {
           <View style={{paddingLeft: 10}}>
           <Text>ADD PHOTO</Text>
           <TouchableOpacity
+            // disabled={(beneficiary.validated_date == null || beneficiary.validated_date == "")}
             onPress={async () => {
-              navigation.navigate("Camera", {beneficiary: beneficiary});
+              if(beneficiary.validated_date == null || beneficiary.validated_date == ""){
+                ToastAndroid.show("Validate first before adding photo.", ToastAndroid.SHORT)
+              }else{
+                navigation.navigate("Camera", {beneficiary: beneficiary});
+              }
           }}>
             <Icon
               style={styles.tinyLogo}
@@ -133,18 +139,6 @@ const Information = ({navigation, setBeneficiary, route, beneficiary, db}) => {
           {beneficiary.image_others ? (<ImagePreview desc="OTHERS" image={`${beneficiary.images_path}/${beneficiary.image_others}`} />) : (<></>)}
         </Layout>
     </ScrollView>
-    <Modal
-        visible={visible}
-        backdropStyle={{backgroundColor: 'rgba(0, 0, 0, 0.5)'}}
-        onBackdropPress={() => setVisible(false)}>
-        <View style={{flex: 1}}>
-            <Card disabled={true} style={{width: (width-20), height: (height*0.75)}}>
-              <ScrollView>
-                  <UpdateInformation setVisible={setVisible} db={db} beneficiary={beneficiary} />
-              </ScrollView>
-            </Card>
-        </View>
-      </Modal>
     </Layout>
   );
 }
