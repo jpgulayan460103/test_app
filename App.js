@@ -119,6 +119,7 @@ function HomeScreen({ navigation, validPermissions }) {
             {/* <Text>Insufficient permission.</Text> */}
           </Layout>
       )}
+      <Text style={{textAlign: "right", padding: 5}}>v{VersionInfo.appVersion}</Text>
     </Layout>
   );
 }
@@ -162,7 +163,7 @@ function App() {
 
   useEffect(() => {
     getProvinces();
-    getDbVersion();
+    dbUptader();
     requestPermissions().then(res => {
       setValidPermissions(res);
       if(!res){
@@ -175,7 +176,7 @@ function App() {
   }, []);
 
 
-  const getDbVersion = () => {
+  const dbUptader = () => {
     db.transaction((trans) => {
       trans.executeSql("select * from app_configs limit 1", [], (trans, results) => {
         let items = [];
@@ -185,7 +186,7 @@ function App() {
           items.push(item);
         }
         if(VersionInfo.appVersion != item.version){
-          let dbVersion = item.version == null ? 0 : item.version;
+          let dbVersion = item.version == null ? -1 : item.version;
           dbVersionUpdate(dbVersion, VersionInfo.appVersion);
         }
         setAppConfig(item);
@@ -199,24 +200,24 @@ function App() {
 
   const dbVersionUpdate = async (dbVersion, appVersion) => {
     let appVersionSplit = appVersion.split('.');
-    let latestVersion = appVersionSplit[2];
+    let latestVersion = appVersionSplit[1];
     console.log(`dbversion: ${dbVersion}`);
     console.log(`appversion: ${latestVersion}`);
     while (dbVersion <= latestVersion) {
       switch (dbVersion) {
-        case 4:
-          console.log(`update to ver ${4}`);
+        case 0:
+          console.log(`update to ver ${0}`);
           await db.transaction((trans) => {
-            trans.executeSql("update app_configs set version = ?", [4], (trans, results) => {},
+            trans.executeSql("update app_configs set version = ?", [0], (trans, results) => {},
             (error) => {
               console.log(error);
             });
           });
           break;
-        case 5:
-          console.log(`update to ver ${5}`);
+        case 1:
+          console.log(`update to ver ${1}`);
           await db.transaction((trans) => {
-            trans.executeSql("update app_configs set version = ?", [5], (trans, results) => {},
+            trans.executeSql("update app_configs set version = ?", [1], (trans, results) => {},
             (error) => {
               console.log(error);
             });
