@@ -97,8 +97,9 @@ const ReportDaily = ({navigation, route, db}) => {
     const makeCsv = () => {
         let headerString = 'region,province_name,city_name,barangay_name,fullname,lastname,firstname,middlename,extname,birthday,hhid,psgc,sex,validated_date,remarks,updated_province_name,updated_city_name,updated_barangay_name,updated_lastname,updated_firstname,updated_middlename,updated_extname,updated_birthday,updated_sex\n';
         let rowString = validatedBeneficiaries.map(item => {
-            return `${item.region},${item.province_name},${item.city_name},${item.barangay_name},${item.fullname},${item.lastname},${item.firstname},${item.middlename},${item.extname},${item.birthday},${item.hhid},${item.psgc},${item.sex},${item.validated_date},${item.remarks},${item.updated_province_name},${item.updated_city_name},${item.updated_barangay_name},${item.updated_lastname},${item.updated_firstname},${item.updated_middlename},${item.updated_extname},${item.updated_birthday},${item.updated_sex},\n`;
+            return `"${item.region}","${item.province_name}","${item.city_name}","${item.barangay_name}","${item.fullname}","${item.lastname}","${item.firstname}","${item.middlename}","${item.extname}","${item.birthday}","${item.hhid}","${item.psgc}","${item.sex}","${item.validated_date}","${item.remarks}","${item.updated_province_name}","${item.updated_city_name}","${item.updated_barangay_name}","${item.updated_lastname}","${item.updated_firstname}","${item.updated_middlename}","${item.updated_extname}","${item.updated_birthday}","${item.updated_sex}",\n`;
         }).join('');
+        console.log(`${headerString}${rowString}`);
         const csvString = `${headerString}${rowString}`;
 
         // write the current list of answers to a local csv file

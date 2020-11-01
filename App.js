@@ -15,6 +15,7 @@ import Reports from './components/Reports'
 import ReportDaily from './components/ReportDaily'
 import _forEach from 'lodash/forEach'
 import RNFS from 'react-native-fs';
+import VersionInfo from 'react-native-version-info';
 
 
 const width = Dimensions.get('window').width; 
@@ -157,10 +158,11 @@ function App() {
   const [selectedBarangay, setSelectedBarangay] = useState(null);
   const [validPermissions, setValidPermissions] = useState(false);
   const [reportDates, setReportDates] = useState([]);
+  const [appConfig, setAppConfig] = useState({});
 
   useEffect(() => {
     getProvinces();
-    // console.log(VersionInfo.appVersion);
+    getDbVersion();
     requestPermissions().then(res => {
       setValidPermissions(res);
       if(!res){
@@ -171,6 +173,62 @@ function App() {
       
     };
   }, []);
+
+
+  const getDbVersion = () => {
+    db.transaction((trans) => {
+      trans.executeSql("select * from app_configs limit 1", [], (trans, results) => {
+        let items = [];
+        let rows = results.rows;
+        for (let i = 0; i < rows.length; i++) {
+          var item = rows.item(i);
+          items.push(item);
+        }
+        if(VersionInfo.appVersion != item.version){
+          let dbVersion = item.version == null ? 0 : item.version;
+          dbVersionUpdate(dbVersion, VersionInfo.appVersion);
+        }
+        setAppConfig(item);
+        // setProvinces(items);
+      },
+      (error) => {
+        console.log(error);
+      });
+    });
+  }
+
+  const dbVersionUpdate = async (dbVersion, appVersion) => {
+    let appVersionSplit = appVersion.split('.');
+    let latestVersion = appVersionSplit[2];
+    console.log(`dbversion: ${dbVersion}`);
+    console.log(`appversion: ${latestVersion}`);
+    while (dbVersion <= latestVersion) {
+      switch (dbVersion) {
+        case 4:
+          console.log(`update to ver ${4}`);
+          await db.transaction((trans) => {
+            trans.executeSql("update app_configs set version = ?", [4], (trans, results) => {},
+            (error) => {
+              console.log(error);
+            });
+          });
+          break;
+        case 5:
+          console.log(`update to ver ${5}`);
+          await db.transaction((trans) => {
+            trans.executeSql("update app_configs set version = ?", [5], (trans, results) => {},
+            (error) => {
+              console.log(error);
+            });
+          });
+          break;
+      
+        default:
+          break;
+      }
+      dbVersion++;
+    }
+  }
 
   const getBeneficiaries = () => {
     // setLoading(true);

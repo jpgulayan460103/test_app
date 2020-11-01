@@ -267,6 +267,9 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
             remarks,
             hhid,
         } = updatedBeneficiary;
+        updated_birthday_m = parseInt(updated_birthday_m);
+        updated_birthday_d = parseInt(updated_birthday_d);
+        // updated_birthday_y = parseInt(updated_birthday_y);
         let updated_birthday = `${updated_birthday_y}-${(updated_birthday_m < 10 ? `0${updated_birthday_m}` : updated_birthday_m )}-${(updated_birthday_d < 10 ? `0${updated_birthday_d}` : updated_birthday_d )}`;
         let sql = "";
         sql += `UPDATE potential_beneficiaries set`;
@@ -388,7 +391,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                 onSubmitEditing={() => ref_updated_firstname.current.focus()}
                 onChangeText={(val) => {
                     setFormData(prev => {
-                        let data = {updated_lastname: val.toLocaleUpperCase()};
+                        let data = {updated_lastname: val};
                         return {...prev, ...data};
                     });
                 }}
@@ -405,7 +408,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                 autoCompleteType="off"
                 onChangeText={(val) => {
                     setFormData(prev => {
-                        let data = {updated_firstname: val.toLocaleUpperCase()};
+                        let data = {updated_firstname: val};
                         return {...prev, ...data};
                     });
                 }}
@@ -422,7 +425,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                 autoCompleteType="off"
                 onChangeText={(val) => {
                     setFormData(prev => {
-                        let data = {updated_middlename: val.toLocaleUpperCase()};
+                        let data = {updated_middlename: val};
                         return {...prev, ...data};
                     });
                 }}
@@ -439,7 +442,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                 autoCompleteType="off"
                 onChangeText={(val) => {
                     setFormData(prev => {
-                        let data = {updated_extname: val.toLocaleUpperCase()};
+                        let data = {updated_extname: val};
                         return {...prev, ...data};
                     });
                 }}
@@ -608,7 +611,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                 autoCompleteType="off"
                 onChangeText={(val) => {
                     setFormData(prev => {
-                        let data = {remarks: val.toLocaleUpperCase()};
+                        let data = {remarks: val};
                         return {...prev, ...data};
                     });
                 }}
