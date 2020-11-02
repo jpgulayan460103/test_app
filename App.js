@@ -383,8 +383,28 @@ function App() {
     return dir;
   }
   const savePicture = () => {
+    let imageTypeFileName = "";
+    switch (capturedImageType) {
+      case 'image_photo':
+        imageTypeFileName = "Bene";
+        break;
+      case 'image_valid_id':
+        imageTypeFileName = "ID";
+        break;
+      case 'image_house':
+        imageTypeFileName = "house";
+        break;
+      case 'image_birth':
+        imageTypeFileName = "BirthCert";
+        break;
+      case 'image_others':
+        imageTypeFileName = "Others";
+        break;
+      default:
+        break;
+    }
     let datenow = currentDate();
-    let filename = `${beneficiary.hhid}_${capturedImageType}.jpg`
+    let filename = `${beneficiary.hhid}_${imageTypeFileName}.jpg`
     let dir;
     let validatedDate;
     if(beneficiary.validated_date){
