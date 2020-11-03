@@ -16,7 +16,7 @@ import ReportDaily from './components/ReportDaily'
 import _forEach from 'lodash/forEach'
 import RNFS from 'react-native-fs';
 import VersionInfo from 'react-native-version-info';
-
+import axios from 'axios';
 
 const width = Dimensions.get('window').width; 
 
@@ -142,6 +142,11 @@ var db = openDatabase({
   createFromLocation: '~data.db',
 },  openCB, errorCB);
 
+const client = axios.create({
+  // baseURL: 'http://encoding.uct11.com/',
+  baseURL: 'http://10.0.2.2:8000/',
+});
+
 
 
 function App() {
@@ -152,7 +157,6 @@ function App() {
   const [beneficiary, setBeneficiary] = useState({});
   const [capturedImage, setCapturedImage] = useState('./assets/images/no-image.png');
   const [capturedImageType, setCapturedImageType] = useState('');
-  const [] = useState(false);
   const [beneficiaryFormData, setBeneficiaryFormData] = useState({searchString: ""});
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [selectedCity, setSelectedCity] = useState(null);
@@ -160,6 +164,8 @@ function App() {
   const [validPermissions, setValidPermissions] = useState(false);
   const [reportDates, setReportDates] = useState([]);
   const [appConfig, setAppConfig] = useState({});
+  const [user, setUser] = useState({});
+  
 
   useEffect(() => {
     getProvinces();
@@ -525,8 +531,8 @@ function App() {
             <Stack.Screen name="Reports">
               {props => <Reports {...props} reportDates={reportDates} getReportDates={getReportDates} />}
             </Stack.Screen>
-            <Stack.Screen name="Daily Report">
-              {props => <ReportDaily {...props} db={db} />}
+            <Stack.Screen name="Daily Report"  options={{headerShown: false}}>
+              {props => <ReportDaily {...props} db={db} client={client} setUser={setUser} user={user} />}
             </Stack.Screen>
           </Stack.Navigator>
           {/* <View style={{position:"absolute"}}>

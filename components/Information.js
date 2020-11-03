@@ -1,7 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import { ScrollView, Image, StyleSheet, Dimensions, TouchableOpacity, View, ToastAndroid  } from 'react-native';
 import { Layout, Text, Divider, Button, Icon, Modal, Card, Input } from '@ui-kitten/components';
-import axios from 'axios';
 import FormData from 'form-data';
 import ImgToBase64 from 'react-native-image-base64';
 import RNFS from 'react-native-fs';
@@ -40,35 +39,6 @@ const Information = ({navigation, setBeneficiary, route, beneficiary, db, update
     });
   }, []);
 
-  const testedUpload = async () => {
-    let image_photo = await ImgToBase64.getBase64String(`file://${beneficiary.image_photo}`);
-    let image_valid_id = await ImgToBase64.getBase64String(`file://${beneficiary.image_valid_id}`);
-    let image_house = await ImgToBase64.getBase64String(`file://${beneficiary.image_house}`);
-    let image_birth = await ImgToBase64.getBase64String(`file://${beneficiary.image_birth}`);
-    let image_others = await ImgToBase64.getBase64String(`file://${beneficiary.image_others}`);
-
-    const formData = new FormData();
-    formData.append('beneficiary', beneficiary);
-    formData.append('image_photo', image_photo);
-    formData.append('image_valid_id', image_valid_id);
-    formData.append('image_house', image_house);
-    formData.append('image_birth', image_birth);
-    formData.append('image_others', image_others);
-    const client = axios.create({
-        baseURL: 'http://10.0.2.2:8000/',
-    });
-    const headers = {
-        // Authorization: `Bearer ${token}`,
-        'Content-Type': 'multipart/form-data'
-    }
-    client.post('/api/test-upload', formData, headers)
-    .then(res => {
-        console.log(res.data);
-    })
-    .catch(err => {
-        console.log(err);
-    });
-  }
   const viewFullImage = (image) => {
     navigation.navigate("Image Preview", {isViewOnly: true, capturedImage: image, capturedImageType: "image_photo"});
   }

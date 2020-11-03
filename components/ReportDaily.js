@@ -1,36 +1,143 @@
 import React, {useEffect, useState} from 'react';
 import { StyleSheet, ToastAndroid, View, Dimensions } from 'react-native';
-import { Layout, Text, Icon, List, ListItem, Button, IndexPath, Select, SelectItem, Divider, Input } from '@ui-kitten/components';
+import { Layout, Text, Icon, List, Button, Card, Modal, Divider } from '@ui-kitten/components';
 import RNFetchBlob from 'rn-fetch-blob'
 import Share from 'react-native-share';
 import { zip, unzip, unzipAssets, subscribe } from 'react-native-zip-archive'
 import RNFS from 'react-native-fs';
 import _debounce  from 'lodash/debounce'
+import _isEmpty  from 'lodash/isEmpty'
+import Login from './Login'
+import ImgToBase64 from 'react-native-image-base64';
+import axios from 'axios';
 
 const styles = StyleSheet.create({
     container: {
         maxHeight: 192,
     },
+    backdrop: {
+        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
 });
 
 const listWidth = Dimensions.get('window').width;
+const width = Dimensions.get('window').width;
+const height = Dimensions.get('window').height;
 
-const ReportDaily = ({navigation, route, db}) => {
+const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
     const { validated_date, total_images, total_uploaded } = route.params.report;
     const [validatedBeneficiaries, setValidatedBeneficiaries] = useState([]);
     const [generatedReportPath, setGeneratedReportPath] = useState("");
     const [loading, setLoading] = useState(false);
+    const [uploading, setUploading] = useState(false);
+    const [visible, setVisible] = React.useState(false);
+    const [uploadingProgess, setUploadingProgess] = useState("");
+    const [userLoginError, setUserLoginError] = useState({
+        error: "",
+    });
+    const [loginLoading, setLoginLoading] = useState(false);
+
     useEffect(() => {
         navigation.setOptions({
           title: `Validated (${validated_date})`,
         });
         getValidatedBeneficiaries();
-    }, []);    
+    }, []);
+
+    const userLogin = async (data) => {
+        try {
+            setLoginLoading(true);
+            let userLogin = await client.post('/api/login', data);
+            setUser(userLogin.data);
+            setLoginLoading(false);
+            setUserLoginError({
+                error: "",
+            });
+            ToastAndroid.show("Login Successful.", ToastAndroid.SHORT);
+            setVisible(false);
+        } catch (error) {
+            console.log(error);
+            setUserLoginError(error.response.data);
+            setLoginLoading(false);
+            ToastAndroid.show("Login Failed.", ToastAndroid.SHORT)
+        }
+    }
+
+    const uploadBeneficiaryImages = async (beneficiary) => {
+        let image_photo = null;
+        let image_valid_id = null;
+        let image_house = null;
+        let image_birth = null;
+        let image_others = null;
+        let uploadImageApi = null;
+        let fileExist = false;
+        let formData = {};
+        return new Promise(async (resolve, reject) => {
+            fileExist = await RNFS.exists(`file://${beneficiary.images_path}/${beneficiary.image_photo}`);
+            if(fileExist){
+                image_photo = await ImgToBase64.getBase64String(`file://${beneficiary.images_path}/${beneficiary.image_photo}`);
+            }
+            fileExist = await RNFS.exists(`file://${beneficiary.images_path}/${beneficiary.image_valid_id}`);
+            if(fileExist){
+                image_valid_id = await ImgToBase64.getBase64String(`file://${beneficiary.images_path}/${beneficiary.image_valid_id}`);
+            }
+            fileExist = await RNFS.exists(`file://${beneficiary.images_path}/${beneficiary.image_house}`);
+            if(fileExist){
+                image_house = await ImgToBase64.getBase64String(`file://${beneficiary.images_path}/${beneficiary.image_house}`);
+            }
+            fileExist = await RNFS.exists(`file://${beneficiary.images_path}/${beneficiary.image_birth}`);
+            if(fileExist){
+                image_birth = await ImgToBase64.getBase64String(`file://${beneficiary.images_path}/${beneficiary.image_birth}`);
+            }
+            fileExist = await RNFS.exists(`file://${beneficiary.images_path}/${beneficiary.image_others}`);
+            if(fileExist){
+                image_others = await ImgToBase64.getBase64String(`file://${beneficiary.images_path}/${beneficiary.image_others}`);
+            }
+            formData = {
+                image_photo: image_photo,
+                image_valid_id: image_valid_id,
+                image_house: image_house,
+                image_birth: image_birth,
+                image_others: image_others,
+            };
+            
+            try {
+                // console.log(formData);
+                formData.token = user.token;
+                formData.beneficiary = beneficiary
+                uploadImageApi = await client.post('/api/v1/test-upload', formData);
+                // console.log(uploadImageApi);
+                resolve(uploadImageApi.data);
+            } catch (error) {
+                if(error && error.response){
+                    if(error.response.status == "401"){
+                        ToastAndroid.show("Session Expired. Please login again.", ToastAndroid.LONG)
+                        setUser({});
+                    }
+                }
+                reject(error);
+            }
+        }) 
+    }
+
+    const uploadImages = async () => {
+        let uploaded;
+        setUploading(true);
+        for (let index = 0; index < validatedBeneficiaries.length; index++) {
+            setUploadingProgess(`${index}/${validatedBeneficiaries.length}`);
+            uploaded = await uploadBeneficiaryImages(validatedBeneficiaries[index]); 
+            setUploadingProgess(`${index+1}/${validatedBeneficiaries.length}`);
+        }
+        setUploadingProgess(`${validatedBeneficiaries.length}/${validatedBeneficiaries.length}`);
+        setUploading(false);
+    }
+    
     const getValidatedBeneficiaries = () => {
         setValidatedBeneficiaries([]);
         db.transaction((trans) => {
             let sql = "";
-            sql += `(count(image_photo) + count(image_valid_id) + count(image_house) + count(image_birth) + count(image_others)) as total_images, `;
+            sql += `(count(image_photo) + count(image_valid_id) + count(image_house) + count(image_birth)) as total_required_images, `;
+            sql += `(count(image_others)) as total_other_images, `;
             sql += `(count(image_photo_status) + count(image_valid_id_status) + count(image_house_status) + count(image_birth_status) + count(image_others_status)) as total_uploaded, `;
             trans.executeSql(`select ${sql} * from potential_beneficiaries where validated_date = ? group by hhid`, [validated_date], (trans, results) => {
                 let items = [];
@@ -135,7 +242,7 @@ const ReportDaily = ({navigation, route, db}) => {
                 <Text category='c1'>{`${item.barangay_name}, ${item.city_name}\n${item.province_name}, ${item.region}`}</Text>
             </View>
             <View style={{ width: (listWidth * 0.15), paddingRight: 4, alignContent: "center", justifyContent: "center"}}>
-                <Text category='c1' style={{fontWeight: "bold", fontSize: 14, textAlign: "center"}}>{`${item.total_images}`}</Text>
+                <Text category='c1' style={{fontWeight: "bold", fontSize: 14, textAlign: "center"}}>{`${item.total_required_images} (${item.total_other_images})`}</Text>
             </View>
             <View style={{ width: (listWidth * 0.15), paddingRight: 4, alignContent: "center", justifyContent: "center"}}>
                 <Text category='c1' style={{fontWeight: "bold", fontSize: 14, textAlign: "center"}}>{`${item.total_uploaded}`}</Text>
@@ -148,11 +255,30 @@ const ReportDaily = ({navigation, route, db}) => {
             <Text>Validation Date: {validated_date}</Text>
             <Text>Total Images: {total_images}</Text>
             <Text>Uploaded Images: {total_uploaded}</Text>
-            { generatedReportPath == "" ? (
-                <Button onPress={() => {generateReport()}} disabled={loading}>{loading ? "Generating Report" : "Generate Report"} </Button>
-            ) : (
-                <Button onPress={() => {shareFile()}}>Share File</Button>
-            ) }
+            { uploading ? (
+                <Text>Uploading Progress: {uploadingProgess}</Text>
+            ) : <></> }
+            <View style={{flexDirection: "row"}}>
+                <View style={{flex: 1}}>
+                    { generatedReportPath == "" ? (
+                        <Button onPress={() => {generateReport()}} disabled={loading}>{loading ? "Generating Report" : "Generate Report"} </Button>
+                    ) : (
+                        <Button onPress={() => {shareFile()}}>Share File</Button>
+                    ) }
+                </View>
+                <View style={{flex: 1}}>
+                    <Button status="info" onPress={() => {
+                        // uploadImages();
+                        if(_isEmpty(user)){
+                            setVisible(true);
+                        }else{
+                            // console.log(user.token);
+                            console.log("upload");
+                            uploadImages();
+                        }
+                    }} disabled={uploading}>{uploading ? `Uploading Images` : "Upload Images"} </Button>
+                </View>
+            </View>
             { generatedReportPath != "" ? (
                 <View>
                     <Text>Generated Report:</Text>
@@ -193,6 +319,10 @@ const ReportDaily = ({navigation, route, db}) => {
                 data={validatedBeneficiaries}
                 renderItem={renderItem}
             />
+
+        <Modal visible={visible} backdropStyle={styles.backdrop}>
+            <Login setVisible={setVisible} userLogin={userLogin} userLoginError={userLoginError} loginLoading={loginLoading} />
+        </Modal>
         </Layout>
     );
 }
