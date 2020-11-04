@@ -1,15 +1,14 @@
 import React, {useEffect, useState} from 'react';
-import { StyleSheet, ToastAndroid, View, Dimensions, Modal, TouchableHighlight } from 'react-native';
-import { Layout, Text, Icon, List, Button, Card, Divider } from '@ui-kitten/components';
+import { StyleSheet, ToastAndroid, View, Dimensions, Modal } from 'react-native';
+import { Layout, Text, List, Button } from '@ui-kitten/components';
 import RNFetchBlob from 'rn-fetch-blob'
 import Share from 'react-native-share';
-import { zip, unzip, unzipAssets, subscribe } from 'react-native-zip-archive'
+import { zip } from 'react-native-zip-archive'
 import RNFS from 'react-native-fs';
 import _debounce  from 'lodash/debounce'
 import _isEmpty  from 'lodash/isEmpty'
 import Login from './Login'
 import ImgToBase64 from 'react-native-image-base64';
-import axios from 'axios';
 
 const styles = StyleSheet.create({
     centeredView: {
@@ -135,11 +134,9 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
             };
             
             try {
-                // console.log(formData);
                 formData.token = user.token;
                 formData.beneficiary = beneficiary
                 uploadImageApi = await client.post('/api/v1/mobilereports/upload', formData);
-                // console.log(uploadImageApi);
                 resolve(uploadImageApi.data);
             } catch (error) {
                 if(error && error.response){
@@ -235,9 +232,6 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
             failOnCancel: false,
             url: `file://${generatedReportPath}`,
           };
-      
-          // If you want, you can use a try catch, to parse
-          // the share response. If the user cancels, etc.
           try {
             const ShareResponse = await Share.open(shareOptions);
             console.log(JSON.stringify(ShareResponse, null, 2));
@@ -283,15 +277,11 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
         console.log(`${headerString}${rowString}`);
         const csvString = `${headerString}${rowString}`;
 
-        // write the current list of answers to a local csv file
         const pathToWrite = `${RNFS.ExternalStorageDirectoryPath}/UCT/Images/${validated_date}/uct-validation-${validated_date}.csv`;
-        // console.log('pathToWrite', pathToWrite);
-        // pathToWrite /storage/emulated/0/Download/data.csv
         RNFetchBlob.fs.writeFile(pathToWrite, csvString, 'utf8')
         .then(() => {
             console.log(`wrote file ${pathToWrite}`);
             makeZip();
-            // wrote file /storage/emulated/0/Download/data.csv
         })
         .catch(error => console.error(error));
     }
@@ -342,11 +332,9 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
                 </View>
                 <View style={{flex: 1}}>
                     <Button status="info" onPress={() => {
-                        // uploadImages();
                         if(_isEmpty(user)){
                             setVisible(true);
                         }else{
-                            // console.log(user.token);
                             console.log("upload");
                             uploadImages();
                         }

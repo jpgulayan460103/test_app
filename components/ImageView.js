@@ -10,8 +10,8 @@ const styles = StyleSheet.create({
       paddingTop: 50,
     },
     tinyLogo: {
-      height: height,  //its same to '20%' of device height
-      aspectRatio: 1, // <-- this
+      height: height,
+      aspectRatio: 1,
       resizeMode: "contain",
     },
     logo: {

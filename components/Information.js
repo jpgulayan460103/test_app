@@ -1,10 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import { ScrollView, Image, StyleSheet, Dimensions, TouchableOpacity, View, ToastAndroid  } from 'react-native';
-import { Layout, Text, Divider, Button, Icon, Modal, Card, Input } from '@ui-kitten/components';
-import FormData from 'form-data';
-import ImgToBase64 from 'react-native-image-base64';
-import RNFS from 'react-native-fs';
-import UpdateInformation from './UpdateInformation'
+import { Layout, Text, Divider, Button, Icon } from '@ui-kitten/components';
 
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
@@ -79,7 +75,6 @@ const Information = ({navigation, setBeneficiary, route, beneficiary, db, update
           <View style={{paddingLeft: 10}}>
           <Text>ADD PHOTO</Text>
           <TouchableOpacity
-            // disabled={(beneficiary.validated_date == null || beneficiary.validated_date == "")}
             onPress={async () => {
               if(beneficiary.validated_date == null || beneficiary.validated_date == ""){
                 ToastAndroid.show("Validate first before adding photo.", ToastAndroid.SHORT)

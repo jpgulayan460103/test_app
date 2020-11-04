@@ -1,6 +1,6 @@
 import React, {useEffect, useState, useRef } from 'react';
 import { StyleSheet, ToastAndroid, View, Dimensions, ScrollView, Platform, KeyboardAvoidingView } from 'react-native';
-import { Layout, Text, Icon, Datepicker, Button, IndexPath, Select, SelectItem, Divider, Input } from '@ui-kitten/components';
+import { Layout, Text, Icon, Button, Select, SelectItem, Divider, Input } from '@ui-kitten/components';
 import _debounce from 'lodash/debounce'
 import _forEach from 'lodash/forEach'
 
@@ -12,9 +12,6 @@ const styles = StyleSheet.create({
 
 const listWidth = Dimensions.get('window').width;
 
-const AlertIcon = (props) => (
-    <Icon {...props} name='alert-circle-outline'/>
-);
 
 const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, currentDate}) => {
     const [provinces, setProvinces] = useState([]);
@@ -300,13 +297,10 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
             validatedDate,
             hhid,
         ];
-        // console.log(sql);
-        // console.log(params);
         db.transaction((trans) => {
             trans.executeSql(sql, params, (trans, results) => {
                 ToastAndroid.show("Validated.", ToastAndroid.SHORT)
                 navigation.goBack();
-                // console.log("asdaskjdnkasdnjasd");
             },
             (error) => {
                 console.log(error);

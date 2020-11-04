@@ -65,7 +65,6 @@ const styles = StyleSheet.create({
 function HomeScreen({ navigation, validPermissions }) {
   return (
     <Layout style={{ flex: 1 }}>
-      {/* <Header /> */}
       <Divider />
       <Layout style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
         {/* <Button onPress={() => navigation.navigate('Camera')}>Go to Details</Button> */}
@@ -116,7 +115,6 @@ function HomeScreen({ navigation, validPermissions }) {
       ) : (
         <Layout style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
             <Button onPress={() => requestPermissions() }>Exit Application</Button>
-            {/* <Text>Insufficient permission.</Text> */}
           </Layout>
       )}
       <Text style={{textAlign: "right", padding: 5}}>v{VersionInfo.appVersion}</Text>
@@ -196,7 +194,6 @@ function App() {
           dbVersionUpdate(dbVersion, VersionInfo.appVersion);
         }
         setAppConfig(item);
-        // setProvinces(items);
       },
       (error) => {
         console.log(error);
@@ -252,7 +249,6 @@ function App() {
         }
         if(key == "searchString"){
           
-          // sql += `fullname like '%${value}%'`;
           value = value.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
           let keywords = value.split(",");
           let mappedKeywords = keywords.map(item => {
@@ -535,9 +531,6 @@ function App() {
               {props => <ReportDaily {...props} db={db} client={client} setUser={setUser} user={user} db={db} />}
             </Stack.Screen>
           </Stack.Navigator>
-          {/* <View style={{position:"absolute"}}>
-            <ActivityIndicator size="large" color="#0000ff" animating={loading} />
-          </View> */}
         </NavigationContainer>
     </ApplicationProvider>
     </SafeAreaView>
