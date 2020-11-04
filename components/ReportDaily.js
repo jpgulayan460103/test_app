@@ -105,7 +105,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
                 // console.log(formData);
                 formData.token = user.token;
                 formData.beneficiary = beneficiary
-                uploadImageApi = await client.post('/api/v1/test-upload', formData);
+                uploadImageApi = await client.post('/api/v1/mobilereports/upload', formData);
                 // console.log(uploadImageApi);
                 resolve(uploadImageApi.data);
             } catch (error) {
@@ -115,6 +115,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
                         setUser({});
                     }
                 }
+                console.log(error.response.data);
                 reject(error);
             }
         }) 
