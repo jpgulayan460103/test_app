@@ -10,9 +10,9 @@ const styles = StyleSheet.create({
 
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
-const Login = ({setVisible, userLogin, userLoginError, loginLoading}) => {
-    const [username, setUsername] = useState("jpgulayan");
-    const [password, setPassword] = useState("admin123");
+const Login = ({setVisible, userLogin, userLoginError, loginLoading, loginString}) => {
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
     const [secureTextEntry, setSecureTextEntry] = React.useState(true);
 
     const toggleSecureEntry = () => {
@@ -21,16 +21,24 @@ const Login = ({setVisible, userLogin, userLoginError, loginLoading}) => {
   
     const renderIcon = (props) => (
       <TouchableWithoutFeedback onPress={toggleSecureEntry}>
-        <Icon {...props} name={secureTextEntry ? 'eye-off' : 'eye'}/>
+        <Icon {...props} name={secureTextEntry ? 'eye-off-outline' : 'eye-outline'}/>
       </TouchableWithoutFeedback>
+    );
+    const renderIconUser = (props) => (
+        <Icon {...props} name="person-outline"/>
     );
     return (
         <Card disabled={true} style={{width: width*0.8}}>
-            {/* <Text category="h1">Login</Text> */}
+            <View style={{alignItems: "center"}}>
+                <View style={{width: 120, height: 120, borderWidth: 2, borderRadius: 60, padding: 10, borderColor: "rgba(255,255,255,0.4)"}}>
+                    <Icon fill='#8F9BB3' name="person"/>
+                </View>
+            </View>
             <Input
                 label="Username"
                 placeholder='Username'
                 value={username}
+                accessoryRight={renderIconUser}
                 onChangeText={nextValue => setUsername(nextValue) }
             />
             <Input
@@ -42,9 +50,10 @@ const Login = ({setVisible, userLogin, userLoginError, loginLoading}) => {
                 secureTextEntry={secureTextEntry}
                 onChangeText={nextValue => setPassword(nextValue) }
                 />
-            <Button onPress={() => userLogin({username: username, password: password})} disabled={loginLoading}>
+            <Button onPress={() => userLogin({username: username, password: password})} disabled={loginLoading} style={{marginTop: 10}}>
                 {loginLoading ? "Logging in" : "Login"}
             </Button>
+            {/* <Text>{loginString}</Text> */}
         </Card>
     );
 }

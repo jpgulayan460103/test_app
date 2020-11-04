@@ -435,7 +435,7 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
                 styles.picButton,
                 { flex: 0.3, alignSelf: 'flex-end' },
               ]}
-              onPress={() => { delayedTakePicture("VALID","image_valid_id") }}>
+              onPress={() => { delayedTakePicture("VALID ID","image_valid_id") }}>
               <Text style={styles.flipText}> VALID ID </Text>
             </TouchableOpacity>
             <TouchableOpacity

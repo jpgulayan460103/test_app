@@ -143,8 +143,8 @@ var db = openDatabase({
 },  openCB, errorCB);
 
 const client = axios.create({
-  // baseURL: 'http://encoding.uct11.com/',
-  baseURL: 'http://10.0.2.2:8000/',
+  baseURL: 'http://encoding.uct11.com/',
+  // baseURL: 'http://10.0.2.2:8000/',
 });
 
 
@@ -532,7 +532,7 @@ function App() {
               {props => <Reports {...props} reportDates={reportDates} getReportDates={getReportDates} />}
             </Stack.Screen>
             <Stack.Screen name="Daily Report"  options={{headerShown: false}}>
-              {props => <ReportDaily {...props} db={db} client={client} setUser={setUser} user={user} />}
+              {props => <ReportDaily {...props} db={db} client={client} setUser={setUser} user={user} db={db} />}
             </Stack.Screen>
           </Stack.Navigator>
           {/* <View style={{position:"absolute"}}>
@@ -545,3 +545,5 @@ function App() {
 }
 
 export default App;
+
+// gradlew assembleRelease

@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import { StyleSheet, ToastAndroid, View, Dimensions } from 'react-native';
-import { Layout, Text, Icon, List, Button, Card, Modal, Divider } from '@ui-kitten/components';
+import { StyleSheet, ToastAndroid, View, Dimensions, Modal, TouchableHighlight } from 'react-native';
+import { Layout, Text, Icon, List, Button, Card, Divider } from '@ui-kitten/components';
 import RNFetchBlob from 'rn-fetch-blob'
 import Share from 'react-native-share';
 import { zip, unzip, unzipAssets, subscribe } from 'react-native-zip-archive'
@@ -12,13 +12,43 @@ import ImgToBase64 from 'react-native-image-base64';
 import axios from 'axios';
 
 const styles = StyleSheet.create({
-    container: {
-        maxHeight: 192,
+    centeredView: {
+      flex: 1,
+      justifyContent: "center",
+      alignItems: "center",
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
     },
-    backdrop: {
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    modalView: {
+      margin: 20,
+      backgroundColor: "white",
+      borderRadius: 20,
+      padding: 35,
+      alignItems: "center",
+      shadowColor: "#000",
+      shadowOffset: {
+        width: 0,
+        height: 2
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+      elevation: 5
     },
-});
+    openButton: {
+      backgroundColor: "#F194FF",
+      borderRadius: 20,
+      padding: 10,
+      elevation: 2
+    },
+    textStyle: {
+      color: "white",
+      fontWeight: "bold",
+      textAlign: "center"
+    },
+    modalText: {
+      marginBottom: 15,
+      textAlign: "center"
+    }
+  });
 
 const listWidth = Dimensions.get('window').width;
 const width = Dimensions.get('window').width;
@@ -35,6 +65,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
     const [userLoginError, setUserLoginError] = useState({
         error: "",
     });
+    const [loginString, setLoginString] = useState("");
     const [loginLoading, setLoginLoading] = useState(false);
 
     useEffect(() => {
@@ -48,6 +79,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
         try {
             setLoginLoading(true);
             let userLogin = await client.post('/api/login', data);
+            console.log(userLogin);
             setUser(userLogin.data);
             setLoginLoading(false);
             setUserLoginError({
@@ -57,6 +89,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
             setVisible(false);
         } catch (error) {
             console.log(error);
+            setLoginString(JSON.stringify(error));
             setUserLoginError(error.response.data);
             setLoginLoading(false);
             ToastAndroid.show("Login Failed.", ToastAndroid.SHORT)
@@ -123,14 +156,53 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
 
     const uploadImages = async () => {
         let uploaded;
+        let updated;
+        let updatedBeneficiary;
         setUploading(true);
         for (let index = 0; index < validatedBeneficiaries.length; index++) {
             setUploadingProgess(`${index}/${validatedBeneficiaries.length}`);
-            uploaded = await uploadBeneficiaryImages(validatedBeneficiaries[index]); 
+            uploaded = await uploadBeneficiaryImages(validatedBeneficiaries[index]);
+            updated = await updateBeneficiary(uploaded);
             setUploadingProgess(`${index+1}/${validatedBeneficiaries.length}`);
         }
         setUploadingProgess(`${validatedBeneficiaries.length}/${validatedBeneficiaries.length}`);
+        getValidatedBeneficiaries();
+        ToastAndroid.show(`Uploaded ${validatedBeneficiaries.length} of ${validatedBeneficiaries.length} Beneficiaries`, ToastAndroid.LONG)
         setUploading(false);
+    }
+
+    const updateBeneficiary = (beneficiary) => {
+        return new Promise((resolve, reject) => {
+            db.transaction((trans) => {
+                let image_photo_status = beneficiary.image_photo != null ? "uploaded" : null;
+                let image_valid_id_status = beneficiary.image_valid_id != null ? "uploaded" : null;
+                let image_house_status = beneficiary.image_house != null ? "uploaded" : null;
+                let image_birth_status = beneficiary.image_birth != null ? "uploaded" : null;
+                let image_others_status = beneficiary.image_others != null ? "uploaded" : null;
+                let params = [
+                    image_photo_status,
+                    image_valid_id_status,
+                    image_house_status,
+                    image_birth_status,
+                    image_others_status,
+                    beneficiary.hhid,
+                ];
+                let query = "image_photo_status = ?, image_valid_id_status = ?, image_house_status = ?, image_birth_status = ?, image_others_status = ?";
+                trans.executeSql(`update potential_beneficiaries set ${query} where hhid = ?; select * from potential_beneficiaries where hhid = '${beneficiary.hhid}'`, params, (trans, results) => {
+                    let items = [];
+                    let rows = results.rows;
+                    for (let i = 0; i < rows.length; i++) {
+                        var item = rows.item(i);
+                        items.push(item);
+                    }
+                    resolve(item);
+                },
+                (error) => {
+                    reject(error);
+                    // console.log(error);
+                });
+            });
+        });
     }
     
     const getValidatedBeneficiaries = () => {
@@ -139,7 +211,8 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
             let sql = "";
             sql += `(count(image_photo) + count(image_valid_id) + count(image_house) + count(image_birth)) as total_required_images, `;
             sql += `(count(image_others)) as total_other_images, `;
-            sql += `(count(image_photo_status) + count(image_valid_id_status) + count(image_house_status) + count(image_birth_status) + count(image_others_status)) as total_uploaded, `;
+            sql += `(count(image_photo_status) + count(image_valid_id_status) + count(image_house_status) + count(image_birth_status)) as total_required_uploaded, `;
+            sql += `(count(image_others_status)) as total_other_update, `;
             trans.executeSql(`select ${sql} * from potential_beneficiaries where validated_date = ? group by hhid`, [validated_date], (trans, results) => {
                 let items = [];
                 let rows = results.rows;
@@ -242,11 +315,11 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
                 </Text>
                 <Text category='c1'>{`${item.barangay_name}, ${item.city_name}\n${item.province_name}, ${item.region}`}</Text>
             </View>
-            <View style={{ width: (listWidth * 0.15), paddingRight: 4, alignContent: "center", justifyContent: "center"}}>
+            <View style={{ width: (listWidth * 0.20), paddingRight: 4, alignContent: "center", justifyContent: "center"}}>
                 <Text category='c1' style={{fontWeight: "bold", fontSize: 14, textAlign: "center"}}>{`${item.total_required_images} (${item.total_other_images})`}</Text>
             </View>
-            <View style={{ width: (listWidth * 0.15), paddingRight: 4, alignContent: "center", justifyContent: "center"}}>
-                <Text category='c1' style={{fontWeight: "bold", fontSize: 14, textAlign: "center"}}>{`${item.total_uploaded}`}</Text>
+            <View style={{ width: (listWidth * 0.20), paddingRight: 4, alignContent: "center", justifyContent: "center"}}>
+                <Text category='c1' style={{fontWeight: "bold", fontSize: 14, textAlign: "center"}}>{`${item.total_required_uploaded} (${item.total_other_update})`}</Text>
             </View>
         </View>
     );
@@ -321,9 +394,18 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
                 renderItem={renderItem}
             />
 
-        <Modal visible={visible} backdropStyle={styles.backdrop}>
-            <Login setVisible={setVisible} userLogin={userLogin} userLoginError={userLoginError} loginLoading={loginLoading} />
-        </Modal>
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={visible}
+                onRequestClose={() => {
+
+                }}
+            >
+                <View style={styles.centeredView}>
+                    <Login setVisible={setVisible} userLogin={userLogin} userLoginError={userLoginError} loginLoading={loginLoading} loginString={loginString} />
+                </View>
+            </Modal>
         </Layout>
     );
 }
