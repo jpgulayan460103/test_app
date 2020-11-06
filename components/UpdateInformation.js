@@ -1092,7 +1092,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                     setCityValue(null);
                     setBarangayValue(null);
                     getCities(provinces[item.row]);
-                    setProvinceValue(provinces[item.row]);
+                    setBarangays([]);
                     setFormData(prev => {
                         let data = {updated_province_name: provinces[item.row]};
                         return {...prev, ...data};

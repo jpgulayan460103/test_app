@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { View, PermissionsAndroid, StyleSheet, Alert, ToastAndroid, Dimensions, SafeAreaView, Image, TouchableWithoutFeedback   } from 'react-native';
+import { View, PermissionsAndroid, StyleSheet, Alert, ToastAndroid, Dimensions, SafeAreaView, Image, TouchableWithoutFeedback, Modal } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import CamSample from './components/CamSample';
@@ -11,6 +11,7 @@ import Beneficiaries from './components/Beneficiaries'
 import Information from './components/Information'
 import UpdateInformation from './components/UpdateInformation'
 import ImageView from './components/ImageView'
+import ActivationForm from './components/ActivationForm'
 import Reports from './components/Reports'
 import ReportDaily from './components/ReportDaily'
 import _forEach from 'lodash/forEach'
@@ -44,6 +45,12 @@ const requestPermissions = async () => {
 };
 
 const styles = StyleSheet.create({
+  centeredView: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
   container: {
     paddingTop: 50,
   },
@@ -63,7 +70,7 @@ const styles = StyleSheet.create({
   },
 });
 
-function HomeScreen({ navigation, validPermissions }) {
+function HomeScreen({ navigation, validPermissions, appConfig }) {
   return (
     <Layout style={{ flex: 1 }}>
       <Divider />
@@ -77,7 +84,7 @@ function HomeScreen({ navigation, validPermissions }) {
       </Layout>
       <Text category="h2" style={{textAlign: "center"}}>For Validation Activity</Text>
       <Divider />
-      {validPermissions ? (
+      {validPermissions && appConfig.is_activated == 1 ? (
         <Layout style={{ flex: 1, alignItems: 'center', justifyContent: 'space-evenly', flexDirection: "row" }}>
         <TouchableWithoutFeedback  onPress={() => {
           navigation.navigate('Reports')
@@ -121,7 +128,7 @@ function HomeScreen({ navigation, validPermissions }) {
             } }>Exit Application</Button>
           </Layout>
       )}
-      <Text category="h3" style={{textAlign: "right", marginTop: -30, paddingBottom: 10, paddingRight: 20}}>Field Office XI</Text>
+      <Text category="h3" style={{textAlign: "right", marginTop: -30, paddingBottom: 10, paddingRight: 20}}>Field Office {appConfig.region}</Text>
       <Text style={{textAlign: "right", padding: 5}}>v{VersionInfo.appVersion}</Text>
     </Layout>
   );
@@ -146,8 +153,8 @@ var db = openDatabase({
 },  openCB, errorCB);
 
 const client = axios.create({
-  // baseURL: 'http://encoding.uct11.com/',
-  baseURL: 'http://10.0.2.2:8000/',
+  baseURL: 'http://encoding.uct11.com/',
+  // baseURL: 'http://10.0.2.2:8000/',
 });
 
 
@@ -168,6 +175,7 @@ function App() {
   const [reportDates, setReportDates] = useState([]);
   const [appConfig, setAppConfig] = useState({});
   const [user, setUser] = useState({});
+  const [activationAppVisible, setActivationAppVisible] = useState(false);
   
 
   useEffect(() => {
@@ -184,7 +192,18 @@ function App() {
     };
   }, []);
 
+  const appActivation = (configs) => {
+    // console.log(configs);
+    if(configs.is_activated == 0){
+      setActivationAppVisible(true);
+    }
+  }
 
+  const date_diff_indays = function(date1, date2) {
+    dt1 = new Date(date1);
+    dt2 = new Date(date2);
+    return Math.floor((Date.UTC(dt2.getFullYear(), dt2.getMonth(), dt2.getDate()) - Date.UTC(dt1.getFullYear(), dt1.getMonth(), dt1.getDate()) ) /(1000 * 60 * 60 * 24));
+  }
   const dbUptader = () => {
     db.transaction((trans) => {
       trans.executeSql("select * from app_configs limit 1", [], (trans, results) => {
@@ -198,7 +217,13 @@ function App() {
           let dbVersion = item.version == null ? -1 : item.version;
           dbVersionUpdate(dbVersion, VersionInfo.appVersion);
         }
+        let date1 = new Date();
+        let datediffs = date_diff_indays(date1, item.expiration_date);
+        if(datediffs < 0){
+          item.is_activated = 0;
+        }
         setAppConfig(item);
+        appActivation(item)
       },
       (error) => {
         console.log(error);
@@ -235,6 +260,7 @@ function App() {
             trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN validated_extname text", [], (trans, results) => {},(error) => console.log(error));
             trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN validated_birthday text", [], (trans, results) => {},(error) => console.log(error));
             trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN validated_sex text", [], (trans, results) => {},(error) => console.log(error));
+            trans.executeSql("ALTER TABLE app_configs ADD COLUMN expiration_date text", [], (trans, results) => {},(error) => console.log(error));
           });
           break;
       
@@ -479,6 +505,7 @@ function App() {
         });
         getCities(value);
         setSelectedProvince(value);
+        setBarangays([]);
         break;
       case 'city_name':
         setBeneficiaryFormData(prev => {
@@ -508,7 +535,7 @@ function App() {
         <NavigationContainer>
           <Stack.Navigator>
             <Stack.Screen name="Home" options={{headerShown: false}} >
-              {props => <HomeScreen {...props} validPermissions={validPermissions} />}
+              {props => <HomeScreen {...props} validPermissions={validPermissions} appConfig={appConfig} />}
             </Stack.Screen>
             <Stack.Screen name="Camera" options={{headerShown: false}}>
               {props => <CamSample {...props} setBeneficiary={setBeneficiary} />}
@@ -530,6 +557,7 @@ function App() {
                 beneficiaryFormData={beneficiaryFormData}
                 getBeneficiaries={getBeneficiaries}
                 setBeneficiary={setBeneficiary}
+                appConfig={appConfig}
                 />}
             </Stack.Screen>
             <Stack.Screen name="Image Preview" initialParams={{ isViewOnly: true }} options={{headerShown: false}}>
@@ -543,6 +571,18 @@ function App() {
             </Stack.Screen>
           </Stack.Navigator>
         </NavigationContainer>
+        <Modal
+            animationType="slide"
+            transparent={true}
+            visible={activationAppVisible}
+            onRequestClose={() => {
+
+            }}
+        >
+            <View style={styles.centeredView}>
+                <ActivationForm setActivationAppVisible={setActivationAppVisible} db={db} />
+            </View>
+        </Modal>
     </ApplicationProvider>
     </SafeAreaView>
   );

@@ -17,13 +17,28 @@ const Beneficiaries = ({
         addresses: {provinces, cities, barangays},
         selectedAddresses: {selectedProvince, selectedCity, selectedBarangay},
         getBeneficiaries,
-        setBeneficiary
+        appConfig
     }) => {
     useEffect(() => {
         // getBeneficiaries();
-        setProvinceValue(selectedProvince);
-        setCityValue(selectedCity);
-        setBarangayValue(selectedBarangay);
+        if(appConfig.province_name){
+            setProvinceValue(appConfig.province_name);
+            updateAddressFilter('province_name', appConfig.province_name);
+        }else{
+            setProvinceValue(selectedProvince);
+        }
+        if(appConfig.city_name){
+            setCityValue(appConfig.city_name)
+            updateAddressFilter('city_name', appConfig.city_name);
+        }else{
+            setCityValue(selectedCity);
+        }
+        if(appConfig.barangay_name){
+            setBarangayValue(appConfig.barangay_name)
+            updateAddressFilter('barangay_name', appConfig.barangay_name);
+        }else{
+            setBarangayValue(selectedBarangay);
+        }
         return () => {
             
         };
@@ -85,6 +100,7 @@ const Beneficiaries = ({
                 <Layout style={{flex: 0, paddingTop: 10, flexDirection: "row", justifyContent: "space-evenly"}}>
                 <Layout style={{width: "45%"}}>
                     <Select
+                        disabled={appConfig.province_name == "" || appConfig.province_name != null}
                         label='Province/City'
                         placeholder="Select Province/City"
                         onSelect={(item) => {
@@ -104,6 +120,7 @@ const Beneficiaries = ({
                 <Layout style={{width: "45%"}}>
                     <Select
                         label='City/Municipality/Subdistrict'
+                        disabled={appConfig.city_name == "" || appConfig.city_name != null}
                         placeholder="Select City/Municipality/Subdistrict"
                         onSelect={(item) => {
                             setCityValue(cities[item.row]);
@@ -127,6 +144,7 @@ const Beneficiaries = ({
                         <Select
                             label='Barangay'
                             placeholder="Select Barangay"
+                            disabled={appConfig.barangay_name == "" || appConfig.barangay_name != null}
                             onSelect={(item) => {
                                 setBarangayValue(barangays[item.row]);
                                 updateAddressFilter('barangay_name', barangays[item.row]);
