@@ -270,11 +270,81 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
     }
 
     const makeCsv = () => {
-        let headerString = 'region,province_name,city_name,barangay_name,fullname,lastname,firstname,middlename,extname,birthday,hhid,psgc,sex,validated_date,remarks,updated_province_name,updated_city_name,updated_barangay_name,updated_lastname,updated_firstname,updated_middlename,updated_extname,updated_birthday,updated_sex\n';
+        let headerString = '';
+        headerString += `region,`;
+        headerString += `province_name,`;
+        headerString += `city_name,`;
+        headerString += `barangay_name,`;
+        headerString += `fullname,`;
+        headerString += `lastname,`;
+        headerString += `firstname,`;
+        headerString += `middlename,`;
+        headerString += `extname,`;
+        headerString += `birthday,`;
+        headerString += `hhid,`;
+        headerString += `psgc,`;
+        headerString += `sex,`;
+        headerString += `remarks,`;
+        headerString += `updated_province_name,`;
+        headerString += `updated_city_name,`;
+        headerString += `updated_barangay_name,`;
+        headerString += `updated_lastname,`;
+        headerString += `updated_firstname,`;
+        headerString += `updated_middlename,`;
+        headerString += `updated_extname,`;
+        headerString += `updated_birthday,`;
+        headerString += `updated_sex,`;
+        headerString += `updated_psgc,`;
+        headerString += `status,`;
+        headerString += `status_reason,`;
+        headerString += `rel_hh,`;
+        headerString += `validated_firstname,`;
+        headerString += `validated_middlename,`;
+        headerString += `validated_lastname,`;
+        headerString += `validated_extname,`;
+        headerString += `validated_birthday,`;
+        headerString += `validated_sex,`;
+        headerString += `validated_date`;
+        headerString += '\n';
         let rowString = validatedBeneficiaries.map(item => {
-            return `"${item.region}","${item.province_name}","${item.city_name}","${item.barangay_name}","${item.fullname}","${item.lastname}","${item.firstname}","${item.middlename}","${item.extname}","${item.birthday}","${item.hhid}","${item.psgc}","${item.sex}","${item.validated_date}","${item.remarks}","${item.updated_province_name}","${item.updated_city_name}","${item.updated_barangay_name}","${item.updated_lastname}","${item.updated_firstname}","${item.updated_middlename}","${item.updated_extname}","${item.updated_birthday}","${item.updated_sex}",\n`;
+            let string = "";
+            string += `"${item.region}",`
+            string += `"${item.province_name}",`
+            string += `"${item.city_name}",`
+            string += `"${item.barangay_name}",`
+            string += `"${item.fullname}",`
+            string += `"${item.lastname}",`
+            string += `"${item.firstname}",`
+            string += `"${item.middlename}",`
+            string += `"${item.extname}",`
+            string += `"${item.birthday}",`
+            string += `"${item.hhid}",`
+            string += `"${item.psgc}",`
+            string += `"${item.sex}",`
+            string += `"${item.remarks}",`
+            string += `"${item.updated_province_name}",`
+            string += `"${item.updated_city_name}",`
+            string += `"${item.updated_barangay_name}",`
+            string += `"${item.updated_lastname}",`
+            string += `"${item.updated_firstname}",`
+            string += `"${item.updated_middlename}",`
+            string += `"${item.updated_extname}",`
+            string += `"${item.updated_birthday}",`
+            string += `"${item.updated_sex}",`
+            string += `"${item.updated_psgc}",`
+            string += `"${item.status}",`
+            string += `"${item.status_reason}",`
+            string += `"${item.rel_hh}",`
+            string += `"${item.validated_firstname}",`
+            string += `"${item.validated_middlename}",`
+            string += `"${item.validated_lastname}",`
+            string += `"${item.validated_extname}",`
+            string += `"${item.validated_birthday}",`
+            string += `"${item.validated_sex}",`
+            string += `"${item.validated_date}",`
+            string += '\n';
+            return string;
         }).join('');
-        console.log(`${headerString}${rowString}`);
         const csvString = `${headerString}${rowString}`;
 
         const pathToWrite = `${RNFS.ExternalStorageDirectoryPath}/UCT/Images/${validated_date}/uct-validation-${validated_date}.csv`;

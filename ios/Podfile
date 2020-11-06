@@ -16,6 +16,8 @@ target 'uct_mobapp' do
 
   pod 'react-native-version-info', :path => '../node_modules/react-native-version-info'
 
+  pod 'RNExitApp', :path => '../node_modules/react-native-exit-app'
+
   target 'uct_mobappTests' do
     inherit! :complete
     # Pods for testing

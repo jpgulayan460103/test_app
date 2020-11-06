@@ -17,6 +17,7 @@ import _forEach from 'lodash/forEach'
 import RNFS from 'react-native-fs';
 import VersionInfo from 'react-native-version-info';
 import axios from 'axios';
+import RNExitApp from 'react-native-exit-app';
 
 const width = Dimensions.get('window').width; 
 
@@ -74,6 +75,7 @@ function HomeScreen({ navigation, validPermissions }) {
           />
         
       </Layout>
+      <Text category="h2" style={{textAlign: "center"}}>For Validation Activity</Text>
       <Divider />
       {validPermissions ? (
         <Layout style={{ flex: 1, alignItems: 'center', justifyContent: 'space-evenly', flexDirection: "row" }}>
@@ -114,9 +116,12 @@ function HomeScreen({ navigation, validPermissions }) {
         </Layout>
       ) : (
         <Layout style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
-            <Button onPress={() => requestPermissions() }>Exit Application</Button>
+            <Button onPress={() => {
+                RNExitApp.exitApp();
+            } }>Exit Application</Button>
           </Layout>
       )}
+      <Text category="h3" style={{textAlign: "right", marginTop: -30, paddingBottom: 10, paddingRight: 20}}>Field Office XI</Text>
       <Text style={{textAlign: "right", padding: 5}}>v{VersionInfo.appVersion}</Text>
     </Layout>
   );
@@ -141,8 +146,8 @@ var db = openDatabase({
 },  openCB, errorCB);
 
 const client = axios.create({
-  baseURL: 'http://encoding.uct11.com/',
-  // baseURL: 'http://10.0.2.2:8000/',
+  // baseURL: 'http://encoding.uct11.com/',
+  baseURL: 'http://10.0.2.2:8000/',
 });
 
 
@@ -220,10 +225,16 @@ function App() {
         case 1:
           console.log(`update to ver ${1}`);
           await db.transaction((trans) => {
-            trans.executeSql("update app_configs set version = ?", [1], (trans, results) => {},
-            (error) => {
-              console.log(error);
-            });
+            trans.executeSql("update app_configs set version = ?", [1], (trans, results) => {}, (error) => console.log(error));
+            trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN status text", [], (trans, results) => {},(error) => console.log(error));
+            trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN status_reason text", [], (trans, results) => {},(error) => console.log(error));
+            trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN rel_hh text", [], (trans, results) => {},(error) => console.log(error));
+            trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN validated_firstname text", [], (trans, results) => {},(error) => console.log(error));
+            trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN validated_middlename text", [], (trans, results) => {},(error) => console.log(error));
+            trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN validated_lastname text", [], (trans, results) => {},(error) => console.log(error));
+            trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN validated_extname text", [], (trans, results) => {},(error) => console.log(error));
+            trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN validated_birthday text", [], (trans, results) => {},(error) => console.log(error));
+            trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN validated_sex text", [], (trans, results) => {},(error) => console.log(error));
           });
           break;
       

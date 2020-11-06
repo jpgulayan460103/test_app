@@ -66,7 +66,7 @@ const Information = ({navigation, setBeneficiary, route, beneficiary, db, update
           <Text>Province: {beneficiary.province_name}</Text>
           <Text>Date Validated: {beneficiary.validated_date}</Text>
           <View>
-            <Button onPress={() => navigation.navigate("Validate Information")}>Validate Information</Button>
+            <Button onPress={() => navigation.navigate("Validate Information")}>VALIDATE BENEFICIARY</Button>
           </View>
         </View>
         <Divider />

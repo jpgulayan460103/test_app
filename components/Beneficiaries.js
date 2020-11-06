@@ -85,8 +85,8 @@ const Beneficiaries = ({
                 <Layout style={{flex: 0, paddingTop: 10, flexDirection: "row", justifyContent: "space-evenly"}}>
                 <Layout style={{width: "45%"}}>
                     <Select
-                        label='Province'
-                        placeholder="Select Province"
+                        label='Province/City'
+                        placeholder="Select Province/City"
                         onSelect={(item) => {
                             setProvinceValue(provinces[item.row]);
                             setCityValue(null);
@@ -103,8 +103,8 @@ const Beneficiaries = ({
                 </Layout>
                 <Layout style={{width: "45%"}}>
                     <Select
-                        label='City/Municipality'
-                        placeholder="Select City/Municipality"
+                        label='City/Municipality/Subdistrict'
+                        placeholder="Select City/Municipality/Subdistrict"
                         onSelect={(item) => {
                             setCityValue(cities[item.row]);
                             setBarangayValue(null);
