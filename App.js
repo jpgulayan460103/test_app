@@ -84,7 +84,8 @@ function HomeScreen({ navigation, validPermissions, appConfig }) {
       </Layout>
       <Text category="h2" style={{textAlign: "center"}}>For Validation Activity</Text>
       <Divider />
-      {validPermissions && appConfig.is_activated == 1 ? (
+      {/* {validPermissions && appConfig.is_activated == 1 ? ( */}
+      {validPermissions ? (
         <Layout style={{ flex: 1, alignItems: 'center', justifyContent: 'space-evenly', flexDirection: "row" }}>
         <TouchableWithoutFeedback  onPress={() => {
           navigation.navigate('Reports')
@@ -195,7 +196,7 @@ function App() {
   const appActivation = (configs) => {
     // console.log(configs);
     if(configs.is_activated == 0){
-      setActivationAppVisible(true);
+      // setActivationAppVisible(true);
     }
   }
 

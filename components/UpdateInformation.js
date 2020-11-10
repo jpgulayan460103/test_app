@@ -3,6 +3,7 @@ import { StyleSheet, ToastAndroid, View, Dimensions, ScrollView, Platform, Keybo
 import { Layout, Text, Icon, Button, Select, SelectItem, Divider, Input } from '@ui-kitten/components';
 import _debounce from 'lodash/debounce'
 import _forEach from 'lodash/forEach'
+import _cloneDeep from 'lodash/cloneDeep'
 
 const styles = StyleSheet.create({
     container: {
@@ -179,8 +180,32 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
             beneficiary.validated_birthday_m = splitBirthdayValidated[1];
             beneficiary.validated_birthday_d = splitBirthdayValidated[2];
         }
+        let clonedBeneficiay = _cloneDeep(beneficiary);
+        if(clonedBeneficiay.validated_date == null){
+            clonedBeneficiay.updated_firstname = clonedBeneficiay.firstname;
+            clonedBeneficiay.updated_middlename = clonedBeneficiay.middlename;
+            clonedBeneficiay.updated_lastname = clonedBeneficiay.lastname;
+            clonedBeneficiay.updated_extname = clonedBeneficiay.extname;
+            clonedBeneficiay.updated_sex = clonedBeneficiay.sex;
+            clonedBeneficiay.updated_province_name = clonedBeneficiay.province_name;
+            clonedBeneficiay.updated_city_name = clonedBeneficiay.city_name;
+            clonedBeneficiay.updated_barangay_name = clonedBeneficiay.barangay_name;
+            setProvinceValue(clonedBeneficiay.province_name);
+            setCityValue(clonedBeneficiay.city_name);
+            setBarangayValue(clonedBeneficiay.barangay_name);
+            getBarangays(clonedBeneficiay.province_name, clonedBeneficiay.city_name);
+            getCities(clonedBeneficiay.province_name);
+            setSexValue(clonedBeneficiay.sex);
+            let splitBirthdayDefault = clonedBeneficiay.birthday.split('-');
+            clonedBeneficiay.updated_birthday_y = splitBirthdayDefault[0];
+            clonedBeneficiay.updated_birthday_m = splitBirthdayDefault[1];
+            clonedBeneficiay.updated_birthday_d = splitBirthdayDefault[2];
+        }else{
+            getBarangays(beneficiary.updated_province_name, beneficiary.updated_city_name);
+            getCities(beneficiary.updated_province_name);
+        }
         setFormData(prev => {
-            return {...prev, ...beneficiary};
+            return {...prev, ...clonedBeneficiay};
         });
     }, []);
 
@@ -1087,6 +1112,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                 placeholder="Select Province"
                 status={formError.updated_province_name.isValid ? "basic": "danger"}
                 caption={formError.updated_province_name.message ? formError.updated_province_name.message: ""}
+                disabled={true}
                 onSelect={(item) => {
                     setProvinceValue(provinces[item.row]);
                     setCityValue(null);

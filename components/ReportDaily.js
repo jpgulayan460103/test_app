@@ -6,6 +6,7 @@ import Share from 'react-native-share';
 import { zip } from 'react-native-zip-archive'
 import RNFS from 'react-native-fs';
 import _debounce  from 'lodash/debounce'
+import _cloneDeep  from 'lodash/cloneDeep'
 import _isEmpty  from 'lodash/isEmpty'
 import Login from './Login'
 import ImgToBase64 from 'react-native-image-base64';
@@ -66,6 +67,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
     });
     const [loginString, setLoginString] = useState("");
     const [loginLoading, setLoginLoading] = useState(false);
+    const [notUploadedBeneficiaries, setNotUploadedBeneficiaries] = useState([]);
 
     useEffect(() => {
         navigation.setOptions({
@@ -137,12 +139,21 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
                 formData.token = user.token;
                 formData.beneficiary = beneficiary
                 uploadImageApi = await client.post('/api/v1/mobilereports/upload', formData);
-                resolve(uploadImageApi.data);
+                resolve({
+                    status: "ok",
+                    response: uploadImageApi.data,
+                });
             } catch (error) {
                 if(error && error.response){
                     if(error.response.status == "401"){
                         ToastAndroid.show("Session Expired. Please login again.", ToastAndroid.LONG)
                         setUser({});
+                    }
+                    if(error.response.status == "422"){
+                        resolve({
+                            status: "error",
+                            errors: error.response.data.errors
+                        });
                     }
                 }
                 console.log(error.response.data);
@@ -156,15 +167,30 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
         let updated;
         let updatedBeneficiary;
         setUploading(true);
-        for (let index = 0; index < validatedBeneficiaries.length; index++) {
-            setUploadingProgess(`${index}/${validatedBeneficiaries.length}`);
-            uploaded = await uploadBeneficiaryImages(validatedBeneficiaries[index]);
-            updated = await updateBeneficiary(uploaded);
-            setUploadingProgess(`${index+1}/${validatedBeneficiaries.length}`);
+        let uploadedCount = 0;
+        let notUploaded = [];
+        let validated = _cloneDeep(validatedBeneficiaries);
+        for (let index = 0; index < validated.length; index++) {
+            setUploadingProgess(`${uploadedCount}/${validated.length}`);
+            uploaded = await uploadBeneficiaryImages(validated[index]);
+            if(uploaded.status == "error"){
+                console.log(uploaded);
+                notUploaded.push({
+                    beneficiary: validated[index],
+                    errors: uploaded.errors
+                });
+                validated[index].errors = uploaded.errors;
+            }else{
+                updated = await updateBeneficiary(uploaded.response);
+                uploadedCount++;
+                setUploadingProgess(`${uploadedCount}/${validated.length}`);
+            }
         }
-        setUploadingProgess(`${validatedBeneficiaries.length}/${validatedBeneficiaries.length}`);
+        // console.log(validated);
+        setNotUploadedBeneficiaries(notUploaded);
+        setUploadingProgess(`${uploadedCount}/${validated.length}`);
         getValidatedBeneficiaries();
-        ToastAndroid.show(`Uploaded ${validatedBeneficiaries.length} of ${validatedBeneficiaries.length} Beneficiaries`, ToastAndroid.LONG)
+        ToastAndroid.show(`Uploaded ${uploadedCount} of ${validated.length} Beneficiaries`, ToastAndroid.LONG)
         setUploading(false);
     }
 
