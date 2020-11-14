@@ -56,15 +56,18 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
 
     const [statusReasonSelection, setstatusReasonSelection] = useState([
         'DECEASED',
-        'WORKING OUTSIDE THE CITY/MUNICIPALITY',
-        'OFW',
-        'UNLOCATED',
+        'DOUBLE ENTRY',
         'IN PRISON',
+        'OFW',
+        'OTHERS',
         'PANTAWID BENEFICIARY',
+        'REFUSED',
         'SEPARATED',
         'TRANSFERRED',
-        'REFUSED',
-        'OTHERS',
+        'UNLOCATED HOUSEHOLD',
+        'UNLOCATED HOUSEHOLD HEAD',
+        'WORKING INSIDE THE CITY/MUNICIPALITY',
+        'WORKING OUTSIDE THE CITY/MUNICIPALITY',
     ]);
 
     const ref_updated_lastname = useRef();
@@ -75,6 +78,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
     const ref_updated_birthday_d = useRef();
     const ref_updated_birthday_y = useRef();
     const ref_updated_sex = useRef();
+    const ref_updated_province = useRef();
     const ref_validated_lastname = useRef();
     const ref_validated_firstname = useRef();
     const ref_validated_middlename = useRef();
@@ -99,6 +103,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
         updated_birthday_m: "",
         updated_birthday_d: "",
         updated_birthday_y: "",
+        updated_purok: "",
         validated_lastname: "",
         validated_firstname: "",
         validated_middlename: "",
@@ -235,6 +240,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
         let formErrors = {};
         let keyError = false;
         _forEach(formData, (value, key)  => {
+            formErrors[key] = { isValid: true, message: message };
             switch (key) {
                 case 'updated_lastname':
                 case 'updated_firstname':
@@ -245,7 +251,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                         keyError = true;
                         message = "Should contain alphabets.";
                     }
-                    if(value == null || (value && value.trim() == "")){
+                    if(value == null || (value.trim() == "")){
                         hasError = true;
                         keyError = true;
                         message = "Required";
@@ -256,7 +262,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                 case 'updated_extname':
                     keyError = false;
                     message = "";
-                    if(value == null || (value && value.trim() == "")){
+                    if(value == null || (value.trim() == "")){
                         formErrors[key] = { isValid: true, message: message };
                     }else{
                         if(!validateName.test(value)){
@@ -276,7 +282,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                         keyError = true;
                         message = "Should contain numbers.";
                     }
-                    if(value == null || (value && value.trim() == "")){
+                    if(value == null || (value.trim() == "")){
                         hasError = true;
                         keyError = true;
                         message = "Required";
@@ -308,12 +314,12 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                         keyError = true;
                         message = "Should contain numbers.";
                     }
-                    if(value == null || (value && value.trim() == "")){
+                    if(value == null || (value.trim() == "")){
                         hasError = true;
                         keyError = true;
                         message = "Required";
                     }
-                    if(value && value.length != 4){
+                    if(value.length != 4){
                         hasError = true;
                         keyError = true;
                         message = "Must have 4 digits";
@@ -351,7 +357,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                 case 'updated_barangay_name':
                     keyError = false;
                     message = "";
-                    if(value == null || (value && value.trim() == "")){
+                    if(value == null || (value.trim() == "")){
                         hasError = true;
                         keyError = true;
                         message = "Required";
@@ -360,7 +366,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                     break;
                 case 'validated_lastname':
                 case 'validated_firstname':
-                    if(beneficiaryStatus == "ACTIVE"){break;}
+                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY"){break;}
                     keyError = false;
                     message = "";
                     if(!validateName.test(value)){
@@ -368,7 +374,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                         keyError = true;
                         message = "Should contain alphabets.";
                     }
-                    if(value == null || (value && value.trim() == "")){
+                    if(value == null || (value.trim() == "")){
                         hasError = true;
                         keyError = true;
                         message = "Required";
@@ -377,10 +383,10 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                     break;
                 case 'validated_middlename':
                 case 'validated_extname':
-                    if(beneficiaryStatus == "ACTIVE"){break;}
+                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY"){break;}
                     keyError = false;
                     message = "";
-                    if(value == null || (value && value.trim() == "")){
+                    if(value == null || (value.trim() == "")){
                         formErrors[key] = { isValid: true, message: message };
                     }else{
                         if(!validateName.test(value)){
@@ -393,7 +399,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                     break;
                 case 'validated_birthday_m':
                 case 'validated_birthday_d':
-                    if(beneficiaryStatus == "ACTIVE"){break;}
+                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY"){break;}
                     keyError = false;
                     message = "";
                     if(!validateNumber.test(value)){
@@ -401,7 +407,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                         keyError = true;
                         message = "Should contain numbers.";
                     }
-                    if(value == null || (value && value.trim() == "")){
+                    if(value == null || (value.trim() == "")){
                         hasError = true;
                         keyError = true;
                         message = "Required";
@@ -426,7 +432,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                     }
                     break;
                 case 'validated_birthday_y':
-                    if(beneficiaryStatus == "ACTIVE"){break;}
+                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY"){break;}
                     keyError = false;
                     message = "";
                     if(!validateNumber.test(value)){
@@ -434,12 +440,12 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                         keyError = true;
                         message = "Should contain numbers.";
                     }
-                    if(value == null || (value && value.trim() == "")){
+                    if(value == null || (value.trim() == "")){
                         hasError = true;
                         keyError = true;
                         message = "Required";
                     }
-                    if(value && value.length != 4){
+                    if(value.length != 4){
                         hasError = true;
                         keyError = true;
                         message = "Must have 4 digits";
@@ -474,10 +480,10 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                 case 'rel_hh':
                 case 'status_reason':
                 case 'remarks':
-                    if(beneficiaryStatus == "ACTIVE"){break;}
+                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY"){break;}
                     keyError = false;
                     message = "";
-                    if(value == null || (value && value.trim() == "")){
+                    if(value == null || (value.trim() == "")){
                         hasError = true;
                         keyError = true;
                         message = "Required";
@@ -526,6 +532,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
             updated_birthday_d,
             updated_birthday_y,
             updated_sex,
+            updated_purok,
             remarks,
             status,
             status_reason,
@@ -549,6 +556,9 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
         validated_birthday_d = parseInt(validated_birthday_d);
         validated_birthday_y = parseInt(validated_birthday_y);
         let validated_birthday = `${validated_birthday_y}-${(validated_birthday_m < 10 ? `0${validated_birthday_m}` : validated_birthday_m )}-${(validated_birthday_d < 10 ? `0${validated_birthday_d}` : validated_birthday_d )}`;
+        if(isNaN(validated_birthday_y)){
+            validated_birthday = null;
+        }
         let sql = "";
         sql += `UPDATE potential_beneficiaries set`;
         sql += ` updated_province_name= ?,`;
@@ -560,6 +570,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
         sql += ` updated_extname = ?,`;
         sql += ` updated_birthday = ?,`;
         sql += ` updated_sex = ?,`;
+        sql += ` updated_purok = ?,`;
         sql += ` remarks = ?,`;
         sql += ` status = ?,`;
         sql += ` status_reason = ?,`;
@@ -585,6 +596,10 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
         validated_lastname = validated_lastname ? validated_lastname.toUpperCase() : validated_lastname;
         validated_extname = validated_extname ? validated_extname.toUpperCase() : validated_extname;
 
+        if(status == "ACTIVE"){
+            status_reason = null;
+        }
+
         let params = [
             updated_province_name,
             updated_city_name,
@@ -595,6 +610,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
             updated_extname,
             updated_birthday,
             updated_sex,
+            updated_purok,
             remarks,
             status,
             status_reason,
@@ -712,9 +728,8 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                 }
             </Select>
 
-            { beneficiaryStatus == "ACTIVE" || beneficiaryStatus == null ? (<></>) : (
+            { beneficiaryStatus != null && beneficiaryStatus != "ACTIVE"  ? (
                 <>
-                <Text style={{textAlign: "center"}}>Inactive Validation Form</Text>
                 <Select
                     label='Inactive Reason'
                     placeholder="Select Reason"
@@ -735,6 +750,12 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                     }
                 </Select>
                 <Divider />
+                </>
+            ) : (<></>) }
+
+            { beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || beneficiaryStatus == null ? (<></>) : (
+                <>
+                <Text style={{textAlign: "center"}}>Inactive Validation Form</Text>
 
                 <Input
                     label="Remarks"
@@ -1107,12 +1128,29 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                 }
             </Select>
             <Divider />
+
+
+            <Input
+                    label="Purok/Sitio"
+                    placeholder="Enter Purok/Sitio"
+                    value={formData.updated_purok}
+                    // onSubmitEditing={() => ref_updated_province.current.focus()}
+                    autoCompleteType="off"
+                    onChangeText={(val) => {
+                        setFormData(prev => {
+                            let data = {updated_purok: val};
+                            return {...prev, ...data};
+                        });
+                    }}
+                />
+                <Divider />
             <Select
                 label='Province'
                 placeholder="Select Province"
                 status={formError.updated_province_name.isValid ? "basic": "danger"}
                 caption={formError.updated_province_name.message ? formError.updated_province_name.message: ""}
                 disabled={true}
+                ref={ref_updated_province}
                 onSelect={(item) => {
                     setProvinceValue(provinces[item.row]);
                     setCityValue(null);
