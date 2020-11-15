@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
-import { StyleSheet, ToastAndroid, View, Dimensions, Modal } from 'react-native';
-import { Layout, Text, List, Button } from '@ui-kitten/components';
+import { StyleSheet, ToastAndroid, View, Dimensions, Modal, TouchableOpacity } from 'react-native';
+import { Layout, Text, List, Button, CheckBox, Card } from '@ui-kitten/components';
 import RNFetchBlob from 'rn-fetch-blob'
 import Share from 'react-native-share';
 import { zip } from 'react-native-zip-archive'
@@ -8,6 +8,7 @@ import RNFS from 'react-native-fs';
 import _debounce  from 'lodash/debounce'
 import _cloneDeep  from 'lodash/cloneDeep'
 import _isEmpty  from 'lodash/isEmpty'
+import _forEach  from 'lodash/forEach'
 import Login from './Login'
 import ImgToBase64 from 'react-native-image-base64';
 
@@ -60,14 +61,17 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
     const [generatedReportPath, setGeneratedReportPath] = useState("");
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
-    const [visible, setVisible] = React.useState(false);
+    const [visible, setVisible] = useState(false);
+    const [showErrors, setShowErrors] = useState(false);
+    const [selectedBeneficiary, setSelectedBeneficiary] = useState({});
     const [uploadingProgess, setUploadingProgess] = useState("");
     const [userLoginError, setUserLoginError] = useState({
         error: "",
     });
     const [loginString, setLoginString] = useState("");
     const [loginLoading, setLoginLoading] = useState(false);
-    const [notUploadedBeneficiaries, setNotUploadedBeneficiaries] = useState([]);
+    const [uploadFeedback, setUploadFeedback] = useState([]);
+    const [selectAll, setSelectAll] = useState(false);
 
     useEffect(() => {
         navigation.setOptions({
@@ -150,13 +154,13 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
                         setUser({});
                     }
                     if(error.response.status == "422"){
+                        let errors = error.response.data.errors;
                         resolve({
                             status: "error",
-                            errors: error.response.data.errors
+                            errors: errors
                         });
                     }
                 }
-                console.log(error.response.data);
                 reject(error);
             }
         }) 
@@ -168,29 +172,36 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
         let updatedBeneficiary;
         setUploading(true);
         let uploadedCount = 0;
-        let notUploaded = [];
-        let validated = _cloneDeep(validatedBeneficiaries);
+        let feedback = [];
+        let clonedValidated = _cloneDeep(validatedBeneficiaries);
+        let validated = clonedValidated.filter(item => item.selected == true);
         for (let index = 0; index < validated.length; index++) {
             setUploadingProgess(`${uploadedCount}/${validated.length}`);
             uploaded = await uploadBeneficiaryImages(validated[index]);
             if(uploaded.status == "error"){
-                console.log(uploaded);
-                notUploaded.push({
+                feedback.push({
                     beneficiary: validated[index],
-                    errors: uploaded.errors
+                    errors: uploaded.errors,
+                    status: "error",
                 });
+                // console.log(uploaded.errors);
                 validated[index].errors = uploaded.errors;
             }else{
+                feedback.push({
+                    beneficiary: validated[index],
+                    errors: uploaded.errors,
+                    status: "ok",
+                });
                 updated = await updateBeneficiary(uploaded.response);
                 uploadedCount++;
                 setUploadingProgess(`${uploadedCount}/${validated.length}`);
             }
         }
-        // console.log(validated);
-        setNotUploadedBeneficiaries(notUploaded);
+        setUploadFeedback(feedback);
         setUploadingProgess(`${uploadedCount}/${validated.length}`);
         getValidatedBeneficiaries();
-        ToastAndroid.show(`Uploaded ${uploadedCount} of ${validated.length} Beneficiaries`, ToastAndroid.LONG)
+        setSelectAll(false);
+        ToastAndroid.show(`Updated ${uploadedCount} of ${validated.length} Beneficiaries`, ToastAndroid.LONG)
         setUploading(false);
     }
 
@@ -202,6 +213,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
                 let image_house_status = beneficiary.image_house != null ? "uploaded" : null;
                 let image_birth_status = beneficiary.image_birth != null ? "uploaded" : null;
                 let image_others_status = beneficiary.image_others != null ? "uploaded" : null;
+                let has_updated = beneficiary.user_id != null ? "uploaded" : null;
                 let params = [
                     image_photo_status,
                     image_valid_id_status,
@@ -242,6 +254,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
                 // console.log(rows.length);
                 for (let i = 0; i < rows.length; i++) {
                     var item = rows.item(i);
+                    item.selected = false;
                     items.push(item);
                 }
                 setValidatedBeneficiaries(items);
@@ -382,6 +395,35 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
         .catch(error => console.error(error));
     }
 
+    const displayFeedback = (beneficiary) => {
+        let feedback = uploadFeedback.filter(item => item.beneficiary.hhid == beneficiary.hhid);
+        if(!_isEmpty(feedback)){
+            if(feedback[0].status == "error"){
+                return {color: "red"};
+            }else{
+                return {color: "green"};
+            }
+        }
+        return {};
+    }
+
+    const displayErrors = (beneficiary) => {
+        let filtered = uploadFeedback.filter(item => item.beneficiary.hhid == beneficiary.hhid);
+        if(!_isEmpty(filtered)){
+            let filteredBeneficiary = filtered[0];
+            let errors = [];
+            errors.push(
+                <Text key={`error_status`}>Update Status: {filteredBeneficiary.status}</Text>
+            );
+            _forEach(filteredBeneficiary.errors, function(value, key) {
+                errors.push(
+                    <Text key={`error_${key}`}>{value[0]}</Text>
+                );
+            })
+            return errors;
+        }
+        return null;
+    }
     const renderItem = ({ item, index }) => (
         <View style={
             {
@@ -395,17 +437,48 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
             }
         }>
             
-            <View style={{ width: (listWidth * 0.55), paddingRight: 4}}>
-                <Text category='c1' style={{fontWeight: "bold", fontSize: 14}}>
-                    {`${item.lastname ? item.lastname : ""}, ${item.firstname ? item.firstname : ""} ${item.middlename ? item.middlename : ""} ${item.extname ? item.extname : ""}`}
-                </Text>
-                <Text category='c1'>{`${item.barangay_name}, ${item.city_name}\n${item.province_name}, ${item.region}`}</Text>
-            </View>
-            <View style={{ width: (listWidth * 0.20), paddingRight: 4, alignContent: "center", justifyContent: "center"}}>
+            <TouchableOpacity onPress={() => {
+                navigation.navigate("Beneficiary Information", {beneficiary: item});
+            }}>
+                <View style={{ width: (listWidth * 0.55), paddingRight: 4}}>
+                    <Text category='c1' style={{fontWeight: "bold", fontSize: 14}}>
+                        {`${item.lastname ? item.lastname : ""}, ${item.firstname ? item.firstname : ""} ${item.middlename ? item.middlename : ""} ${item.extname ? item.extname : ""}`}
+                    </Text>
+                    <Text category='c1'>{`${item.barangay_name}, ${item.city_name}\n${item.province_name}, ${item.region}`}</Text>
+                </View>
+            </TouchableOpacity>
+            <View style={{ width: (listWidth * 0.15), paddingRight: 4, alignContent: "center", justifyContent: "center"}}>
+                {/* <Text style={{textAlign: "center"}}></Text> */}
                 <Text category='c1' style={{fontWeight: "bold", fontSize: 14, textAlign: "center"}}>{`${item.total_required_images} (${item.total_other_images})`}</Text>
             </View>
-            <View style={{ width: (listWidth * 0.20), paddingRight: 4, alignContent: "center", justifyContent: "center"}}>
-                <Text category='c1' style={{fontWeight: "bold", fontSize: 14, textAlign: "center"}}>{`${item.total_required_uploaded} (${item.total_other_update})`}</Text>
+            <TouchableOpacity onPress={() => {
+                setSelectedBeneficiary(item);
+                let filtered = uploadFeedback.filter(feedback => feedback.beneficiary.hhid == item.hhid);
+                if(!_isEmpty(filtered)){
+                    setShowErrors(true);
+                }
+            }} style={{alignContent: "center", justifyContent: "center"}}>
+                <View style={{ width: (listWidth * 0.15), paddingRight: 4}}>
+                    {/* <Text style={{textAlign: "center"}}>{displayFeedback(item)}</Text> */}
+                    <Text style={{color: "red"}}>
+                    <Text category='c1' style={{fontWeight: "bold", fontSize: 14, textAlign: "center", ...displayFeedback(item) }}>{`${item.total_required_uploaded} (${item.total_other_update})`}</Text>
+                    </Text>
+                </View>
+            </TouchableOpacity>
+            <View style={{ width: (listWidth * 0.10), paddingRight: 4, alignContent: "center", justifyContent: "center"}}>
+                <CheckBox
+                    checked={item.selected}
+                    onChange={nextChecked => {
+                        let clonedValidated = _cloneDeep(validatedBeneficiaries);
+                        clonedValidated[index].selected = nextChecked;
+                        if(!nextChecked){
+                            setSelectAll(nextChecked);
+                        }
+                        setValidatedBeneficiaries(clonedValidated);
+                    }}>
+                    
+                </CheckBox>
+                {/* <Text style={{textAlign: "center"}}></Text> */}
             </View>
         </View>
     );
@@ -427,14 +500,13 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
                     ) }
                 </View>
                 <View style={{flex: 1}}>
-                    <Button status="info" onPress={() => {
+                    <Button status={_isEmpty(user) ? "danger" : "info"} onPress={() => {
                         if(_isEmpty(user)){
                             setVisible(true);
                         }else{
-                            console.log("upload");
                             uploadImages();
                         }
-                    }} disabled={uploading}>{uploading ? `Uploading Images` : "Upload Images"} </Button>
+                    }} disabled={uploading}>{uploading ? `Uploading Images` :  (_isEmpty(user) ? "Login" : "Upload Images") } </Button>
                 </View>
             </View>
             { generatedReportPath != "" ? (
@@ -457,7 +529,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
                     marginTop: 10
                 }
             }>
-                <View style={{ width: (listWidth * 0.55), paddingRight: 4}}>
+                <View style={{ width: (listWidth * 0.45), paddingRight: 4}}>
                     <Text category='c1' style={{fontWeight: "bold", fontSize: 14}}>
                         Beneficiary
                     </Text>
@@ -471,6 +543,20 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
                     <Text category='c1' style={{fontWeight: "bold", fontSize: 14, textAlign: "center"}}>
                         Uploaded
                     </Text>
+                </View>
+                <View style={{ width: (listWidth * 0.17), paddingRight: 4, alignContent: "center", justifyContent: "center"}}>
+                    <CheckBox
+                        checked={selectAll}
+                        onChange={nextChecked => {
+                            let clonedValidated = _cloneDeep(validatedBeneficiaries);
+                            clonedValidated.map(item => {
+                                item.selected = nextChecked;
+                                return item;
+                            });
+                            setValidatedBeneficiaries(clonedValidated);
+                            setSelectAll(nextChecked);
+                        }}>
+                    </CheckBox>
                 </View>
             </View>
             <List
@@ -488,6 +574,26 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
             >
                 <View style={styles.centeredView}>
                     <Login setVisible={setVisible} userLogin={userLogin} userLoginError={userLoginError} loginLoading={loginLoading} loginString={loginString} />
+                </View>
+            </Modal>
+
+            <Modal
+                animationType="slide"
+                transparent={true}
+                visible={showErrors}
+                onRequestClose={() => {
+
+                }}
+            >
+                <View style={styles.centeredView}>
+                    <Card disabled={true} style={{width: width*0.8}}>
+                        { displayErrors(selectedBeneficiary) }
+                        <Button onPress={() => {
+                            setShowErrors(false);
+                        }} style={{marginTop: 10}}>
+                            Close
+                        </Button>
+                    </Card>
                 </View>
             </Modal>
         </Layout>

@@ -253,6 +253,7 @@ function App() {
           await db.transaction((trans) => {
             trans.executeSql("update app_configs set version = ?", [1], (trans, results) => {}, (error) => console.log(error));
             trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN updated_purok text", [], (trans, results) => {},(error) => console.log(error));
+            trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN has_updated text", [], (trans, results) => {},(error) => console.log(error));
             trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN status text", [], (trans, results) => {},(error) => console.log(error));
             trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN status_reason text", [], (trans, results) => {},(error) => console.log(error));
             trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN rel_hh text", [], (trans, results) => {},(error) => console.log(error));
