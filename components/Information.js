@@ -39,6 +39,7 @@ const Information = ({navigation, setBeneficiary, route, beneficiary, db, update
     navigation.navigate("Image Preview", {isViewOnly: true, capturedImage: image, capturedImageType: "image_photo"});
   }
   const ImagePreview = ({image, desc}) => {
+    let rand = Math.random();
     return (
       <View style={{paddingLeft: 10}}>
         <Text>{desc}</Text>
@@ -48,7 +49,7 @@ const Information = ({navigation, setBeneficiary, route, beneficiary, db, update
         }}>
         <Image
           style={styles.tinyLogo}
-          source={{uri:`file://${image}`}}
+          source={{uri:`file://${image}?v=${rand}`}}
         />
 
         </TouchableOpacity>

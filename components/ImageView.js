@@ -19,6 +19,8 @@ const styles = StyleSheet.create({
       height: 58,
     },
   });
+
+const rand = Math.random();
 const ImageView = ({savePicture, pictureTaken, deletePicture, route, navigation}) => {
   const { isViewOnly, capturedImage, capturedImageType } = route.params;
   const [loading, setLoading] = useState(false);
@@ -77,7 +79,7 @@ const ImageView = ({savePicture, pictureTaken, deletePicture, route, navigation}
           <View style={{ flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', padding: 10}}>
               <Image
               style={styles.tinyLogo}
-              source={{uri:`file://${capturedImage}`}}
+              source={{uri:`file://${capturedImage}?v=${rand}`}}
               />
           </View>
           </ScrollView>
