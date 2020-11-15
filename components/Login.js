@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useRef, useState} from 'react';
 import { StyleSheet, TouchableWithoutFeedback, View, Dimensions } from 'react-native';
 import { Layout, Text, Icon, List, ListItem, Button, IndexPath, Select, Card, Divider, Input } from '@ui-kitten/components';
 
@@ -14,6 +14,7 @@ const Login = ({setVisible, userLogin, userLoginError, loginLoading, loginString
     const [username, setUsername] = useState("");
     const [password, setPassword] = useState("");
     const [secureTextEntry, setSecureTextEntry] = React.useState(true);
+    const ref_password = useRef();
 
     const toggleSecureEntry = () => {
       setSecureTextEntry(!secureTextEntry);
@@ -38,6 +39,7 @@ const Login = ({setVisible, userLogin, userLoginError, loginLoading, loginString
                 label="Username"
                 placeholder='Username'
                 value={username}
+                onSubmitEditing={() => ref_password.current.focus()}
                 accessoryRight={renderIconUser}
                 onChangeText={nextValue => setUsername(nextValue) }
             />
@@ -45,12 +47,14 @@ const Login = ({setVisible, userLogin, userLoginError, loginLoading, loginString
                 value={password}
                 label='Password'
                 placeholder='Password'
+                ref={ref_password}
                 caption={userLoginError.error}
                 accessoryRight={renderIcon}
                 secureTextEntry={secureTextEntry}
                 onChangeText={nextValue => setPassword(nextValue) }
+                onSubmitEditing={() => userLogin({username: username, password: password})}
                 />
-            <Button onPress={() => userLogin({username: username, password: password})} disabled={loginLoading} style={{marginTop: 10}}>
+            <Button  onPress={() => userLogin({username: username, password: password})} disabled={loginLoading} style={{marginTop: 10}}>
                 {loginLoading ? "Logging in" : "Login"}
             </Button>
             {/* <Text>{loginString}</Text> */}

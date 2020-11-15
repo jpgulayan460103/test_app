@@ -56,7 +56,7 @@ const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
 
 const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
-    const { validated_date, total_images, total_uploaded } = route.params.report;
+    const { validated_date, total_images, total_uploaded, count_updated, count_hhid } = route.params.report;
     const [validatedBeneficiaries, setValidatedBeneficiaries] = useState([]);
     const [generatedReportPath, setGeneratedReportPath] = useState("");
     const [loading, setLoading] = useState(false);
@@ -220,10 +220,11 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
                     image_house_status,
                     image_birth_status,
                     image_others_status,
+                    has_updated,
                     beneficiary.hhid,
                 ];
-                let query = "image_photo_status = ?, image_valid_id_status = ?, image_house_status = ?, image_birth_status = ?, image_others_status = ?";
-                trans.executeSql(`update potential_beneficiaries set ${query} where hhid = ?; select * from potential_beneficiaries where hhid = '${beneficiary.hhid}'`, params, (trans, results) => {
+                let query = "image_photo_status = ?, image_valid_id_status = ?, image_house_status = ?, image_birth_status = ?, image_others_status = ?, has_updated = ?";
+                trans.executeSql(`update potential_beneficiaries set ${query} where hhid = ?`, params, (trans, results) => {
                     let items = [];
                     let rows = results.rows;
                     for (let i = 0; i < rows.length; i++) {
@@ -412,12 +413,11 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
         if(!_isEmpty(filtered)){
             let filteredBeneficiary = filtered[0];
             let errors = [];
-            errors.push(
-                <Text key={`error_status`}>Update Status: {filteredBeneficiary.status}</Text>
-            );
+            errors.push(<Text category="h6" key={`error_beneficiary_name`}>{filteredBeneficiary.beneficiary.fullname}</Text>);
+            errors.push(<Text key={`error_status`}>Upload Status: {filteredBeneficiary.status}</Text>);
             _forEach(filteredBeneficiary.errors, function(value, key) {
                 errors.push(
-                    <Text key={`error_${key}`}>{value[0]}</Text>
+                    <Text key={`error_${key}`}> - {value[0]}</Text>
                 );
             })
             return errors;
@@ -444,7 +444,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
                     <Text category='c1' style={{fontWeight: "bold", fontSize: 14}}>
                         {`${item.lastname ? item.lastname : ""}, ${item.firstname ? item.firstname : ""} ${item.middlename ? item.middlename : ""} ${item.extname ? item.extname : ""}`}
                     </Text>
-                    <Text category='c1'>{`${item.barangay_name}, ${item.city_name}\n${item.province_name}, ${item.region}`}</Text>
+                    <Text category='c1'>{`${item.barangay_name}, ${item.city_name}\n${item.province_name}, ${item.region} ${ item.has_updated ? "(uploaded)" : "" }`}</Text>
                 </View>
             </TouchableOpacity>
             <View style={{ width: (listWidth * 0.15), paddingRight: 4, alignContent: "center", justifyContent: "center"}}>
@@ -486,6 +486,8 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
     return (
         <Layout style={{flex: 1, padding: 10}}>
             <Text>Validation Date: {validated_date}</Text>
+            <Text>Validated Beneficiaries: {count_hhid}</Text>
+            <Text>Uploaded Beneficiaries: {count_updated}</Text>
             <Text>Total Images: {total_images}</Text>
             <Text>Uploaded Images: {total_uploaded}</Text>
             { uploading ? (

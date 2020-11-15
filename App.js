@@ -385,6 +385,7 @@ function App() {
       let sql = "";
       sql += `(count(image_photo) + count(image_valid_id) + count(image_house) + count(image_birth) + count(image_others)) as total_images, `;
       sql += `(count(image_photo_status) + count(image_valid_id_status) + count(image_house_status) + count(image_birth_status) + count(image_others_status)) as total_uploaded, `;
+      sql += `count(has_updated) as count_updated, `;
       sql += `count(hhid) as count_hhid, `;
       trans.executeSql(`select ${sql} validated_date from potential_beneficiaries where validated_date is not null group by validated_date order by validated_date`, [], (trans, results) => {
         let items = [];
