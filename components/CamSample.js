@@ -9,6 +9,7 @@ import {
   TouchableWithoutFeedback,
   Dimensions,
   Platform,
+  ToastAndroid
 } from 'react-native';
 // eslint-disable-next-line
 import { RNCamera } from 'react-native-camera';
@@ -272,9 +273,9 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
 
   const delayedTakePicture =  _debounce(async (label, type) => {
     try {
-      setLoading(true);
       setIsRecording(true);
       let options = { fixOrientation: true };
+      ToastAndroid.show("Taking Picture, Please wait.", ToastAndroid.SHORT)
       let data = await takePicture(options);
       let dirExist = await RNFS.exists(data.uri);
       if(dirExist){
@@ -294,7 +295,7 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
       setIsRecording(false);
       setLoading(false);
     }
-  }, 250);
+  }, 150);
 
   return (
     <View style={styles.container}>
@@ -420,32 +421,35 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
               justifyContent: "space-evenly",
             }}>
             <TouchableOpacity
+              disabled={loading}
               style={[
                 styles.flipButton,
                 styles.picButton,
                 { flex: 0.3, alignSelf: 'flex-end' },
               ]}
               disabled={loading}
-              onPress={() => { delayedTakePicture("PHOTO","image_photo") }}>
-              <Text style={styles.flipText}> PHOTO </Text>
+              onPress={() => { setLoading(true);delayedTakePicture("PHOTO","image_photo") }}>
+              <Text style={styles.flipText}>PHOTO</Text>
             </TouchableOpacity>
             <TouchableOpacity
+              disabled={loading}
               style={[
                 styles.flipButton,
                 styles.picButton,
                 { flex: 0.3, alignSelf: 'flex-end' },
               ]}
-              onPress={() => { delayedTakePicture("VALID ID","image_valid_id") }}>
-              <Text style={styles.flipText}> VALID ID </Text>
+              onPress={() => { setLoading(true);delayedTakePicture("VALID ID FRONT","image_valid_id") }}>
+              <Text style={styles.flipText}>VALID ID FRONT</Text>
             </TouchableOpacity>
             <TouchableOpacity
+              disabled={loading}
               style={[
                 styles.flipButton,
                 styles.picButton,
                 { flex: 0.3, alignSelf: 'flex-end' },
               ]}
-              onPress={() => { delayedTakePicture("House","image_house") }}>
-              <Text style={styles.flipText}> HOUSE </Text>
+              onPress={() => { setLoading(true);delayedTakePicture("VALID ID BACK","image_valid_id_back") }}>
+              <Text style={styles.flipText}>VALID ID BACK</Text>
             </TouchableOpacity>
           </View>
           <View
@@ -456,22 +460,34 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
               justifyContent: "space-evenly",
             }}>
             <TouchableOpacity
+              disabled={loading}
               style={[
                 styles.flipButton,
                 styles.picButton,
-                { flex: 0.46, alignSelf: 'flex-end' },
+                { flex: 0.3, alignSelf: 'flex-end' },
               ]}
-              onPress={() => { delayedTakePicture("Birth Certificate","image_birth") }}>
-              <Text style={styles.flipText}> BIRTH CERTIFICATE </Text>
+              onPress={() => { setLoading(true);delayedTakePicture("House","image_house") }}>
+              <Text style={styles.flipText}>HOUSE</Text>
             </TouchableOpacity>
             <TouchableOpacity
+              disabled={loading}
               style={[
                 styles.flipButton,
                 styles.picButton,
-                { flex: 0.46, alignSelf: 'flex-end' },
+                { flex: 0.3, alignSelf: 'flex-end' },
               ]}
-              onPress={() => { delayedTakePicture("Other Document","image_others") }}>
-              <Text style={styles.flipText}> OTHERS </Text>
+              onPress={() => { setLoading(true);delayedTakePicture("Birth Certificate","image_birth") }}>
+              <Text style={styles.flipText}>BIRTH CERT</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              disabled={loading}
+              style={[
+                styles.flipButton,
+                styles.picButton,
+                { flex: 0.3, alignSelf: 'flex-end' },
+              ]}
+              onPress={() => { setLoading(true);delayedTakePicture("Other Document","image_others") }}>
+              <Text style={styles.flipText}>OTHERS</Text>
             </TouchableOpacity>
           </View>
         </View>

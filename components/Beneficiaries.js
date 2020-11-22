@@ -1,6 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import { StyleSheet, TouchableOpacity, View, Dimensions } from 'react-native';
 import { Layout, Text, Icon, List, ListItem, Button, IndexPath, Select, SelectItem, Divider, Input } from '@ui-kitten/components';
+import _isEmpty from 'lodash/isEmpty'
 
 const styles = StyleSheet.create({
     container: {
@@ -17,19 +18,24 @@ const Beneficiaries = ({
         addresses: {provinces, cities, barangays},
         selectedAddresses: {selectedProvince, selectedCity, selectedBarangay},
         getBeneficiaries,
+        getCities,
+        getBarangays,
         appConfig
     }) => {
     useEffect(() => {
         // getBeneficiaries();
+        updateAddressFilter('searchString', "");
         if(appConfig.province_name){
             setProvinceValue(appConfig.province_name);
             updateAddressFilter('province_name', appConfig.province_name);
+            getCities(appConfig.province_name);
         }else{
             setProvinceValue(selectedProvince);
         }
         if(appConfig.city_name){
             setCityValue(appConfig.city_name)
             updateAddressFilter('city_name', appConfig.city_name);
+            getBarangays(appConfig.province_name, appConfig.city_name);
         }else{
             setCityValue(selectedCity);
         }
@@ -50,12 +56,18 @@ const Beneficiaries = ({
     const [barangayValue, setBarangayValue] = useState(null);
     const [showFilter, setShowFilter] = useState(true);
     const [value, setValue] = useState('');
+    const [typeValue, setTypeValue] = useState(null);
+    const [typeOptions, setTypeOptions] = useState([
+        "UCT", "NON-UCT"
+    ]);
+    const [hasSearched, setHasSearched] = useState(false);
     const renderItemIcon = (props) => (
         <Icon {...props} name='person'/>
     );
 
     const renderIcon = (props) => (
         <TouchableOpacity onPress={() => {
+            setHasSearched(true);
             getBeneficiaries();
         }}>
           <Icon {...props} name="search"/>
@@ -100,7 +112,7 @@ const Beneficiaries = ({
                 <Layout style={{flex: 0, paddingTop: 10, flexDirection: "row", justifyContent: "space-evenly"}}>
                 <Layout style={{width: "45%"}}>
                     <Select
-                        disabled={appConfig.province_name == "" || appConfig.province_name != null}
+                        disabled={appConfig.province_name != "" && appConfig.province_name != null}
                         label='Province/City'
                         placeholder="Select Province/City"
                         onSelect={(item) => {
@@ -120,7 +132,7 @@ const Beneficiaries = ({
                 <Layout style={{width: "45%"}}>
                     <Select
                         label='City/Municipality/Subdistrict'
-                        disabled={appConfig.city_name == "" || appConfig.city_name != null}
+                        disabled={appConfig.city_name != "" && appConfig.city_name != null}
                         placeholder="Select City/Municipality/Subdistrict"
                         onSelect={(item) => {
                             setCityValue(cities[item.row]);
@@ -144,7 +156,6 @@ const Beneficiaries = ({
                         <Select
                             label='Barangay'
                             placeholder="Select Barangay"
-                            disabled={appConfig.barangay_name == "" || appConfig.barangay_name != null}
                             onSelect={(item) => {
                                 setBarangayValue(barangays[item.row]);
                                 updateAddressFilter('barangay_name', barangays[item.row]);
@@ -153,6 +164,26 @@ const Beneficiaries = ({
                             {
                                 barangays.map((item, index) => {
                                     return (<SelectItem title={item} key={`brgy_${index}`}/>)
+                                })
+                            }
+                        </Select>
+                    </Layout>
+                </Layout>
+            ) : (<></>)}
+            {showFilter && appConfig.region != "XI" ? (
+                <Layout style={{flex: 0, paddingTop: 10, flexDirection: "row", justifyContent: "space-evenly"}}>
+                    <Layout style={{width: "93%"}}>
+                        <Select
+                            label='Type'
+                            placeholder="Select Type"
+                            onSelect={(item) => {
+                                setTypeValue(typeOptions[item.row]);
+                                updateAddressFilter('type', typeOptions[item.row]);
+                            }}
+                            value={typeValue}>
+                            {
+                                typeOptions.map((item, index) => {
+                                    return (<SelectItem title={item} key={`type_${index}`}/>)
                                 })
                             }
                         </Select>
@@ -185,10 +216,14 @@ const Beneficiaries = ({
             </Layout>
             <Divider style={{marginTop: 20}} />
             <Layout style={{flex: 1}}>
-                <List
-                data={beneficiaries}
-                renderItem={renderItem}
-                />
+                { !_isEmpty(beneficiaries) ? (<>
+                    <List
+                        data={beneficiaries}
+                        renderItem={renderItem}
+                    />
+                </>) : (<>
+                    <Text style={{textAlign: "center"}}> {hasSearched ? "No Data Found" : ""} </Text>
+                </>)}
             </Layout>
         </Layout>
     );

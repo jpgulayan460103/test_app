@@ -36,6 +36,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
         'SON',
         'DAUGHTER',
         'SPOUSE',
+        'LIVE-IN PARTNER',
         'FATHER-IN-LAW',
         'MOTHER-IN-LAW',
         'SON-IN-LAW',
@@ -519,7 +520,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
 
     const updateBeneficiary = async (updatedBeneficiary, validatedDate) => {
         let updated_psgc = await getUpdatedPsgc(updatedBeneficiary);
-        console.log(updated_psgc);
+        // console.log(updated_psgc);
         let {
             updated_province_name,
             updated_city_name,
@@ -625,8 +626,8 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
             validatedDate,
             hhid,
         ];
-        console.log(sql);
-        console.log(params);
+        // console.log(sql);
+        // console.log(params);
         db.transaction((trans) => {
             trans.executeSql(sql, params, (trans, results) => {
                 ToastAndroid.show("Validated.", ToastAndroid.SHORT)
@@ -753,7 +754,25 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                 </>
             ) : (<></>) }
 
-            { beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || beneficiaryStatus == null ? (<></>) : (
+            { beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || beneficiaryStatus == null ? (
+            <>
+            <Input
+                    label="Remarks"
+                    placeholder="Add Remarks"
+                    status={formError.remarks.isValid ? "basic": "danger"}
+                    caption={formError.remarks.message ? formError.remarks.message: ""}
+                    value={formData.remarks}
+                    autoCompleteType="off"
+                    onChangeText={(val) => {
+                        setFormData(prev => {
+                            let data = {remarks: val};
+                            return {...prev, ...data};
+                        });
+                    }}
+                />
+                <Divider />
+            </>
+            ) : (
                 <>
                 <Text style={{textAlign: "center"}}>Inactive Validation Form</Text>
 

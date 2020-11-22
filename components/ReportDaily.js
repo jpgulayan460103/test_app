@@ -55,7 +55,7 @@ const listWidth = Dimensions.get('window').width;
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
 
-const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
+const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig}) => {
     const { validated_date, total_images, total_uploaded, count_updated, count_hhid } = route.params.report;
     const [validatedBeneficiaries, setValidatedBeneficiaries] = useState([]);
     const [generatedReportPath, setGeneratedReportPath] = useState("");
@@ -77,11 +77,15 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
         navigation.setOptions({
           title: `Validated (${validated_date})`,
         });
+        if(appConfig.upload_url != null){
+            client.defaults.baseURL = appConfig.upload_url;
+        }
         getValidatedBeneficiaries();
     }, []);
 
     const userLogin = async (data) => {
         try {
+            console.log(client.defaults.baseURL);
             setLoginLoading(true);
             let userLogin = await client.post('/api/login', data);
             console.log(userLogin);
@@ -104,6 +108,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
     const uploadBeneficiaryImages = async (beneficiary) => {
         let image_photo = null;
         let image_valid_id = null;
+        let image_valid_id_back = null;
         let image_house = null;
         let image_birth = null;
         let image_others = null;
@@ -118,6 +123,10 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
             fileExist = await RNFS.exists(`file://${beneficiary.images_path}/${beneficiary.image_valid_id}`);
             if(fileExist){
                 image_valid_id = await ImgToBase64.getBase64String(`file://${beneficiary.images_path}/${beneficiary.image_valid_id}`);
+            }
+            fileExist = await RNFS.exists(`file://${beneficiary.images_path}/${beneficiary.image_valid_id_back}`);
+            if(fileExist){
+                image_valid_id_back = await ImgToBase64.getBase64String(`file://${beneficiary.images_path}/${beneficiary.image_valid_id_back}`);
             }
             fileExist = await RNFS.exists(`file://${beneficiary.images_path}/${beneficiary.image_house}`);
             if(fileExist){
@@ -134,6 +143,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
             formData = {
                 image_photo: image_photo,
                 image_valid_id: image_valid_id,
+                image_valid_id_back: image_valid_id_back,
                 image_house: image_house,
                 image_birth: image_birth,
                 image_others: image_others,
@@ -246,9 +256,9 @@ const ReportDaily = ({navigation, route, db, client, user, setUser}) => {
         db.transaction((trans) => {
             let sql = "";
             sql += `(count(image_photo) + count(image_valid_id) + count(image_house) + count(image_birth)) as total_required_images, `;
-            sql += `(count(image_others)) as total_other_images, `;
+            sql += `(count(image_others) + count(image_valid_id_back)) as total_other_images, `;
             sql += `(count(image_photo_status) + count(image_valid_id_status) + count(image_house_status) + count(image_birth_status)) as total_required_uploaded, `;
-            sql += `(count(image_others_status)) as total_other_update, `;
+            sql += `(count(image_others_status) + count(image_valid_id_back_status)) as total_other_update, `;
             trans.executeSql(`select ${sql} * from potential_beneficiaries where validated_date = ? group by hhid`, [validated_date], (trans, results) => {
                 let items = [];
                 let rows = results.rows;

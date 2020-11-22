@@ -70,7 +70,7 @@ const styles = StyleSheet.create({
   },
 });
 
-function HomeScreen({ navigation, validPermissions, appConfig }) {
+function HomeScreen({ navigation, validPermissions, appConfig, setActivationAppVisible }) {
   return (
     <Layout style={{ flex: 1 }}>
       <Divider />
@@ -129,7 +129,7 @@ function HomeScreen({ navigation, validPermissions, appConfig }) {
             } }>Exit Application</Button>
           </Layout>
       )}
-      <Text category="h3" style={{textAlign: "right", marginTop: -30, paddingBottom: 10, paddingRight: 20}}>Field Office {appConfig.region}</Text>
+      <Text category="h3" style={{textAlign: "right", marginTop: -30, paddingBottom: 10, paddingRight: 20}} onPress={() => { setActivationAppVisible(true) }}>Field Office {appConfig.region}</Text>
       <Text style={{textAlign: "right", padding: 5}}>v{VersionInfo.appVersion}</Text>
     </Layout>
   );
@@ -266,6 +266,17 @@ function App() {
             trans.executeSql("ALTER TABLE app_configs ADD COLUMN expiration_date text", [], (trans, results) => {},(error) => console.log(error));
           });
           break;
+        case 2:
+          console.log(`update to ver ${2}`);
+          await db.transaction((trans) => {
+            trans.executeSql("update app_configs set version = ?", [2], (trans, results) => {}, (error) => console.log(error));
+            trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN image_valid_id_back text", [], (trans, results) => {},(error) => console.log(error));
+            trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN image_valid_id_back_status text", [], (trans, results) => {},(error) => console.log(error));
+          });
+          await db.transaction((trans) => {
+            trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN type text", [], (trans, results) => {},(error) => console.log(error));
+          });
+          break;
       
         default:
           break;
@@ -288,9 +299,8 @@ function App() {
           sql += ` and `;
         }
         if(key == "searchString"){
-          
           value = value.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-          let keywords = value.split(",");
+          let keywords = value.split(" ");
           let mappedKeywords = keywords.map(item => {
             return `fullname like '%${item.trim()}%'`;
           });
@@ -383,8 +393,8 @@ function App() {
     setReportDates([]);
     db.transaction((trans) => {
       let sql = "";
-      sql += `(count(image_photo) + count(image_valid_id) + count(image_house) + count(image_birth) + count(image_others)) as total_images, `;
-      sql += `(count(image_photo_status) + count(image_valid_id_status) + count(image_house_status) + count(image_birth_status) + count(image_others_status)) as total_uploaded, `;
+      sql += `(count(image_photo) + count(image_valid_id) + count(image_valid_id_back) + count(image_house) + count(image_birth) + count(image_others)) as total_images, `;
+      sql += `(count(image_photo_status) + count(image_valid_id_status) + count(image_valid_id_back_status) + count(image_house_status) + count(image_birth_status) + count(image_others_status)) as total_uploaded, `;
       sql += `count(has_updated) as count_updated, `;
       sql += `count(hhid) as count_hhid, `;
       trans.executeSql(`select ${sql} validated_date from potential_beneficiaries where validated_date is not null group by validated_date order by validated_date`, [], (trans, results) => {
@@ -433,6 +443,9 @@ function App() {
         break;
       case 'image_valid_id':
         imageTypeFileName = "ID";
+        break;
+      case 'image_valid_id_back':
+        imageTypeFileName = "ID_back";
         break;
       case 'image_house':
         imageTypeFileName = "house";
@@ -539,13 +552,13 @@ function App() {
         <NavigationContainer>
           <Stack.Navigator>
             <Stack.Screen name="Home" options={{headerShown: false}} >
-              {props => <HomeScreen {...props} validPermissions={validPermissions} appConfig={appConfig} />}
+              {props => <HomeScreen {...props} validPermissions={validPermissions} appConfig={appConfig} setActivationAppVisible={setActivationAppVisible} />}
             </Stack.Screen>
             <Stack.Screen name="Camera" options={{headerShown: false}}>
               {props => <CamSample {...props} setBeneficiary={setBeneficiary} />}
             </Stack.Screen>
             <Stack.Screen name="Beneficiary Information">
-              {props => <Information {...props} changePicture={changePicture} setBeneficiary={setBeneficiary} beneficiary={beneficiary} db={db} updateBeneficiaries={updateBeneficiaries} />}
+              {props => <Information {...props} changePicture={changePicture} setBeneficiary={setBeneficiary} beneficiary={beneficiary} appConfig={appConfig} />}
             </Stack.Screen>
             <Stack.Screen name="Validate Information">
               {props => <UpdateInformation {...props} db={db} currentDate={currentDate} beneficiary={beneficiary} updateBeneficiaries={updateBeneficiaries} />}
@@ -561,6 +574,8 @@ function App() {
                 beneficiaryFormData={beneficiaryFormData}
                 getBeneficiaries={getBeneficiaries}
                 setBeneficiary={setBeneficiary}
+                getCities={getCities}
+                getBarangays={getBarangays}
                 appConfig={appConfig}
                 />}
             </Stack.Screen>
@@ -571,7 +586,7 @@ function App() {
               {props => <Reports {...props} reportDates={reportDates} getReportDates={getReportDates} />}
             </Stack.Screen>
             <Stack.Screen name="Daily Report"  options={{headerShown: false}}>
-              {props => <ReportDaily {...props} db={db} client={client} setUser={setUser} user={user} db={db} />}
+              {props => <ReportDaily {...props} db={db} client={client} setUser={setUser} user={user} db={db} appConfig={appConfig} />}
             </Stack.Screen>
           </Stack.Navigator>
         </NavigationContainer>

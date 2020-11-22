@@ -225,22 +225,7 @@ const ActivationForm = ({setVisible, userLogin, setActivationAppVisible, db}) =>
                             })
                         }
                     </Picker>
-                    <Divider />
-                    <Text category="c2">Province</Text>
-                    <Picker
-                        style={{height: 50 ,color: '#fff', placeholderTextColor: '#fff', backgroundColor: "#1c2238", marginBottom: 5}}
-                        selectedValue={barangayValue}
-                        onValueChange={(itemValue, itemIndex) => {
-                            setBarangayValue(itemValue);
-                        }}>
-                            <Picker.Item label="Select Barangay" value=""/>
-                        {
-                            barangays.map((item, index) => {
-                                return (<Picker.Item label={item} value={item} key={`city_${index}`}/>)
-                            })
-                        }
-                    </Picker>
-                    <Text>{isSetUpComplete ? "Setup Complete! \nRestart the app to complete setup." : ""}</Text>
+                    <Text style={{color: "red"}}>{isSetUpComplete ? "Setup Complete! \nRestart the app to complete setup." : ""}</Text>
                 </View>
             )}
             <View style={{flexDirection: "row", marginTop: 20}}>

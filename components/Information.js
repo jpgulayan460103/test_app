@@ -22,7 +22,7 @@ const styles = StyleSheet.create({
   });
 
 
-const Information = ({navigation, setBeneficiary, route, beneficiary, db, updateBeneficiaries}) => {
+const Information = ({navigation, setBeneficiary, route, beneficiary, appConfig}) => {
   const [images, setImages] = useState([]);
   const [visible, setVisible] = useState(false);
   
@@ -59,6 +59,9 @@ const Information = ({navigation, setBeneficiary, route, beneficiary, db, update
   return (
   <Layout style={{flex: 1}}>
         <View style={{padding: 10}}>
+          { appConfig.region != "XI" ? (
+            <Text>Type: {beneficiary.type}</Text>
+          ): (<></>) }
           <Text>HHID: {beneficiary.hhid}</Text>
           <Text>Name: {beneficiary.fullname}</Text>
           <Text>Birthdate: {beneficiary.birthday}</Text>
@@ -93,11 +96,14 @@ const Information = ({navigation, setBeneficiary, route, beneficiary, db, update
           {beneficiary.image_photo ? (<ImagePreview desc="PHOTO" image={`${beneficiary.images_path}/${beneficiary.image_photo}`} />) : (<></>)}
         </Layout>
         <Layout style={{flex: 1, flexDirection: "row",marginTop: 20}}>
-          {beneficiary.image_valid_id ? (<ImagePreview desc="VALID ID" image={`${beneficiary.images_path}/${beneficiary.image_valid_id}`} />) : (<></>)}
-          {beneficiary.image_house ? (<ImagePreview desc="HOUSE" image={`${beneficiary.images_path}/${beneficiary.image_house}`} />) : (<></>)}
+          {beneficiary.image_valid_id ? (<ImagePreview desc="VALID ID FRONT" image={`${beneficiary.images_path}/${beneficiary.image_valid_id}`} />) : (<></>)}
+          {beneficiary.image_valid_id ? (<ImagePreview desc="VALID ID BACK" image={`${beneficiary.images_path}/${beneficiary.image_valid_id_back}`} />) : (<></>)}
         </Layout>
         <Layout style={{flex: 1, flexDirection: "row",marginTop: 20}}>
+          {beneficiary.image_house ? (<ImagePreview desc="HOUSE" image={`${beneficiary.images_path}/${beneficiary.image_house}`} />) : (<></>)}
           {beneficiary.image_birth ? (<ImagePreview desc="BIRTH CERTIFICATE" image={`${beneficiary.images_path}/${beneficiary.image_birth}`} />) : (<></>)}
+        </Layout>
+        <Layout style={{flex: 1, flexDirection: "row",marginTop: 20}}>
           {beneficiary.image_others ? (<ImagePreview desc="OTHERS" image={`${beneficiary.images_path}/${beneficiary.image_others}`} />) : (<></>)}
         </Layout>
     </ScrollView>
