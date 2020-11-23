@@ -395,6 +395,18 @@ function App() {
       });
     });
   }
+
+  const deleteImage = (field) => {
+    console.log(`UPDATE potential_beneficiaries set ${field} = null where hhid = ?`);
+    db.transaction((trans) => {
+      trans.executeSql(`UPDATE potential_beneficiaries set ${field} = null where hhid = ?`, [beneficiary.hhid], () => {
+        
+      },
+      (err) => {
+        console.log(err);
+      });
+    });
+  }
   
   const getReportDates = () => {
     setReportDates([]);
@@ -505,13 +517,23 @@ function App() {
     setBeneficiaries(updatedBeneficiaries);
   }
 
-  const deletePicture = async (data, isViewOnly) => {
+  const deletePicture = async (data, isViewOnly, capturedImageType = null) => {
     if(!isViewOnly){
       let fileExists = await RNFS.exists(data);
       if(fileExists){
         RNFS.unlink(data);
         ToastAndroid.show("Image deleted.", ToastAndroid.SHORT)
       }
+    }else{
+      let fileExists = await RNFS.exists(data);
+      if(fileExists){
+        RNFS.unlink(data);
+        ToastAndroid.show("Image deleted.", ToastAndroid.SHORT)
+      }
+      let updatedBeneficiary = { ...beneficiary, ...{ [capturedImageType]: null } }
+      setBeneficiary(updatedBeneficiary);
+      updateBeneficiaries(updatedBeneficiary);
+      deleteImage(capturedImageType);
     }
   }
 

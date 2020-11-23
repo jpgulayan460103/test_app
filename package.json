@@ -37,6 +37,7 @@
     "react-native-image-base64": "^0.1.4",
     "react-native-image-marker": "^0.6.1",
     "react-native-image-picker": "^2.3.4",
+    "react-native-image-zoom-viewer": "^3.0.1",
     "react-native-reanimated": "^1.13.1",
     "react-native-safe-area-context": "^3.1.8",
     "react-native-screens": "^2.11.0",

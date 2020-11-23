@@ -38,22 +38,30 @@ const Information = ({navigation, setBeneficiary, route, beneficiary, appConfig}
     });
   }, []);
 
-  const viewFullImage = (image) => {
-    navigation.navigate("Image Preview", {isViewOnly: true, capturedImage: image, capturedImageType: "image_photo"});
+  const viewFullImage = (image, type) => {
+    navigation.navigate("Image Preview", {isViewOnly: true, capturedImage: image, capturedImageType: type});
   }
-  const addPhotoButton = (hasImage, type) => {
+  const addPhotoButton = (hasImage = false, type = null) => {
     if(!hasImage){
       if(beneficiary.validated_date == null || beneficiary.validated_date == ""){
         ToastAndroid.show("Validate first before adding photo.", ToastAndroid.SHORT)
       }else{
-        ImagePicker.launchImageLibrary({mediaType: 'photo'}, (response) => {
-          console.log(response.fileName);
-          let dir = `${RNFS.ExternalStorageDirectoryPath}/UCT/temp/`;
-          RNFS.mkdir(`${dir}`);
-          RNFS.copyFile(response.path,`${dir}/${response.fileName}`);
-          let createdImage = `${dir}/${response.fileName}`;
-          navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: createdImage, capturedImageType: type});
-        })
+        if(type == null){
+          navigation.navigate("Camera", {beneficiary: beneficiary});
+        }else{
+          ImagePicker.launchImageLibrary({mediaType: 'photo'}, (response) => {
+            if(response.didCancel){
+
+            }else{
+              let dir = `${RNFS.ExternalStorageDirectoryPath}/UCT/temp/`;
+              RNFS.mkdir(`${dir}`);
+              RNFS.copyFile(response.path,`${dir}/${response.fileName}`);
+              let createdImage = `${dir}/${response.fileName}`;
+              navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: createdImage, capturedImageType: type});
+            }
+            
+          })
+        }
       }
     }
   }
@@ -65,7 +73,7 @@ const Information = ({navigation, setBeneficiary, route, beneficiary, appConfig}
         <TouchableOpacity
           onPress={async () => {
             if(hasImage){
-              viewFullImage(image);
+              viewFullImage(image, type);
             }else{
               addPhotoButton(hasImage,type);
             }
