@@ -518,7 +518,7 @@ function App() {
   }
 
   const removeValidationData = () => {
-    
+
   }
 
   const deletePicture = async (data, isViewOnly, capturedImageType = null) => {

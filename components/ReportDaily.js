@@ -220,6 +220,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig}) 
             db.transaction((trans) => {
                 let image_photo_status = beneficiary.image_photo != null ? "uploaded" : null;
                 let image_valid_id_status = beneficiary.image_valid_id != null ? "uploaded" : null;
+                let image_valid_id_back_status = beneficiary.image_valid_id_back != null ? "uploaded" : null;
                 let image_house_status = beneficiary.image_house != null ? "uploaded" : null;
                 let image_birth_status = beneficiary.image_birth != null ? "uploaded" : null;
                 let image_others_status = beneficiary.image_others != null ? "uploaded" : null;
@@ -227,13 +228,14 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig}) 
                 let params = [
                     image_photo_status,
                     image_valid_id_status,
+                    image_valid_id_back_status,
                     image_house_status,
                     image_birth_status,
                     image_others_status,
                     has_updated,
                     beneficiary.hhid,
                 ];
-                let query = "image_photo_status = ?, image_valid_id_status = ?, image_house_status = ?, image_birth_status = ?, image_others_status = ?, has_updated = ?";
+                let query = "image_photo_status = ?, image_valid_id_status = ?, image_valid_id_back_status = ?, image_house_status = ?, image_birth_status = ?, image_others_status = ?, has_updated = ?";
                 trans.executeSql(`update potential_beneficiaries set ${query} where hhid = ?`, params, (trans, results) => {
                     let items = [];
                     let rows = results.rows;
