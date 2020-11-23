@@ -11,6 +11,7 @@ import _isEmpty  from 'lodash/isEmpty'
 import _forEach  from 'lodash/forEach'
 import Login from './Login'
 import ImgToBase64 from 'react-native-image-base64';
+import isEmpty from 'lodash/isEmpty';
 
 const styles = StyleSheet.create({
     centeredView: {
@@ -500,6 +501,10 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig}) 
             <Text>Uploaded Beneficiaries: {count_updated}</Text>
             <Text>Total Images: {total_images}</Text>
             <Text>Uploaded Images: {total_uploaded}</Text>
+            { !_isEmpty(user) ? (<>
+                <Text>User: {user.user.full_name} ({user.user.username})</Text>
+            </>) : (<></>) }
+            
             { uploading ? (
                 <Text>Uploading Progress: {uploadingProgess}</Text>
             ) : <></> }

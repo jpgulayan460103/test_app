@@ -115,6 +115,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
         validated_birthday_d: "",
         validated_birthday_y: "",
         remarks: "",
+        contact_number: "",
         status_reason: "",
         status: "",
         rel_hh: "",
@@ -143,6 +144,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
         rel_hh: { isValid: true, message: "" },
         status_reason: { isValid: true, message: "" },
         remarks: { isValid: true, message: "" },
+        contact_number: { isValid: true, message: "" },
     });
 
     useEffect(() => {
@@ -367,7 +369,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                     break;
                 case 'validated_lastname':
                 case 'validated_firstname':
-                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY"){break;}
+                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || statusReason == "TRANSFERRED"){break;}
                     keyError = false;
                     message = "";
                     if(!validateName.test(value)){
@@ -384,7 +386,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                     break;
                 case 'validated_middlename':
                 case 'validated_extname':
-                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY"){break;}
+                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || statusReason == "TRANSFERRED"){break;}
                     keyError = false;
                     message = "";
                     if(value == null || (value.trim() == "")){
@@ -400,7 +402,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                     break;
                 case 'validated_birthday_m':
                 case 'validated_birthday_d':
-                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY"){break;}
+                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || statusReason == "TRANSFERRED"){break;}
                     keyError = false;
                     message = "";
                     if(!validateNumber.test(value)){
@@ -433,7 +435,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                     }
                     break;
                 case 'validated_birthday_y':
-                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY"){break;}
+                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || statusReason == "TRANSFERRED"){break;}
                     keyError = false;
                     message = "";
                     if(!validateNumber.test(value)){
@@ -481,13 +483,26 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                 case 'rel_hh':
                 case 'status_reason':
                 case 'remarks':
-                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY"){break;}
+                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || statusReason == "TRANSFERRED"){break;}
                     keyError = false;
                     message = "";
                     if(value == null || (value.trim() == "")){
                         hasError = true;
                         keyError = true;
                         message = "Required";
+                    }
+                    formErrors[key] = { isValid: !keyError, message: message };
+                    break;
+                case 'contact_number':
+                    keyError = false;
+                    message = "";
+                    if(value == null || value.trim() == ""){
+                        break;
+                    }
+                    if(isNaN(value) || value.length != 11 || value.substring(0, 2) != "09"){
+                        hasError = true;
+                        keyError = true;
+                        message = "Must be a valid cellphone number.";
                     }
                     formErrors[key] = { isValid: !keyError, message: message };
                     break;
@@ -546,6 +561,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
             validated_birthday_m,
             validated_birthday_d,
             validated_birthday_y,
+            contact_number,
             hhid,
         } = updatedBeneficiary;
         updated_birthday_m = parseInt(updated_birthday_m);
@@ -583,6 +599,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
         sql += ` validated_birthday = ?,`;
         sql += ` validated_sex = ?,`;
         sql += ` updated_psgc = ?,`;
+        sql += ` contact_number = ?,`;
         sql += ` validated_date = ?`;
         sql += ` where hhid = ?`;
 
@@ -623,6 +640,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
             validated_birthday,
             validated_sex,
             updated_psgc,
+            contact_number,
             validatedDate,
             hhid,
         ];
@@ -754,7 +772,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                 </>
             ) : (<></>) }
 
-            { beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || beneficiaryStatus == null ? (
+            { beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || statusReason == "TRANSFERRED" || beneficiaryStatus == null ? (
             <>
             <Input
                     label="Remarks"
@@ -770,7 +788,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                         });
                     }}
                 />
-                <Divider />
+            <Divider />
             </>
             ) : (
                 <>
@@ -1146,6 +1164,24 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                     })
                 }
             </Select>
+            <Divider />
+
+            <Input
+                    label="Cellphone Number"
+                    placeholder="Add Cellphone Number"
+                    keyboardType="numeric"
+                    maxLength={11}
+                    status={formError.contact_number.isValid ? "basic": "danger"}
+                    caption={formError.contact_number.message ? formError.contact_number.message: ""}
+                    value={formData.contact_number}
+                    autoCompleteType="off"
+                    onChangeText={(val) => {
+                        setFormData(prev => {
+                            let data = {contact_number: val};
+                            return {...prev, ...data};
+                        });
+                    }}
+                />
             <Divider />
 
 

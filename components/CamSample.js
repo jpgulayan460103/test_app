@@ -358,34 +358,6 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
             justifyContent: 'space-around',
           }}>
             
-          <View
-            style={{
-              backgroundColor: 'transparent',
-              flexDirection: 'row',
-              justifyContent: 'space-around',
-            }}>
-            {/* <TouchableOpacity
-              onPress={() => toggleCameraState('canDetectFaces')}
-              style={styles.flipButton}>
-              <Text style={styles.flipText}>
-                {!canDetectFaces ? 'Detect Faces' : 'Detecting Faces'}
-              </Text>
-            </TouchableOpacity> */}
-            {/* <TouchableOpacity
-              onPress={() => toggleCameraState('canDetectText')}
-              style={styles.flipButton}>
-              <Text style={styles.flipText}>
-                {!canDetectText ? 'Detect Text' : 'Detecting Text'}
-              </Text>
-            </TouchableOpacity> */}
-            {/* <TouchableOpacity
-              onPress={() => toggleCameraState('canDetectBarcode')}
-              style={styles.flipButton}>
-              <Text style={styles.flipText}>
-                {!canDetectBarcode ? 'Detect Barcode' : 'Detecting Barcode'}
-              </Text>
-            </TouchableOpacity> */}
-          </View>
         </View>
         <View style={{ bottom: 0 }}>
           <View
@@ -395,12 +367,6 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
               flexDirection: 'row',
               alignSelf: 'flex-end',
             }}>
-            <Slider
-              style={{ width: 150, marginTop: 15, alignSelf: 'flex-end' }}
-              onValueChange={(value = 0) => setFocusDepth(value)}
-              step={0.1}
-              disabled={autoFocus === 'on'}
-            />
           </View>
           <View
             style={{
@@ -477,7 +443,7 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
                 { flex: 0.3, alignSelf: 'flex-end' },
               ]}
               onPress={() => { setLoading(true);delayedTakePicture("Birth Certificate","image_birth") }}>
-              <Text style={styles.flipText}>BIRTH CERT</Text>
+              <Text style={styles.flipText}>BIRTH CERTIFICATE</Text>
             </TouchableOpacity>
             <TouchableOpacity
               disabled={loading}
@@ -508,7 +474,7 @@ const styles = StyleSheet.create({
   },
   flipButton: {
     flex: 0.3,
-    height: 40,
+    height: 50,
     marginHorizontal: 2,
     marginBottom: 10,
     flexDirection: 'row',
@@ -533,6 +499,7 @@ const styles = StyleSheet.create({
   flipText: {
     color: 'white',
     fontSize: 15,
+    textAlign: "center"
   },
   zoomText: {
     position: 'absolute',

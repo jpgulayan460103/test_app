@@ -154,8 +154,8 @@ var db = openDatabase({
 },  openCB, errorCB);
 
 const client = axios.create({
-  baseURL: 'http://encoding.uct11.com/',
-  // baseURL: 'http://10.0.2.2:8000/',
+  // baseURL: 'http://encoding.uct11.com/',
+  baseURL: 'http://10.0.2.2:8000/',
 });
 
 
@@ -277,6 +277,13 @@ function App() {
             trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN type text", [], (trans, results) => {},(error) => console.log(error));
           });
           break;
+        case 3:
+          console.log(`update to ver ${3}`);
+          await db.transaction((trans) => {
+            trans.executeSql("update app_configs set version = ?", [3], (trans, results) => {}, (error) => console.log(error));
+            trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN contact_number text", [], (trans, results) => {},(error) => console.log(error));
+          });
+          break;
       
         default:
           break;
@@ -311,7 +318,7 @@ function App() {
         }
         iter++;
       })
-      sql += ` order by fullname limit 30`;
+      sql += ` and region = '${appConfig.region}' order by fullname limit 30`;
       // console.log(sql);
       trans.executeSql(sql, params, (trans, results) => {
         let items = [];
