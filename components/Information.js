@@ -1,6 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import { ScrollView, Image, StyleSheet, Dimensions, TouchableOpacity, View, ToastAndroid  } from 'react-native';
 import { Layout, Text, Divider, Button, Icon } from '@ui-kitten/components';
+import ImagePicker from 'react-native-image-picker';
+import RNFetchBlob from 'rn-fetch-blob'
+import RNFS from 'react-native-fs';
 
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
@@ -38,19 +41,47 @@ const Information = ({navigation, setBeneficiary, route, beneficiary, appConfig}
   const viewFullImage = (image) => {
     navigation.navigate("Image Preview", {isViewOnly: true, capturedImage: image, capturedImageType: "image_photo"});
   }
-  const ImagePreview = ({image, desc}) => {
+  const addPhotoButton = (hasImage, type) => {
+    if(!hasImage){
+      if(beneficiary.validated_date == null || beneficiary.validated_date == ""){
+        ToastAndroid.show("Validate first before adding photo.", ToastAndroid.SHORT)
+      }else{
+        ImagePicker.launchImageLibrary({mediaType: 'photo'}, (response) => {
+          console.log(response.fileName);
+          let dir = `${RNFS.ExternalStorageDirectoryPath}/UCT/temp/`;
+          RNFS.mkdir(`${dir}`);
+          RNFS.copyFile(response.path,`${dir}/${response.fileName}`);
+          let createdImage = `${dir}/${response.fileName}`;
+          navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: createdImage, capturedImageType: type});
+        })
+      }
+    }
+  }
+  const ImagePreview = ({image, desc, hasImage, type, addPhotoButton}) => {
     let rand = Math.random();
     return (
       <View style={{paddingLeft: 10}}>
         <Text>{desc}</Text>
         <TouchableOpacity
           onPress={async () => {
-            viewFullImage(image);
+            if(hasImage){
+              viewFullImage(image);
+            }else{
+              addPhotoButton(hasImage,type);
+            }
         }}>
-        <Image
-          style={styles.tinyLogo}
-          source={{uri:`file://${image}?v=${rand}`}}
-        />
+        {hasImage ? (
+          <Image
+            style={styles.tinyLogo}
+            source={{uri:`file://${image}?v=${rand}`}}
+          />
+        ) : (
+          <Icon
+            style={styles.tinyLogo}
+            fill='#8F9BB3'
+            name='image-outline'
+          />
+        )}
 
         </TouchableOpacity>
       </View>
@@ -80,31 +111,27 @@ const Information = ({navigation, setBeneficiary, route, beneficiary, appConfig}
           <Text>ADD PHOTO</Text>
           <TouchableOpacity
             onPress={async () => {
-              if(beneficiary.validated_date == null || beneficiary.validated_date == ""){
-                ToastAndroid.show("Validate first before adding photo.", ToastAndroid.SHORT)
-              }else{
-                navigation.navigate("Camera", {beneficiary: beneficiary});
-              }
+              addPhotoButton()
           }}>
             <Icon
               style={styles.tinyLogo}
               fill='#8F9BB3'
-              name='image-outline'
+              name='camera-outline'
             />
           </TouchableOpacity>
         </View>
-          {beneficiary.image_photo ? (<ImagePreview desc="PHOTO" image={`${beneficiary.images_path}/${beneficiary.image_photo}`} />) : (<></>)}
+          <ImagePreview addPhotoButton={addPhotoButton} hasImage={beneficiary.image_photo != null} type="image_photo" desc="PHOTO" image={`${beneficiary.images_path}/${beneficiary.image_photo}`} />
         </Layout>
         <Layout style={{flex: 1, flexDirection: "row",marginTop: 20}}>
-          {beneficiary.image_valid_id ? (<ImagePreview desc="VALID ID FRONT" image={`${beneficiary.images_path}/${beneficiary.image_valid_id}`} />) : (<></>)}
-          {beneficiary.image_valid_id ? (<ImagePreview desc="VALID ID BACK" image={`${beneficiary.images_path}/${beneficiary.image_valid_id_back}`} />) : (<></>)}
+          <ImagePreview addPhotoButton={addPhotoButton} hasImage={beneficiary.image_valid_id != null} type="image_valid_id" desc="VALID ID FRONT" image={`${beneficiary.images_path}/${beneficiary.image_valid_id}`} />
+          <ImagePreview addPhotoButton={addPhotoButton} hasImage={beneficiary.image_valid_id_back != null} type="image_valid_id_back" desc="VALID ID BACK" image={`${beneficiary.images_path}/${beneficiary.image_valid_id_back}`} />
         </Layout>
         <Layout style={{flex: 1, flexDirection: "row",marginTop: 20}}>
-          {beneficiary.image_house ? (<ImagePreview desc="HOUSE" image={`${beneficiary.images_path}/${beneficiary.image_house}`} />) : (<></>)}
-          {beneficiary.image_birth ? (<ImagePreview desc="BIRTH CERTIFICATE" image={`${beneficiary.images_path}/${beneficiary.image_birth}`} />) : (<></>)}
+          <ImagePreview addPhotoButton={addPhotoButton} hasImage={beneficiary.image_house != null} type="image_house" desc="HOUSE" image={`${beneficiary.images_path}/${beneficiary.image_house}`} />
+          <ImagePreview addPhotoButton={addPhotoButton} hasImage={beneficiary.image_birth != null} type="image_birth" desc="BIRTH CERTIFICATE" image={`${beneficiary.images_path}/${beneficiary.image_birth}`} />
         </Layout>
         <Layout style={{flex: 1, flexDirection: "row",marginTop: 20}}>
-          {beneficiary.image_others ? (<ImagePreview desc="OTHERS" image={`${beneficiary.images_path}/${beneficiary.image_others}`} />) : (<></>)}
+          <ImagePreview addPhotoButton={addPhotoButton} hasImage={beneficiary.image_others != null} type="image_others" desc="OTHERS" image={`${beneficiary.images_path}/${beneficiary.image_others}`} />
         </Layout>
     </ScrollView>
     </Layout>

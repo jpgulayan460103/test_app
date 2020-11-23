@@ -11,7 +11,6 @@ import _isEmpty  from 'lodash/isEmpty'
 import _forEach  from 'lodash/forEach'
 import Login from './Login'
 import ImgToBase64 from 'react-native-image-base64';
-import isEmpty from 'lodash/isEmpty';
 
 const styles = StyleSheet.create({
     centeredView: {
