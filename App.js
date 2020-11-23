@@ -154,8 +154,8 @@ var db = openDatabase({
 },  openCB, errorCB);
 
 const client = axios.create({
-  // baseURL: 'http://encoding.uct11.com/',
-  baseURL: 'http://10.0.2.2:8000/',
+  baseURL: 'http://encoding.uct11.com/',
+  // baseURL: 'http://10.0.2.2:8000/',
 });
 
 
@@ -515,6 +515,10 @@ function App() {
     let updatedBeneficiaries = beneficiaries;
     updatedBeneficiaries[selectedBeneficiaryIndex] = updatedBeneficiary;
     setBeneficiaries(updatedBeneficiaries);
+  }
+
+  const removeValidationData = () => {
+    
   }
 
   const deletePicture = async (data, isViewOnly, capturedImageType = null) => {

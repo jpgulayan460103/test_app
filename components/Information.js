@@ -108,8 +108,11 @@ const Information = ({navigation, setBeneficiary, route, beneficiary, appConfig}
           <Text>City/Municipality: {beneficiary.city_name}</Text>
           <Text>Province: {beneficiary.province_name}</Text>
           <Text>Date Validated: {beneficiary.validated_date}</Text>
-          <View>
-            <Button onPress={() => navigation.navigate("Validate Information")}>VALIDATE BENEFICIARY</Button>
+          <View style={{flexDirection: "row", justifyContent: "space-evenly"}}>
+            <Button onPress={() => navigation.navigate("Validate Information")}>{beneficiary.validated_date ? "UPDATE BENEFICIARY" : "VALIDATE BENEFICIARY"}</Button>
+            {/* {beneficiary.validated_date ? (
+              <Button status="danger">Remove Validation Data</Button>
+            ) : (<></>)} */}
           </View>
         </View>
         <Divider />

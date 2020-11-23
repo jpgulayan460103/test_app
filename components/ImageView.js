@@ -55,14 +55,25 @@ const ImageView = ({savePicture, pictureTaken, deletePicture, route, navigation}
     return () => backHandler.remove();
   }, []);
   const delayedSavePicture = _debounce(()=>{
-    setLoading(true);
     navigation.goBack();
     savePicture();
+    setLoading(false);
   }, 150);
   const delayedDeletePicture = _debounce(() => {
-    setLoading(true);
-    navigation.goBack();
-    deletePicture(capturedImage, isViewOnly, capturedImageType);
+
+    Alert.alert("Hold on!", "Are you sure you want to go delete image?", [
+      {
+        text: "Cancel",
+        onPress: () => null,
+        style: "cancel"
+      },
+      { text: "YES", onPress: async () => {
+        deletePicture(capturedImage, isViewOnly, capturedImageType);
+        navigation.goBack();
+      } }
+    ]);
+    
+    setLoading(false);
   },150);
 
   const images = [{
