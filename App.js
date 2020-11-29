@@ -177,10 +177,12 @@ function App() {
   const [appConfig, setAppConfig] = useState({});
   const [user, setUser] = useState({});
   const [activationAppVisible, setActivationAppVisible] = useState(false);
+  const [typeOptions, setTypeOptions] = useState([]);
   
 
   useEffect(() => {
     getProvinces();
+    getTypes();
     dbUptader();
     requestPermissions().then(res => {
       setValidPermissions(res);
@@ -284,6 +286,13 @@ function App() {
             trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN contact_number text", [], (trans, results) => {},(error) => console.log(error));
           });
           break;
+        case 4:
+          console.log(`update to ver ${4}`);
+          await db.transaction((trans) => {
+            trans.executeSql("update app_configs set version = ?", [4], (trans, results) => {}, (error) => console.log(error));
+            trans.executeSql("ALTER TABLE potential_beneficiaries ADD COLUMN mothers_name text", [], (trans, results) => {},(error) => console.log(error));
+          });
+          break;
       
         default:
           break;
@@ -345,6 +354,24 @@ function App() {
           items.push(item.province_name);
         }
         setProvinces(items);
+      },
+      (error) => {
+        console.log(error);
+      });
+    });
+  }
+  const getTypes = () => {
+    setTypeOptions([]);
+    db.transaction((trans) => {
+      trans.executeSql("select distinct type from potential_beneficiaries order by type", [], (trans, results) => {
+        let items = [];
+        let rows = results.rows;
+        for (let i = 0; i < rows.length; i++) {
+          var item = rows.item(i);
+          items.push(item.type);
+        }
+        // console.log(items);
+        setTypeOptions(items);
       },
       (error) => {
         console.log(error);
@@ -591,12 +618,12 @@ function App() {
               {props => <CamSample {...props} setBeneficiary={setBeneficiary} />}
             </Stack.Screen>
             <Stack.Screen name="Beneficiary Information">
-              {props => <Information {...props} changePicture={changePicture} setBeneficiary={setBeneficiary} beneficiary={beneficiary} appConfig={appConfig} />}
+              {props => <Information {...props} changePicture={changePicture} setBeneficiary={setBeneficiary} beneficiary={beneficiary} appConfig={appConfig} updateBeneficiaries={updateBeneficiaries} db={db} />}
             </Stack.Screen>
             <Stack.Screen name="Validate Information">
               {props => <UpdateInformation {...props} db={db} currentDate={currentDate} beneficiary={beneficiary} updateBeneficiaries={updateBeneficiaries} />}
             </Stack.Screen>
-            <Stack.Screen name="Potential Beneficiaries">
+            <Stack.Screen name="Potential Beneficiaries" options={{headerShown: false}}>
               {props => <Beneficiaries
                 {...props}
                 beneficiaries={beneficiaries}
@@ -610,6 +637,7 @@ function App() {
                 getCities={getCities}
                 getBarangays={getBarangays}
                 appConfig={appConfig}
+                typeOptions={typeOptions}
                 />}
             </Stack.Screen>
             <Stack.Screen name="Image Preview" initialParams={{ isViewOnly: true }} options={{headerShown: false}}>

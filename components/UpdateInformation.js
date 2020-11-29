@@ -145,6 +145,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
         status_reason: { isValid: true, message: "" },
         remarks: { isValid: true, message: "" },
         contact_number: { isValid: true, message: "" },
+        mothers_name: { isValid: true, message: "" },
     });
 
     useEffect(() => {
@@ -263,6 +264,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                     break;
                 case 'updated_middlename':
                 case 'updated_extname':
+                case 'mothers_name':
                     keyError = false;
                     message = "";
                     if(value == null || (value.trim() == "")){
@@ -562,6 +564,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
             validated_birthday_d,
             validated_birthday_y,
             contact_number,
+            mothers_name,
             hhid,
         } = updatedBeneficiary;
         updated_birthday_m = parseInt(updated_birthday_m);
@@ -600,6 +603,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
         sql += ` validated_sex = ?,`;
         sql += ` updated_psgc = ?,`;
         sql += ` contact_number = ?,`;
+        sql += ` mothers_name = ?,`;
         sql += ` validated_date = ?`;
         sql += ` where hhid = ?`;
 
@@ -641,6 +645,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
             validated_sex,
             updated_psgc,
             contact_number,
+            mothers_name,
             validatedDate,
             hhid,
         ];
@@ -1268,6 +1273,22 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                     })
                 }
             </Select>
+            <Divider />
+
+            <Input
+                label="Mother's Maiden Name"
+                placeholder="Enter Mother's Maiden Name"
+                status={formError.mothers_name.isValid ? "basic": "danger"}
+                caption={formError.mothers_name.message ? formError.mothers_name.message: ""}
+                value={formData.mothers_name}
+                autoCompleteType="off"
+                onChangeText={(val) => {
+                    setFormData(prev => {
+                        let data = {mothers_name: val};
+                        return {...prev, ...data};
+                    });
+                }}
+            />
             <Divider />
 
             <Button style={{marginTop: 10}} disabled={loading} onPress={() => {

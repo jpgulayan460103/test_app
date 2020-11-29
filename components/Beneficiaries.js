@@ -20,9 +20,13 @@ const Beneficiaries = ({
         getBeneficiaries,
         getCities,
         getBarangays,
-        appConfig
+        appConfig,
+        typeOptions,
     }) => {
     useEffect(() => {
+        navigation.setOptions({
+            title: `Beneficiaries`,
+        });
         // getBeneficiaries();
         updateAddressFilter('searchString', "");
         if(appConfig.province_name){
@@ -57,9 +61,6 @@ const Beneficiaries = ({
     const [showFilter, setShowFilter] = useState(true);
     const [value, setValue] = useState('');
     const [typeValue, setTypeValue] = useState(null);
-    const [typeOptions, setTypeOptions] = useState([
-        "UCT", "NON-UCT"
-    ]);
     const [hasSearched, setHasSearched] = useState(false);
     const renderItemIcon = (props) => (
         <Icon {...props} name='person'/>
@@ -170,26 +171,24 @@ const Beneficiaries = ({
                     </Layout>
                 </Layout>
             ) : (<></>)}
-            {showFilter && appConfig.region != "XI" ? (
-                <Layout style={{flex: 0, paddingTop: 10, flexDirection: "row", justifyContent: "space-evenly"}}>
-                    <Layout style={{width: "93%"}}>
-                        <Select
-                            label='Type'
-                            placeholder="Select Type"
-                            onSelect={(item) => {
-                                setTypeValue(typeOptions[item.row]);
-                                updateAddressFilter('type', typeOptions[item.row]);
-                            }}
-                            value={typeValue}>
-                            {
-                                typeOptions.map((item, index) => {
-                                    return (<SelectItem title={item} key={`type_${index}`}/>)
-                                })
-                            }
-                        </Select>
-                    </Layout>
+            <Layout style={{flex: 0, paddingTop: 10, flexDirection: "row", justifyContent: "space-evenly"}}>
+                <Layout style={{width: "93%"}}>
+                    <Select
+                        label='Type'
+                        placeholder="Select Type"
+                        onSelect={(item) => {
+                            setTypeValue(typeOptions[item.row]);
+                            updateAddressFilter('type', typeOptions[item.row]);
+                        }}
+                        value={typeValue}>
+                        {
+                            typeOptions.map((item, index) => {
+                                return (<SelectItem title={item} key={`type_${index}`}/>)
+                            })
+                        }
+                    </Select>
                 </Layout>
-            ) : (<></>)}
+            </Layout>
             <TouchableOpacity
                 onPress={
                     () => {
