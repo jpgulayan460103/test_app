@@ -9,7 +9,8 @@ import {
   TouchableWithoutFeedback,
   Dimensions,
   Platform,
-  ToastAndroid
+  ToastAndroid,
+  Alert
 } from 'react-native';
 // eslint-disable-next-line
 import { RNCamera } from 'react-native-camera';

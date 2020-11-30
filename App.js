@@ -129,7 +129,7 @@ function HomeScreen({ navigation, validPermissions, appConfig, setActivationAppV
             } }>Exit Application</Button>
           </Layout>
       )}
-      <Text category="h3" style={{textAlign: "right", marginTop: -30, paddingBottom: 10, paddingRight: 20}} onPress={() => { setActivationAppVisible(true) }}>Field Office {appConfig.region}</Text>
+      <Text category="h3" style={{textAlign: "right", marginTop: -30, paddingBottom: 10, paddingRight: 20}} onLongPress={() => { setActivationAppVisible(true) }}>Field Office {appConfig.region}</Text>
       <Text style={{textAlign: "right", padding: 5}}>v{VersionInfo.appVersion}</Text>
     </Layout>
   );

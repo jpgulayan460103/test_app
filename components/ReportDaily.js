@@ -598,7 +598,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig, g
                 transparent={true}
                 visible={visible}
                 onRequestClose={() => {
-
+                    setVisible(false)
                 }}
             >
                 <View style={styles.centeredView}>
