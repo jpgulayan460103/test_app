@@ -21,6 +21,7 @@ import { useCamera } from 'react-native-camera-hooks';
 import RNFS from 'react-native-fs';
 import { Icon } from '@ui-kitten/components';
 import _debounce from 'lodash/debounce'
+import LocationServicesDialogBox from "react-native-android-location-services-dialog-box";
 
 const landmarkSize = 2;
 
@@ -182,7 +183,25 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
         longitude: position.coords.longitude,
         latitude: position.coords.latitude,
       });
-    },(error) => console.log(JSON.stringify(error)),
+    },(error) => {
+      navigation.goBack();
+      LocationServicesDialogBox.checkLocationServicesIsEnabled({
+          message: "<h2 style='color: #0af13e'>Cannot open camera</h2>This app requires to enable your device location in order to get the GPS coordinates.<br/><br/>",
+          ok: "ENABLE LOCATION",
+          cancel: "CLOSE",
+          enableHighAccuracy: false, // true => GPS AND NETWORK PROVIDER, false => GPS OR NETWORK PROVIDER
+          showDialog: true, // false => Opens the Location access page directly
+          openLocationServices: true, // false => Directly catch method is called if location services are turned off
+          preventOutSideTouch: false, // true => To prevent the location services window from closing when it is clicked outside
+          preventBackClick: false, // true => To prevent the location services popup from closing when it is clicked back button
+          providerListener: false // true ==> Trigger locationProviderStatusChange listener when the location state changes
+      }).then(function(success) {
+          console.log(success); // success => {alreadyEnabled: false, enabled: true, status: "enabled"}
+      }).catch((error) => {
+          console.log(error.message); // error.message => "disabled"
+      });
+    
+    },
     {enableHighAccuracy: true, distanceFilter: 0});
     return () => Geolocation.clearWatch(watchId);
   }, []);

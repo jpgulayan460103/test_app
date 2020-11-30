@@ -146,6 +146,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
         remarks: { isValid: true, message: "" },
         contact_number: { isValid: true, message: "" },
         mothers_name: { isValid: true, message: "" },
+        updated_purok: { isValid: true, message: "" },
     });
 
     useEffect(() => {
@@ -360,6 +361,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                 case 'updated_province_name':
                 case 'updated_city_name':
                 case 'updated_barangay_name':
+                case 'updated_purok':
                     keyError = false;
                     message = "";
                     if(value == null || (value.trim() == "")){
@@ -1189,11 +1191,29 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                 />
             <Divider />
 
+            <Input
+                label="Mother's Maiden Name"
+                placeholder="Enter Mother's Maiden Name"
+                status={formError.mothers_name.isValid ? "basic": "danger"}
+                caption={formError.mothers_name.message ? formError.mothers_name.message: ""}
+                value={formData.mothers_name}
+                autoCompleteType="off"
+                onChangeText={(val) => {
+                    setFormData(prev => {
+                        let data = {mothers_name: val};
+                        return {...prev, ...data};
+                    });
+                }}
+            />
+            <Divider />
+
 
             <Input
                     label="Purok/Sitio"
                     placeholder="Enter Purok/Sitio"
                     value={formData.updated_purok}
+                    status={formError.updated_purok.isValid ? "basic": "danger"}
+                    caption={formError.updated_purok.message ? formError.updated_purok.message: ""}
                     // onSubmitEditing={() => ref_updated_province.current.focus()}
                     autoCompleteType="off"
                     onChangeText={(val) => {
@@ -1275,21 +1295,6 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
             </Select>
             <Divider />
 
-            <Input
-                label="Mother's Maiden Name"
-                placeholder="Enter Mother's Maiden Name"
-                status={formError.mothers_name.isValid ? "basic": "danger"}
-                caption={formError.mothers_name.message ? formError.mothers_name.message: ""}
-                value={formData.mothers_name}
-                autoCompleteType="off"
-                onChangeText={(val) => {
-                    setFormData(prev => {
-                        let data = {mothers_name: val};
-                        return {...prev, ...data};
-                    });
-                }}
-            />
-            <Divider />
 
             <Button style={{marginTop: 10}} disabled={loading} onPress={() => {
                 setLoading(true);
