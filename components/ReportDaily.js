@@ -55,7 +55,7 @@ const listWidth = Dimensions.get('window').width;
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
 
-const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig}) => {
+const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig, getReportDates}) => {
     const { validated_date, total_images, total_uploaded, count_updated, count_hhid } = route.params.report;
     const [validatedBeneficiaries, setValidatedBeneficiaries] = useState([]);
     const [generatedReportPath, setGeneratedReportPath] = useState("");
@@ -72,6 +72,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig}) 
     const [loginLoading, setLoginLoading] = useState(false);
     const [uploadFeedback, setUploadFeedback] = useState([]);
     const [selectAll, setSelectAll] = useState(false);
+    const [loadingPercentage, setLoadingPercentage] = useState("");
 
     useEffect(() => {
         navigation.setOptions({
@@ -106,6 +107,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig}) 
     }
 
     const uploadBeneficiaryImages = async (beneficiary) => {
+        setLoadingPercentage("");
         let image_photo = null;
         let image_valid_id = null;
         let image_valid_id_back = null;
@@ -152,7 +154,13 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig}) 
             try {
                 formData.token = user.token;
                 formData.beneficiary = beneficiary
-                uploadImageApi = await client.post('/api/v1/mobilereports/upload', formData);
+                let config = {
+                    onUploadProgress: function(progressEvent) {
+                        var percentCompleted = Math.round( (progressEvent.loaded * 100) / progressEvent.total );
+                        setLoadingPercentage(`${percentCompleted}%`);
+                    }
+                }
+                uploadImageApi = await client.post('/api/v1/mobilereports/upload', formData, config);
                 resolve({
                     status: "ok",
                     response: uploadImageApi.data,
@@ -161,6 +169,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig}) 
                 if(error && error.response){
                     if(error.response.status == "401"){
                         ToastAndroid.show("Session Expired. Please login again.", ToastAndroid.LONG)
+                        setLoadingPercentage("");
                         setUser({});
                     }
                     if(error.response.status == "422"){
@@ -171,6 +180,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig}) 
                         });
                     }
                 }
+                setLoadingPercentage("");
                 reject(error);
             }
         }) 
@@ -213,6 +223,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig}) 
         setSelectAll(false);
         ToastAndroid.show(`Updated ${uploadedCount} of ${validated.length} Beneficiaries`, ToastAndroid.LONG)
         setUploading(false);
+        getReportDates();
     }
 
     const updateBeneficiary = (beneficiary) => {
@@ -507,7 +518,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig}) 
             </>) : (<></>) }
             
             { uploading ? (
-                <Text>Uploading Progress: {uploadingProgess}</Text>
+                <Text>Uploading Progress: {uploadingProgess} {loadingPercentage}</Text>
             ) : <></> }
             <View style={{flexDirection: "row"}}>
                 <View style={{flex: 1}}>
