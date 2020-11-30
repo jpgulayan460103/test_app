@@ -1229,7 +1229,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                 placeholder="Select Province"
                 status={formError.updated_province_name.isValid ? "basic": "danger"}
                 caption={formError.updated_province_name.message ? formError.updated_province_name.message: ""}
-                disabled={true}
+                // disabled={true}
                 ref={ref_updated_province}
                 onSelect={(item) => {
                     setProvinceValue(provinces[item.row]);

@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { StyleSheet, ToastAndroid, View, Dimensions, Modal, TouchableOpacity } from 'react-native';
+import { StyleSheet, ToastAndroid, View, Dimensions, Modal, TouchableOpacity, RefreshControl } from 'react-native';
 import { Layout, Text, List, Button, CheckBox, Card } from '@ui-kitten/components';
 import RNFetchBlob from 'rn-fetch-blob'
 import Share from 'react-native-share';
@@ -55,7 +55,7 @@ const listWidth = Dimensions.get('window').width;
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
 
-const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig, getReportDates}) => {
+const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig}) => {
     const { validated_date, total_images, total_uploaded, count_updated, count_hhid } = route.params.report;
     const [validatedBeneficiaries, setValidatedBeneficiaries] = useState([]);
     const [generatedReportPath, setGeneratedReportPath] = useState("");
@@ -73,6 +73,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig, g
     const [uploadFeedback, setUploadFeedback] = useState([]);
     const [selectAll, setSelectAll] = useState(false);
     const [loadingPercentage, setLoadingPercentage] = useState("");
+    const [refreshing, setRefreshing] = useState(false);
 
     useEffect(() => {
         navigation.setOptions({
@@ -223,7 +224,6 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig, g
         setSelectAll(false);
         ToastAndroid.show(`Updated ${uploadedCount} of ${validated.length} Beneficiaries`, ToastAndroid.LONG)
         setUploading(false);
-        getReportDates();
     }
 
     const updateBeneficiary = (beneficiary) => {
@@ -591,7 +591,15 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig, g
             <List
                 data={validatedBeneficiaries}
                 renderItem={renderItem}
+                refreshControl={
+                    <RefreshControl refreshing={refreshing} onRefresh={() => {
+                        setRefreshing(true);
+                        getValidatedBeneficiaries();
+                        setRefreshing(false);
+                    }} />
+                }
             />
+            <Text style={{textAlign: "center"}}>Pull down to refresh</Text>
 
             <Modal
                 animationType="slide"

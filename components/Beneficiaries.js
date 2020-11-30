@@ -16,7 +16,7 @@ const Beneficiaries = ({
         navigation,
         updateAddressFilter,
         addresses: {provinces, cities, barangays},
-        selectedAddresses: {selectedProvince, selectedCity, selectedBarangay},
+        selectedAddresses: {selectedProvince, selectedCity, selectedBarangay, selectedType},
         getBeneficiaries,
         getCities,
         getBarangays,
@@ -29,6 +29,7 @@ const Beneficiaries = ({
         });
         // getBeneficiaries();
         updateAddressFilter('searchString', "");
+        // updateAddressFilter('type', null);
         if(appConfig.province_name){
             setProvinceValue(appConfig.province_name);
             updateAddressFilter('province_name', appConfig.province_name);
@@ -49,6 +50,7 @@ const Beneficiaries = ({
         }else{
             setBarangayValue(selectedBarangay);
         }
+        setTypeValue(selectedType);
         return () => {
             
         };

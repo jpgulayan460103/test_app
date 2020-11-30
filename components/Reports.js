@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { StyleSheet, TouchableHighlight, View, Dimensions } from 'react-native';
+import { StyleSheet, TouchableHighlight, View, Dimensions, RefreshControl } from 'react-native';
 import { Layout, Text, Icon, List, ListItem, Button, IndexPath, Select, SelectItem, Divider, Input } from '@ui-kitten/components';
 import RNFetchBlob from 'rn-fetch-blob'
 
@@ -12,6 +12,7 @@ const styles = StyleSheet.create({
 const listWidth = Dimensions.get('window').width;
 
 const Reports = ({navigation, reportDates, getReportDates}) => {
+    const [refreshing, setRefreshing] = useState(false);
     useEffect(() => {
         getReportDates();
     }, []);
@@ -100,7 +101,15 @@ const Reports = ({navigation, reportDates, getReportDates}) => {
             <List
             data={reportDates}
             renderItem={renderItem}
+            refreshControl={
+                <RefreshControl refreshing={refreshing} onRefresh={() => {
+                    setRefreshing(true);
+                    getReportDates();
+                    setRefreshing(false);
+                }} />
+            }
             />
+            <Text style={{textAlign: "center"}}>Pull down to refresh</Text>
         </Layout>
     );
 }

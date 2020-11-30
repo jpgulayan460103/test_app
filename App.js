@@ -172,6 +172,7 @@ function App() {
   const [selectedProvince, setSelectedProvince] = useState(null);
   const [selectedCity, setSelectedCity] = useState(null);
   const [selectedBarangay, setSelectedBarangay] = useState(null);
+  const [selectedType, setSelectedType] = useState(null);
   const [validPermissions, setValidPermissions] = useState(false);
   const [reportDates, setReportDates] = useState([]);
   const [appConfig, setAppConfig] = useState({});
@@ -598,6 +599,12 @@ function App() {
         });
         setSelectedBarangay(value);
         break;
+      case 'type':
+        setBeneficiaryFormData(prev => {
+          return {...prev, ...newValue}
+        });
+        setSelectedType(value);
+        break;
       default:
         setBeneficiaryFormData(prev => {
           return {...prev, ...newValue}
@@ -628,7 +635,7 @@ function App() {
                 {...props}
                 beneficiaries={beneficiaries}
                 addresses={{provinces, cities, barangays}}
-                selectedAddresses={{selectedProvince, selectedCity, selectedBarangay}}
+                selectedAddresses={{selectedProvince, selectedCity, selectedBarangay, selectedType}}
                 selectBeneficiary={selectBeneficiary}
                 updateAddressFilter={updateAddressFilter}
                 beneficiaryFormData={beneficiaryFormData}

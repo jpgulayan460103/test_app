@@ -257,9 +257,7 @@ const Information = ({navigation, setBeneficiary, route, beneficiary, appConfig,
   return (
   <Layout style={{flex: 1}}>
         <View style={{padding: 10}}>
-          { appConfig.region != "XI" ? (
-            <Text>Type: {beneficiary.type}</Text>
-          ): (<></>) }
+          <Text>Type: {beneficiary.type}</Text>
           <Text>HHID: {beneficiary.hhid}</Text>
           <Text>Name: {beneficiary.fullname}</Text>
           <Text>Birthdate: {beneficiary.birthday}</Text>
