@@ -13,8 +13,7 @@ const styles = StyleSheet.create({
 
 const listWidth = Dimensions.get('window').width;
 
-
-const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, currentDate}) => {
+const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, currentDate, appConfig}) => {
     const [provinces, setProvinces] = useState([]);
     const [cities, setCities] = useState([]);
     const [barangays, setBarangays] = useState([]);
@@ -30,6 +29,8 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
     const [relHh, setRelHH] = useState(null);
     const [statusReason, setStatusReason] = useState(null);
     const [loading, setLoading] = useState(false);
+    const [min, setMin] = useState(1920);
+    const [max, setMax] = useState(2008);
     const [relHhSelection, setRelHhSelection] = useState([
         'FATHER',
         'MOTHER',
@@ -69,6 +70,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
         'UNLOCATED HOUSEHOLD HEAD',
         'WORKING INSIDE THE CITY/MUNICIPALITY',
         'WORKING OUTSIDE THE CITY/MUNICIPALITY',
+        'NO QUALIFIED REPLACEMENT',
     ]);
 
     const ref_updated_lastname = useRef();
@@ -150,6 +152,10 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
     });
 
     useEffect(() => {
+        if(appConfig.region == "V"){
+            setMin(1900);
+            setMax(2016);
+        }
         getProvinces();
         if(beneficiary.updated_province_name){
             setProvinceValue(beneficiary.updated_province_name);
@@ -238,7 +244,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
     }, 150);
 
     const validateForm = () => {
-        let validateName = /^[a-zA-Z Ññ-]+$/; 
+        let validateName = /^[a-zA-Z Ññ\-\.]+$/; 
         let validateNumber = /^[0-9]+$/; 
         let hasError = false;
         let message = "";
@@ -330,7 +336,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                         keyError = true;
                         message = "Must have 4 digits";
                     }else{
-                        if(value && (value >= 2003 || value < 1920)){
+                        if(value && (value >= 2003 || value < 1900)){
                             hasError = true;
                             keyError = true;
                             message = "Not valid age.";
@@ -361,7 +367,6 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                 case 'updated_province_name':
                 case 'updated_city_name':
                 case 'updated_barangay_name':
-                case 'updated_purok':
                     keyError = false;
                     message = "";
                     if(value == null || (value.trim() == "")){
@@ -373,7 +378,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                     break;
                 case 'validated_lastname':
                 case 'validated_firstname':
-                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || statusReason == "TRANSFERRED"){break;}
+                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || statusReason == "TRANSFERRED" || statusReason == "NO QUALIFIED REPLACEMENT"){break;}
                     keyError = false;
                     message = "";
                     if(!validateName.test(value)){
@@ -390,7 +395,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                     break;
                 case 'validated_middlename':
                 case 'validated_extname':
-                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || statusReason == "TRANSFERRED"){break;}
+                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || statusReason == "TRANSFERRED" || statusReason == "NO QUALIFIED REPLACEMENT"){break;}
                     keyError = false;
                     message = "";
                     if(value == null || (value.trim() == "")){
@@ -406,7 +411,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                     break;
                 case 'validated_birthday_m':
                 case 'validated_birthday_d':
-                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || statusReason == "TRANSFERRED"){break;}
+                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || statusReason == "TRANSFERRED" || statusReason == "NO QUALIFIED REPLACEMENT"){break;}
                     keyError = false;
                     message = "";
                     if(!validateNumber.test(value)){
@@ -439,7 +444,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                     }
                     break;
                 case 'validated_birthday_y':
-                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || statusReason == "TRANSFERRED"){break;}
+                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || statusReason == "TRANSFERRED" || statusReason == "NO QUALIFIED REPLACEMENT"){break;}
                     keyError = false;
                     message = "";
                     if(!validateNumber.test(value)){
@@ -457,7 +462,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                         keyError = true;
                         message = "Must have 4 digits";
                     }else{
-                        if(value && (value >= 2003 || value < 1920)){
+                        if(value && (value >= max || value < min)){
                             hasError = true;
                             keyError = true;
                             message = "Not valid age.";
@@ -487,7 +492,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                 case 'rel_hh':
                 case 'status_reason':
                 case 'remarks':
-                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || statusReason == "TRANSFERRED"){break;}
+                    if(beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || statusReason == "TRANSFERRED" || statusReason == "NO QUALIFIED REPLACEMENT"){break;}
                     keyError = false;
                     message = "";
                     if(value == null || (value.trim() == "")){
@@ -779,7 +784,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                 </>
             ) : (<></>) }
 
-            { beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || statusReason == "TRANSFERRED" || beneficiaryStatus == null ? (
+            { beneficiaryStatus == "ACTIVE" || statusReason == "DOUBLE ENTRY" || statusReason == "UNLOCATED HOUSEHOLD" || statusReason == "REFUSED" || statusReason == "PANTAWID BENEFICIARY" || statusReason == "TRANSFERRED" || statusReason == "NO QUALIFIED REPLACEMENT" || beneficiaryStatus == null ? (
             <>
             <Input
                     label="Remarks"
@@ -964,7 +969,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                         <Input
                             label=" "
                             placeholder="YYYY"
-                            caption="1920-2002"
+                            caption={`${min}-${max-1}`}
                             keyboardType="numeric"
                             maxLength={4}
                             value={formData.validated_birthday_y}
@@ -1133,7 +1138,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                         label=" "
                         placeholder="YYYY"
                         keyboardType="numeric"
-                        caption="1920-2002"
+                        caption="1900-2002"
                         maxLength={4}
                         value={formData.updated_birthday_y}
                         status={formError.updated_birthday_y.isValid ? "basic": "danger"}

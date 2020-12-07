@@ -81,6 +81,7 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig}) 
         });
         if(appConfig.upload_url != null){
             client.defaults.baseURL = appConfig.upload_url;
+            // client.defaults.baseURL = 'http://10.0.2.2:8000/';
         }
         getValidatedBeneficiaries();
     }, []);

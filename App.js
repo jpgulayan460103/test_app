@@ -628,7 +628,7 @@ function App() {
               {props => <Information {...props} changePicture={changePicture} setBeneficiary={setBeneficiary} beneficiary={beneficiary} appConfig={appConfig} updateBeneficiaries={updateBeneficiaries} db={db} />}
             </Stack.Screen>
             <Stack.Screen name="Validate Information">
-              {props => <UpdateInformation {...props} db={db} currentDate={currentDate} beneficiary={beneficiary} updateBeneficiaries={updateBeneficiaries} />}
+              {props => <UpdateInformation {...props} db={db} currentDate={currentDate} beneficiary={beneficiary} updateBeneficiaries={updateBeneficiaries} appConfig={appConfig} />}
             </Stack.Screen>
             <Stack.Screen name="Potential Beneficiaries" options={{headerShown: false}}>
               {props => <Beneficiaries
