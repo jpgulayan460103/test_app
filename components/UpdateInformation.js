@@ -336,7 +336,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                         keyError = true;
                         message = "Must have 4 digits";
                     }else{
-                        if(value && (value >= 2003 || value < 1900)){
+                        if(value && (value >= max || value < min)){
                             hasError = true;
                             keyError = true;
                             message = "Not valid age.";
@@ -1138,7 +1138,7 @@ const UpdateInformation = ({navigation, beneficiary, db, updateBeneficiaries, cu
                         label=" "
                         placeholder="YYYY"
                         keyboardType="numeric"
-                        caption="1900-2002"
+                        caption={`${min}-${max-1}`}
                         maxLength={4}
                         value={formData.updated_birthday_y}
                         status={formError.updated_birthday_y.isValid ? "basic": "danger"}
