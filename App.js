@@ -13,6 +13,7 @@ import UpdateInformation from './components/UpdateInformation'
 import ImageView from './components/ImageView'
 import ActivationForm from './components/ActivationForm'
 import Reports from './components/Reports'
+import Listahanan from './components/Listahanan'
 import ReportDaily from './components/ReportDaily'
 import _forEach from 'lodash/forEach'
 import RNFS from 'react-native-fs';
@@ -154,8 +155,8 @@ var db = openDatabase({
 },  openCB, errorCB);
 
 const client = axios.create({
-  baseURL: 'http://encoding.uct11.com/',
-  // baseURL: 'http://10.0.2.2:8000/',
+  // baseURL: 'http://encoding.uct11.com/',
+  baseURL: 'http://10.0.2.2:8000/',
 });
 
 
@@ -179,6 +180,7 @@ function App() {
   const [user, setUser] = useState({});
   const [activationAppVisible, setActivationAppVisible] = useState(false);
   const [typeOptions, setTypeOptions] = useState([]);
+  const [appMainVersion, setAppMainVersion] = useState(false);
   
 
   useEffect(() => {
@@ -191,6 +193,9 @@ function App() {
         ToastAndroid.show("Insufficient Permissions", ToastAndroid.SHORT)
       }
     });
+    let appVersionSplit = VersionInfo.appVersion.split('.');
+    let mainVersion = appVersionSplit[0];
+    setAppMainVersion(mainVersion)
     return () => {
       
     };
@@ -198,7 +203,10 @@ function App() {
 
   const appActivation = (configs) => {
     // console.log(configs);
-    if(configs.is_activated == 0){
+    let appVersionSplit = VersionInfo.appVersion.split('.');
+    let mainVersion = appVersionSplit[0];
+    // console.log(mainVersion);
+    if(configs.is_activated == 0 && mainVersion != 2){
       setActivationAppVisible(true);
     }
   }
@@ -618,9 +626,16 @@ function App() {
     <ApplicationProvider {...eva} theme={eva.dark}>
         <NavigationContainer>
           <Stack.Navigator>
-            <Stack.Screen name="Home" options={{headerShown: false}} >
-              {props => <HomeScreen {...props} validPermissions={validPermissions} appConfig={appConfig} setActivationAppVisible={setActivationAppVisible} />}
-            </Stack.Screen>
+            {
+              appMainVersion == 2 ? 
+              <Stack.Screen name="Home" options={{headerShown: false}} >
+                {props => <Listahanan client={client}  />}
+              </Stack.Screen>
+              :
+              <Stack.Screen name="Home" options={{headerShown: false}} >
+                {props => <HomeScreen {...props} validPermissions={validPermissions} appConfig={appConfig} setActivationAppVisible={setActivationAppVisible} />}
+              </Stack.Screen>
+            }
             <Stack.Screen name="Camera" options={{headerShown: false}}>
               {props => <CamSample {...props} setBeneficiary={setBeneficiary} />}
             </Stack.Screen>
