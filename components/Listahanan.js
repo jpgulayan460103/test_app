@@ -54,7 +54,7 @@ const styles = StyleSheet.create({
     }
 });
 
-const Listahanan = ({client}) => {
+const Listahanan = ({navigation, client}) => {
 
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
@@ -71,9 +71,10 @@ const Listahanan = ({client}) => {
     const [uploadFeedback, setUploadFeedback] = useState([]);
     const [loadingPercentage, setLoadingPercentage] = useState("");
     const [refreshing, setRefreshing] = useState(false);
+    const [beneficiaries, setBeneficiaries] = useState([]);
 
     useEffect(() => {
-        getAddressFilters();
+        // getAddressFilters();
         return () => {
             
         };
@@ -85,6 +86,23 @@ const Listahanan = ({client}) => {
         // addressFiltersResult = addressFiltersResult.data;
         // let [converted_psgcs, subdistricts] = addressFiltersResult.props;
         // console.log(converted_psgcs);
+    }
+    const getBeneficiaries = async () => {
+        let options = {
+            searchString: "",
+            city: "",
+            province: "",
+            barangay: "",
+            nameOrder: "",
+            uctTypes: [2],
+            page: 1,
+            isMobile: 2,
+            token: user.token,
+        }
+        console.log(options);
+        let addressFiltersResult = await client.get('/api/v1/beneficiary',{params: options});
+        console.log(addressFiltersResult.data.beneficiaries.data);
+        setBeneficiaries(addressFiltersResult.data.beneficiaries.data);
     }
 
     const userLogin = async (data) => {
@@ -109,10 +127,47 @@ const Listahanan = ({client}) => {
         }
     }
 
+    const renderItem = ({ item, index }) => (
+        <View style={
+            {
+                width:"100%",
+                backgroundColor: "#222b44",
+                padding: 5,
+                paddingLeft: 10,
+                borderColor: "black",
+                borderBottomWidth: 1,
+                flexDirection: "row"
+            }
+        }>
+            <View style={{ width: (width - 140), paddingRight: 4}}>
+                <Text category='c1' style={{fontWeight: "bold", fontSize: 14}}>
+                    {`${item.last_name ? item.last_name : ""}, ${item.first_name ? item.first_name : ""} ${item.middle_name ? item.middle_name : ""} ${item.ext_name ? item.ext_name : ""}`}
+                </Text>
+                {/* <Text category='c1'>{`${item.barangay_name}, ${item.city_name}\n${item.province_name}, ${item.region}`}</Text> */}
+            </View>
+            <View style={{ width: 120, justifyContent: 'center', alignItems: 'center'}}>
+                <Button
+                    size='tiny'
+                    onPress={() => {
+                        navigation.navigate("Listahanan Camera", {beneficiary: item});
+                        // setBeneficiary(item);
+                    }
+                }>View Information</Button>
+            </View>
+        </View>
+    );
+
     return (
         <Layout style={{flex: 1}}>
             <Text>Username: {!_isEmpty(user) ? user.user.username : ""}</Text>
             <Text>Fullname: {!_isEmpty(user) ? user.user.full_name : ""}</Text>
+            <Button onPress={() => { getBeneficiaries() }}>Get Beneficiaries</Button>
+
+
+            <List
+                data={beneficiaries}
+                renderItem={renderItem}
+            />
 
             <Modal
                 animationType="slide"
