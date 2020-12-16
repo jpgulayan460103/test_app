@@ -156,8 +156,8 @@ var db = openDatabase({
 },  openCB, errorCB);
 
 const client = axios.create({
-  baseURL: 'http://encoding.uct11.com/',
-  // baseURL: 'http://10.0.2.2:8000/',
+  // baseURL: 'http://encoding.uct11.com/',
+  baseURL: 'http://10.0.2.2:8000/',
 });
 
 

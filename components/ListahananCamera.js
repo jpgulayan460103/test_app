@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useRef } from 'react';
 import Marker from "react-native-image-marker"
 import {
   StyleSheet,
@@ -10,7 +10,10 @@ import {
   Dimensions,
   Platform,
   ToastAndroid,
-  Alert
+  Alert,
+  Image,
+  Button,
+  BackHandler
 } from 'react-native';
 // eslint-disable-next-line
 import { RNCamera } from 'react-native-camera';
@@ -23,6 +26,7 @@ import RNFS from 'react-native-fs';
 import { Icon } from '@ui-kitten/components';
 import _debounce from 'lodash/debounce'
 import LocationServicesDialogBox from "react-native-android-location-services-dialog-box";
+import { CropView } from 'react-native-image-crop-tools';
 
 const landmarkSize = 2;
 
@@ -172,13 +176,41 @@ const renderBarcode = ({ bounds = {}, data, type }) => (
 );
 
 export const ListahananCamera = ({navigation, route, setBeneficiary}) => {
+  const cropViewRef = useRef();
   const { beneficiary } = route.params;
+  const [hasPictureTaken, setHasPictureTaken] = useState(false);
+  const [pictureType, setPictureType] = useState("");
+  const [pictureTaken, setPictureTaken] = useState("");
   const [lastPosition, setLastPosition] = useState({
     longitude: "",
     latitude: "",
   });
   useEffect(() => {
     // setBeneficiary(beneficiary);
+    const backAction = () => {
+      Alert.alert("Hold on!", "Are you sure you want to go back to retake picture?", [
+        {
+          text: "Cancel",
+          onPress: () => null,
+          style: "cancel"
+        },
+        { text: "YES", onPress: async () => {
+          let fileExists = await RNFS.exists(pictureTaken);
+          if(fileExists){
+            RNFS.unlink(pictureTaken);
+          }
+          setHasPictureTaken(false);
+        } }
+      ]);
+      return true;
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => backHandler.remove();
   }, []);
   const [
     {
@@ -218,6 +250,7 @@ export const ListahananCamera = ({navigation, route, setBeneficiary}) => {
 
   const [location, setLocation] = useState({});
   const [loading, setLoading] = useState(false);
+  const [cropLabel, setCropLabel] = useState("Crop Image");
 
   //TODO: [mr] useEffect?
   const canDetectFaces = useMemo(() => cameraState['canDetectFaces'], [
@@ -230,23 +263,24 @@ export const ListahananCamera = ({navigation, route, setBeneficiary}) => {
     cameraState,
   ]);
 
-  const waterMark = async (data, type, location) => {
+  const waterMark = async (image, type) => {
     return  Marker.markText({
-      src: data.uri,
-      text: `HHID: ${beneficiary.hhid}\nName: ${beneficiary.fullname}\nImage: ${type}\nLocation: ${location.latitude}, ${location.longitude}`, 
-      X: 30,
-      Y: 10, 
+      src: `file://${image.uri.substring(5)}`,
+      text: `${beneficiary.full_name} (${type.substring(10)})`, 
+      X: 0,
+      Y: 0, 
       color: '#000000',
       fontName: 'Arial-BoldItalicMT',
-      fontSize: 30,
+      fontSize: image.height / 24,
       textBackgroundStyle: {
         type: 'stretchX',
-        paddingX: 10,
-        paddingY: 10,
+        paddingX: 0,
+        paddingY: 0,
         color: '#FFFFFF'
       },
       scale: 1, 
-      quality: 100
+      quality: 100,
+      position: "bottomCenter"
    })
   }
 
@@ -273,12 +307,14 @@ export const ListahananCamera = ({navigation, route, setBeneficiary}) => {
       let data = await takePicture(options);
       let dirExist = await RNFS.exists(data.uri);
       if(dirExist){
-        let markedImage = await waterMark(data, label, lastPosition)
-        let fileExists = await RNFS.exists(data.uri);
-        if(fileExists){
-          RNFS.unlink(data.uri);
+        setHasPictureTaken(true);
+        setPictureType(type);
+        setPictureTaken(data.uri);
+        setCropLabel("Crop Signature");
+        if(type == "uploading_photo"){
+          setCropLabel("Crop Photo");
         }
-        navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: markedImage, capturedImageType: type});
+        // navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: data.uri.substring(7), capturedImageType: type});
       }else{
         console.log("err");
       }
@@ -291,7 +327,7 @@ export const ListahananCamera = ({navigation, route, setBeneficiary}) => {
     }
   }, 150);
 
-  return (
+  const camView = (
     <View style={styles.container}>
       <RNCamera
         ref={cameraRef}
@@ -388,7 +424,7 @@ export const ListahananCamera = ({navigation, route, setBeneficiary}) => {
                 { flex: 0.3, alignSelf: 'flex-end' },
               ]}
               disabled={loading}
-              onPress={() => { setLoading(true);delayedTakePicture("PHOTO","image_photo") }}>
+              onPress={() => { setLoading(true);delayedTakePicture("PHOTO","uploading_photo") }}>
               <Text style={styles.flipText}>PHOTO</Text>
             </TouchableOpacity>
             <TouchableOpacity
@@ -398,8 +434,8 @@ export const ListahananCamera = ({navigation, route, setBeneficiary}) => {
                 styles.picButton,
                 { flex: 0.3, alignSelf: 'flex-end' },
               ]}
-              onPress={() => { setLoading(true);delayedTakePicture("SIGNATURE","image_signature") }}>
-              <Text style={styles.flipText}>VALID ID FRONT</Text>
+              onPress={() => { setLoading(true);delayedTakePicture("SIGNATURE","uploading_signature") }}>
+              <Text style={styles.flipText}>SIGNATURE</Text>
             </TouchableOpacity>
           </View>
 
@@ -411,9 +447,44 @@ export const ListahananCamera = ({navigation, route, setBeneficiary}) => {
       </RNCamera>
     </View>
   );
+
+  const cropView = (
+    <View>
+      <Button
+          title={cropLabel}
+          onPress={() => {
+            cropViewRef.current.saveImage(true,90);
+            // console.log(cropped);
+          }}
+        />
+        {/* <Text>{pictureTaken}</Text> */}
+    <CropView
+        sourceUrl={pictureTaken}
+        style={styles.image}
+        ref={cropViewRef}
+        onImageCrop={async (res) => {
+          console.log(res);
+          let markedImage = await waterMark(res, pictureType)
+          navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: markedImage, capturedImageType: pictureType});
+        }}
+        // keepAspectRatio
+        // aspectRatio={{width: 16, height: 9}}
+      />
+    </View>
+  );
+
+  return hasPictureTaken ? cropView : camView;
 };
 
+
+
 const styles = StyleSheet.create({
+  image: {
+    width: "100%",
+    height: "94%",
+    resizeMode: "stretch",
+    // position: "absolute"
+  },
   container: {
     flex: 1,
     paddingTop: Platform.OS === 'ios' ? 20 : 10,
@@ -500,6 +571,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     textAlign: 'center',
     backgroundColor: 'transparent',
+  },
+  cropView: {
+    flex: 1,
+    backgroundColor: 'red'
   },
 });
 
