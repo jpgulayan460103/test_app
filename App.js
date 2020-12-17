@@ -4,6 +4,7 @@ import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import CamSample from './components/CamSample';
 import ListahananCamera from './components/ListahananCamera';
+import ListahananInformation from './components/ListahananInformation';
 import * as eva from '@eva-design/eva';
 import { openDatabase } from 'react-native-sqlite-storage';
 import { ApplicationProvider, Text, Button, Divider, IconRegistry, Layout, Icon } from '@ui-kitten/components';
@@ -156,8 +157,8 @@ var db = openDatabase({
 },  openCB, errorCB);
 
 const client = axios.create({
-  // baseURL: 'http://encoding.uct11.com/',
-  baseURL: 'http://10.0.2.2:8000/',
+  baseURL: 'http://encoding.uct11.com/',
+  // baseURL: 'http://10.0.2.2:8000/',
 });
 
 
@@ -635,6 +636,9 @@ function App() {
             </Stack.Screen>
             <Stack.Screen name="Listahanan Camera" options={{headerShown: false}}>
               {props => <ListahananCamera {...props} setBeneficiary={setBeneficiary} />}
+            </Stack.Screen>
+            <Stack.Screen name="Listahanan Information" options={{headerShown: false}}>
+              {props => <ListahananInformation {...props} setBeneficiary={setBeneficiary} />}
             </Stack.Screen>
             <Stack.Screen name="Beneficiary Information">
               {props => <Information {...props} changePicture={changePicture} setBeneficiary={setBeneficiary} beneficiary={beneficiary} appConfig={appConfig} updateBeneficiaries={updateBeneficiaries} db={db} />}

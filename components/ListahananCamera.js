@@ -188,6 +188,9 @@ export const ListahananCamera = ({navigation, route, setBeneficiary}) => {
   useEffect(() => {
     // setBeneficiary(beneficiary);
     const backAction = () => {
+      if(!hasPictureTaken){
+        return false;
+      }
       Alert.alert("Hold on!", "Are you sure you want to go back to retake picture?", [
         {
           text: "Cancel",
@@ -361,7 +364,7 @@ export const ListahananCamera = ({navigation, route, setBeneficiary}) => {
           </TouchableWithoutFeedback>
         </View>
         <View style={{position: "absolute", backgroundColor: "white",top: -10, width: "100%"}}>
-              <Text style={{ fontSize: 11,padding: 10, paddingBottom: 5, paddingTop: 5}}>{`HHID: ${beneficiary.uct_id}\nName: ${beneficiary.full_name}\n\n`}</Text>
+              <Text style={{ fontSize: 11,padding: 10, paddingBottom: 5, paddingTop: 5}}>{`HHID: ${beneficiary.uct_id}\nName: ${beneficiary.full_name}\nAddress: ${beneficiary.brgy_name}, ${beneficiary.city_name}, ${beneficiary.province_name}\n`}</Text>
             </View>
         <View
             style={{

@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import { StyleSheet, ToastAndroid, View, Dimensions, Modal, TouchableOpacity, RefreshControl } from 'react-native';
-import { Layout, Text, List, Button, CheckBox, Card } from '@ui-kitten/components';
+import { Layout, Text, List, Button, Divider, Card, Select, SelectItem, Input, Icon } from '@ui-kitten/components';
 import RNFetchBlob from 'rn-fetch-blob'
 import Share from 'react-native-share';
 import { zip } from 'react-native-zip-archive'
@@ -54,6 +54,7 @@ const styles = StyleSheet.create({
     }
 });
 
+
 const Listahanan = ({navigation, client}) => {
 
     const [loading, setLoading] = useState(false);
@@ -72,6 +73,14 @@ const Listahanan = ({navigation, client}) => {
     const [loadingPercentage, setLoadingPercentage] = useState("");
     const [refreshing, setRefreshing] = useState(false);
     const [beneficiaries, setBeneficiaries] = useState([]);
+    const [provinces, setProvinces] = useState([]);
+    const [cities, setCities] = useState([]);
+    const [barangays, setBarangays] = useState([]);
+
+    const [provinceValue, setProvinceValue] = useState(null);
+    const [cityValue, setCityValue] = useState(null);
+    const [barangayValue, setBarangayValue] = useState(null);
+    const [searchString, setSearchString] = useState("");
 
     useEffect(() => {
         // getAddressFilters();
@@ -80,24 +89,42 @@ const Listahanan = ({navigation, client}) => {
         };
     }, []);
 
-    const getAddressFilters = async () => {
-        let addressFiltersResult = await client.get('/api/addressFilters');
-        console.log(typeof addressFiltersResult);
-        // addressFiltersResult = addressFiltersResult.data;
-        // let [converted_psgcs, subdistricts] = addressFiltersResult.props;
-        // console.log(converted_psgcs);
+    const getProvinces = async () => {
+        let result = await client.get('/api/uct/provinces');
+        setProvinces(result.data.provinces);
     }
+    const getCities = async (province) => {
+        let options = {province};
+        let result = await client.get('/api/uct/cities',{params: options});
+        setCities(result.data.provinces);
+    }
+    const getBarangays = async (province, city) => {
+        let options = {province, city};
+        let result = await client.get('/api/uct/barangays',{params: options});
+        setBarangays(result.data.provinces);
+        console.log(result.data.provinces);
+    }
+
+    const renderIcon = (props) => (
+        <TouchableOpacity onPress={() => {
+            // setHasSearched(true);
+            getBeneficiaries();
+        }}>
+          <Icon {...props} name="search"/>
+        </TouchableOpacity>
+      );
     const getBeneficiaries = async () => {
         let options = {
-            searchString: "",
-            city: "",
-            province: "",
-            barangay: "",
+            searchString,
+            city: cityValue,
+            province: provinceValue,
+            barangay: barangayValue,
             nameOrder: "",
             uctTypes: [2],
             page: 1,
             isMobile: 2,
             token: user.token,
+            payrollyears: 2018
         }
         console.log(options);
         let addressFiltersResult = await client.get('/api/v1/beneficiary',{params: options});
@@ -117,6 +144,7 @@ const Listahanan = ({navigation, client}) => {
                 error: "",
             });
             ToastAndroid.show("Login Successful.", ToastAndroid.SHORT);
+            getProvinces();
             setVisible(false);
         } catch (error) {
             console.log(error);
@@ -133,7 +161,7 @@ const Listahanan = ({navigation, client}) => {
                 width:"100%",
                 backgroundColor: "#222b44",
                 padding: 5,
-                paddingLeft: 10,
+                paddingLeft: 0,
                 borderColor: "black",
                 borderBottomWidth: 1,
                 flexDirection: "row"
@@ -143,25 +171,94 @@ const Listahanan = ({navigation, client}) => {
                 <Text category='c1' style={{fontWeight: "bold", fontSize: 14}}>
                     {`${item.last_name ? item.last_name : ""}, ${item.first_name ? item.first_name : ""} ${item.middle_name ? item.middle_name : ""} ${item.ext_name ? item.ext_name : ""}`}
                 </Text>
-                {/* <Text category='c1'>{`${item.barangay_name}, ${item.city_name}\n${item.province_name}, ${item.region}`}</Text> */}
+                <Text category='c1'>{`${item.uct_id}`}</Text>
+                <Text category='c1'>{`${item.brgy_name}, ${item.city_name}\n${item.province_name}`}</Text>
             </View>
             <View style={{ width: 120, justifyContent: 'center', alignItems: 'center'}}>
+                { item.information && item.information.has_gis ? 
                 <Button
                     size='tiny'
                     onPress={() => {
-                        navigation.navigate("Listahanan Camera", {beneficiary: item});
+                        navigation.navigate("Listahanan Information", {beneficiary: item});
                         // setBeneficiary(item);
                     }
-                }>View Information</Button>
+                }>View Information</Button> : 
+                <Button
+                        size='tiny'
+                        status="danger"
+                        onPress={() => {
+                            navigation.navigate("Listahanan Information", {beneficiary: item});
+                            // setBeneficiary(item);
+                        }
+                    }>Unencoded</Button> }
             </View>
         </View>
     );
 
     return (
-        <Layout style={{flex: 1}}>
+        <Layout style={{flex: 1, padding: 10}}>
             <Text>Username: {!_isEmpty(user) ? user.user.username : ""}</Text>
             <Text>Fullname: {!_isEmpty(user) ? user.user.full_name : ""}</Text>
-            <Button onPress={() => { getBeneficiaries() }}>Get Beneficiaries</Button>
+
+            <Select
+                label='Province'
+                placeholder="Select Province"
+                onSelect={(item) => {
+                    setProvinceValue(provinces[item.row].province_name);
+                    setCityValue(null);
+                    setBarangayValue(null);
+                    getCities(provinces[item.row].province_name);
+                    // updateAddressFilter('province_name', provinces[item.row]);
+                }}
+                value={provinceValue}>
+                {
+                    provinces.map((item, index) => {
+                        return (<SelectItem title={item.province_name} key={`prov_${index}`}/>)
+                    })
+                }
+            </Select>
+
+            <Select
+                label='City/Municipality'
+                placeholder="Select City/Municipality"
+                onSelect={(item) => {
+                    setCityValue(cities[item.row].city_name);
+                    setBarangayValue(null);
+                    getBarangays(provinceValue, cities[item.row].city_name);
+                }}
+                value={cityValue}>
+                {
+                    cities.map((item, index) => {
+                        return (<SelectItem title={item.city_name} key={`city_${index}`}/>)
+                    })
+                }
+            </Select>
+
+            <Select
+                label='Barangay'
+                placeholder="Select Barangay"
+                onSelect={(item) => {
+                    setBarangayValue(barangays[item.row].brgy_name);
+                }}
+                value={barangayValue}>
+                {
+                    barangays.map((item, index) => {
+                        return (<SelectItem title={item.brgy_name} key={`brgy_${index}`}/>)
+                    })
+                }
+            </Select>
+
+            <Input
+                value={searchString}
+                label='Search'
+                placeholder='Enter Name'
+                accessoryRight={renderIcon}
+                onChangeText={nextValue => {
+                    setSearchString(nextValue);
+                }}
+            />
+            <Divider style={{marginTop: 20}} />
+            {/* <Button onPress={() => { getBeneficiaries() }}>Get Beneficiaries</Button> */}
 
 
             <List
