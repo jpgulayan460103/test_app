@@ -11,8 +11,8 @@ const styles = StyleSheet.create({
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
 const Login = ({setVisible, userLogin, userLoginError, loginLoading, loginString}) => {
-    const [username, setUsername] = useState("jpgulayan");
-    const [password, setPassword] = useState("admin123");
+    const [username, setUsername] = useState("");
+    const [password, setPassword] = useState("");
     const [secureTextEntry, setSecureTextEntry] = React.useState(true);
     const ref_password = useRef();
 

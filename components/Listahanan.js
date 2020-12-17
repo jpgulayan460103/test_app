@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { StyleSheet, ToastAndroid, View, Dimensions, Modal, TouchableOpacity, RefreshControl } from 'react-native';
+import { StyleSheet, ToastAndroid, View, Dimensions, Modal, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
 import { Layout, Text, List, Button, Divider, Card, Select, SelectItem, Input, Icon } from '@ui-kitten/components';
 import RNFetchBlob from 'rn-fetch-blob'
 import Share from 'react-native-share';
@@ -51,18 +51,22 @@ const styles = StyleSheet.create({
     modalText: {
       marginBottom: 15,
       textAlign: "center"
-    }
+    },
+    activityIndicator: {
+        position: "absolute",
+        right: 10,
+        top: 10
+     }
 });
 
 
-const Listahanan = ({navigation, client}) => {
+const Listahanan = ({navigation, client, setUser, user}) => {
 
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [visible, setVisible] = useState(true);
     const [showErrors, setShowErrors] = useState(false);
     const [selectedBeneficiary, setSelectedBeneficiary] = useState({});
-    const [user, setUser] = useState({});
     const [uploadingProgess, setUploadingProgess] = useState("");
     const [userLoginError, setUserLoginError] = useState({
         error: "",
@@ -90,23 +94,29 @@ const Listahanan = ({navigation, client}) => {
     }, []);
 
     const getProvinces = async () => {
+        setLoading(true);
         let result = await client.get('/api/uct/provinces');
         setProvinces(result.data.provinces);
+        setLoading(false);
     }
     const getCities = async (province) => {
+        setLoading(true);
         let options = {province};
         let result = await client.get('/api/uct/cities',{params: options});
         setCities(result.data.provinces);
+        setLoading(false);
     }
     const getBarangays = async (province, city) => {
+        setLoading(true);
         let options = {province, city};
         let result = await client.get('/api/uct/barangays',{params: options});
         setBarangays(result.data.provinces);
         console.log(result.data.provinces);
+        setLoading(false);
     }
 
     const renderIcon = (props) => (
-        <TouchableOpacity onPress={() => {
+        <TouchableOpacity disabled={loading} onPress={() => {
             // setHasSearched(true);
             getBeneficiaries();
         }}>
@@ -114,6 +124,8 @@ const Listahanan = ({navigation, client}) => {
         </TouchableOpacity>
       );
     const getBeneficiaries = async () => {
+        setLoading(true);
+        setBeneficiaries([]);
         let options = {
             searchString,
             city: cityValue,
@@ -122,14 +134,32 @@ const Listahanan = ({navigation, client}) => {
             nameOrder: "",
             uctTypes: [2],
             page: 1,
-            isMobile: 2,
+            isMobile: true,
             token: user.token,
             payrollyears: 2018
         }
-        console.log(options);
-        let addressFiltersResult = await client.get('/api/v1/beneficiary',{params: options});
-        console.log(addressFiltersResult.data.beneficiaries.data);
-        setBeneficiaries(addressFiltersResult.data.beneficiaries.data);
+        // console.log(options);
+        let config = {
+            headers: {'Content-Type': 'application/json','X-Requested-With': 'XMLHttpRequest'}
+        };
+        client.get('/api/v1/beneficiary',{params: options}, config)
+        .then(res => {
+            console.log(res.data);
+            let result = res.data.beneficiaries.data;
+            setBeneficiaries(result)
+            setLoading(false);
+        })
+        .catch(err => {
+            setLoading(false);
+            if(err.response && err.response.status == "401"){
+                ToastAndroid.show("Session Expired.", ToastAndroid.SHORT);
+                setUser({});
+                setVisible(true);
+            }
+        })
+        .then(res => {
+            setLoading(false);
+        });
     }
 
     const userLogin = async (data) => {
@@ -197,6 +227,8 @@ const Listahanan = ({navigation, client}) => {
 
     return (
         <Layout style={{flex: 1, padding: 10}}>
+
+            <ActivityIndicator size="large" color="#00ff00" animating={loading} textContent={'Loading...'}  style = {styles.activityIndicator} />
             <Text>Username: {!_isEmpty(user) ? user.user.username : ""}</Text>
             <Text>Fullname: {!_isEmpty(user) ? user.user.full_name : ""}</Text>
 

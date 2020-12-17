@@ -22,6 +22,7 @@ import RNFS from 'react-native-fs';
 import VersionInfo from 'react-native-version-info';
 import axios from 'axios';
 import RNExitApp from 'react-native-exit-app';
+import ImgToBase64 from 'react-native-image-base64';
 
 const width = Dimensions.get('window').width; 
 
@@ -159,6 +160,7 @@ var db = openDatabase({
 const client = axios.create({
   baseURL: 'http://encoding.uct11.com/',
   // baseURL: 'http://10.0.2.2:8000/',
+  headers: {'Content-Type': 'application/json','X-Requested-With': 'XMLHttpRequest'}
 });
 
 
@@ -513,6 +515,12 @@ function App() {
       case 'image_others':
         imageTypeFileName = "Others";
         break;
+      case 'uploading_photo':
+      case 'uploading_signature':
+        // imageTypeFileName = "Others";
+        uploadListhananImage()
+        return false;
+        break;
       default:
         break;
     }
@@ -555,8 +563,28 @@ function App() {
     setBeneficiaries(updatedBeneficiaries);
   }
 
-  const removeValidationData = () => {
-
+  const uploadListhananImage = async () => {
+    let image = await ImgToBase64.getBase64String(`file://${capturedImage}`);
+    let formData = {
+      image,
+      type: capturedImageType
+    }
+    formData.token = user.token;
+    let type = capturedImageType == "uploading_photo" ? "mobile-add-photo" : "mobile-add-signature" ;
+    client.post(`/api/v1/beneficiary-information/${beneficiary.id}/${type}`, formData)
+    .then(res => {
+      console.log(res);
+      ToastAndroid.show(`Uploaded ${capturedImageType}`, ToastAndroid.LONG)
+    })
+    .catch(err => {
+      if(err.response.status == "401"){
+        ToastAndroid.show("Session Expired. Exit the app", ToastAndroid.SHORT);
+        setUser({});
+    }
+      console.log(err);
+    })
+    .then(res => {})
+    //  /api/v1/beneficiary-information/130556/mobile-add-photo
   }
 
   const deletePicture = async (data, isViewOnly, capturedImageType = null) => {
@@ -629,7 +657,7 @@ function App() {
         <NavigationContainer>
           <Stack.Navigator>
           <Stack.Screen name="Home" options={{headerShown: false}} >
-                {props => <Listahanan {...props} client={client}  />}
+                {props => <Listahanan {...props} client={client} setUser={setUser} user={user}  />}
               </Stack.Screen>
             <Stack.Screen name="Camera" options={{headerShown: false}}>
               {props => <CamSample {...props} setBeneficiary={setBeneficiary} />}

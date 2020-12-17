@@ -14,8 +14,11 @@ const styles = StyleSheet.create({
 });
 
 
-const ListahananInformation = ({navigation, route}) => {
+const ListahananInformation = ({navigation, route, setBeneficiary}) => {
     const { beneficiary } = route.params;
+    useEffect(() => {
+        setBeneficiary(beneficiary)
+    }, []);
     const [viewFull, setViewFull] = useState(false);
     const image_photo = beneficiary.information && beneficiary.information.scanned_attachments ? `http://encoding.uct11.com/images/beneficiaries${beneficiary.information.scanned_attachments}` : "https://www.bengi.nl/wp-content/uploads/2014/10/no-image-available1.png";
     const image_signature = beneficiary.information && beneficiary.information.scanned_file ? `http://encoding.uct11.com/images/signatures${beneficiary.information.scanned_file}` : "https://www.bengi.nl/wp-content/uploads/2014/10/no-image-available1.png";
@@ -66,6 +69,11 @@ const ListahananInformation = ({navigation, route}) => {
                 <Text>Province: {beneficiary.province_name}</Text>
                 <Text>City: {beneficiary.city_name}</Text>
                 <Text>Barangay: {beneficiary.brgy_name}</Text>
+                { beneficiary.information && beneficiary.information.has_gis ? 
+                    <Button onPress={() => {
+                        navigation.navigate("Listahanan Camera", {beneficiary});
+                    }}>ADD IMAGES</Button>
+                : <></> }
 
                 <Modal visible={viewFull} transparent={true} onRequestClose={() => setViewFull(false)}>
                     <ImageViewer saveToLocalByLongPress={false} imageUrls={images}/>

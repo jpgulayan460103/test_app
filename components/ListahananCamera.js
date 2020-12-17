@@ -188,24 +188,8 @@ export const ListahananCamera = ({navigation, route, setBeneficiary}) => {
   useEffect(() => {
     // setBeneficiary(beneficiary);
     const backAction = () => {
-      if(!hasPictureTaken){
-        return false;
-      }
-      Alert.alert("Hold on!", "Are you sure you want to go back to retake picture?", [
-        {
-          text: "Cancel",
-          onPress: () => null,
-          style: "cancel"
-        },
-        { text: "YES", onPress: async () => {
-          let fileExists = await RNFS.exists(pictureTaken);
-          if(fileExists){
-            RNFS.unlink(pictureTaken);
-          }
-          setHasPictureTaken(false);
-        } }
-      ]);
-      return true;
+      deletePicture();
+      return false;
     };
 
     const backHandler = BackHandler.addEventListener(
@@ -215,6 +199,14 @@ export const ListahananCamera = ({navigation, route, setBeneficiary}) => {
 
     return () => backHandler.remove();
   }, []);
+
+  const deletePicture = async () => {
+    let fileExists = await RNFS.exists(pictureTaken);
+    console.log("delete");
+    if(fileExists){
+      RNFS.unlink(pictureTaken);
+    }
+  }
   const [
     {
       cameraRef,
@@ -453,14 +445,27 @@ export const ListahananCamera = ({navigation, route, setBeneficiary}) => {
 
   const cropView = (
     <View>
-      <Button
-          title={cropLabel}
-          onPress={() => {
-            cropViewRef.current.saveImage(true,90);
-            // console.log(cropped);
-          }}
-        />
-        {/* <Text>{pictureTaken}</Text> */}
+      <View style={{flexDirection: "row", justifyContent: "center"}}>
+
+      <View style={{flex: 1, padding: 5}}>
+        <Button
+            title={cropLabel}
+            onPress={() => {
+              cropViewRef.current.saveImage(true,90);
+            }}
+          />
+      </View>
+      <View style={{flex: 1, padding: 5}}>
+        <Button
+          color="red"
+            title="RETAKE PICTURE"
+            onPress={() => {
+              deletePicture();
+              setHasPictureTaken(false);
+            }}
+          />
+      </View>
+      </View>
     <CropView
         sourceUrl={pictureTaken}
         style={styles.image}
