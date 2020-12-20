@@ -574,7 +574,7 @@ function App() {
     client.post(`/api/v1/beneficiary-information/${beneficiary.id}/${type}`, formData)
     .then(res => {
       console.log(res);
-      ToastAndroid.show(`Uploaded ${capturedImageType}`, ToastAndroid.LONG)
+      ToastAndroid.show(`Uploaded ${capturedImageType == 'uploading_photo' ? "Photo" : "Signature"}`, ToastAndroid.LONG)
     })
     .catch(err => {
       if(err.response.status == "401"){
@@ -650,15 +650,19 @@ function App() {
         break;
     }
   }
+
+  
   return (
     <SafeAreaView style={{ flex: 1 }}>
     <IconRegistry icons={EvaIconsPack} />
     <ApplicationProvider {...eva} theme={eva.dark}>
         <NavigationContainer>
           <Stack.Navigator>
-          <Stack.Screen name="Home" options={{headerShown: false}} >
-                {props => <Listahanan {...props} client={client} setUser={setUser} user={user}  />}
-              </Stack.Screen>
+            { appMainVersion != 2 ? <Stack.Screen name="Home" options={{headerShown: false}} >
+              {props => <HomeScreen {...props} validPermissions={validPermissions} appConfig={appConfig} />}
+            </Stack.Screen> : <Stack.Screen name="Listahanan Home" options={{headerShown: false}} >
+                {props => <Listahanan {...props} client={client} setUser={setUser} user={user} />}
+              </Stack.Screen> }
             <Stack.Screen name="Camera" options={{headerShown: false}}>
               {props => <CamSample {...props} setBeneficiary={setBeneficiary} />}
             </Stack.Screen>
@@ -666,7 +670,7 @@ function App() {
               {props => <ListahananCamera {...props} setBeneficiary={setBeneficiary} />}
             </Stack.Screen>
             <Stack.Screen name="Listahanan Information" options={{headerShown: false}}>
-              {props => <ListahananInformation {...props} setBeneficiary={setBeneficiary} />}
+              {props => <ListahananInformation {...props} setBeneficiary={setBeneficiary} client={client} user={user} />}
             </Stack.Screen>
             <Stack.Screen name="Beneficiary Information">
               {props => <Information {...props} changePicture={changePicture} setBeneficiary={setBeneficiary} beneficiary={beneficiary} appConfig={appConfig} updateBeneficiaries={updateBeneficiaries} db={db} />}

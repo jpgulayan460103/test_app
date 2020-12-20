@@ -146,6 +146,14 @@ const Listahanan = ({navigation, client, setUser, user}) => {
         .then(res => {
             console.log(res.data);
             let result = res.data.beneficiaries.data;
+            result.map(item => {
+                let payroll_data = item.payrolls.data.filter(bene => bene.payroll_year == 2018);
+                item.last_name = payroll_data[0].last_name;
+                item.first_name = payroll_data[0].first_name;
+                item.middle_name = payroll_data[0].middle_name;
+                item.ext_name = payroll_data[0].ext_name;
+                return item;
+            });
             setBeneficiaries(result)
             setLoading(false);
         })
