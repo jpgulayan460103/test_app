@@ -14,18 +14,21 @@ const styles = StyleSheet.create({
     },
 });
 
-const rand = Math.random();
 const ListahananInformation = ({navigation, route, setBeneficiary, client, user}) => {
     const { beneficiary } = route.params;
+    var rand = Math.random();
     useEffect(() => {
         setBeneficiary(beneficiary);
         setBeneficiaryData(beneficiary);
+        rand = Math.random();
+        setrandString(rand)
     }, []);
     const [viewFull, setViewFull] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [beneficiaryData, setBeneficiaryData] = useState({});
-    const image_signature = beneficiaryData.information && beneficiaryData.information.scanned_attachments ? `http://encoding.uct11.com//images/signatures${beneficiaryData.information.scanned_attachments}?v=${rand}` : "https://www.bengi.nl/wp-content/uploads/2014/10/no-image-available1.png";
-    const image_photo = beneficiaryData.information && beneficiaryData.information.scanned_file ? `http://encoding.uct11.com//images/beneficiaries${beneficiaryData.information.scanned_file}?v=${rand}` : "https://www.bengi.nl/wp-content/uploads/2014/10/no-image-available1.png";
+    const [randString, setrandString] = useState(rand);
+    const image_signature = beneficiaryData.information && beneficiaryData.information.scanned_attachments ? `http://encoding.uct11.com/images/signatures${beneficiaryData.information.scanned_attachments}?v=${randString}` : "https://www.bengi.nl/wp-content/uploads/2014/10/no-image-available1.png";
+    const image_photo = beneficiaryData.information && beneficiaryData.information.scanned_file ? `http://encoding.uct11.com/images/beneficiaries${beneficiaryData.information.scanned_file}?v=${randString}` : "https://www.bengi.nl/wp-content/uploads/2014/10/no-image-available1.png";
     const images = [
         {
             url: image_photo,
@@ -47,6 +50,8 @@ const ListahananInformation = ({navigation, route, setBeneficiary, client, user}
         console.log(clonedBeneficiary.information.scanned_file);
         setBeneficiaryData(clonedBeneficiary);
         setRefreshing(false);
+        rand = Math.random();
+        setrandString(rand)
     }
     return (
         <Layout style={{flex: 1, padding: 10}}>
@@ -95,6 +100,7 @@ const ListahananInformation = ({navigation, route, setBeneficiary, client, user}
                 <Text>Province: {beneficiaryData.province_name}</Text>
                 <Text>City: {beneficiaryData.city_name}</Text>
                 <Text>Barangay: {beneficiaryData.brgy_name}</Text>
+                <Text>Birthday: {beneficiaryData.birth_date}</Text>
                 {/* <Text>Picture: {image_photo}</Text> */}
                 {/* <Text>Signature: {image_signature}</Text> */}
                 { beneficiaryData.information && beneficiaryData.information.has_gis ? 

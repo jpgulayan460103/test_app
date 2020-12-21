@@ -297,7 +297,7 @@ export const ListahananCamera = ({navigation, route, setBeneficiary}) => {
   const delayedTakePicture =  _debounce(async (label, type) => {
     try {
       setIsRecording(true);
-      let options = { fixOrientation: true };
+      let options = { fixOrientation: false };
       ToastAndroid.show("Taking Picture, Please wait.", ToastAndroid.SHORT)
       let data = await takePicture(options);
       let dirExist = await RNFS.exists(data.uri);
