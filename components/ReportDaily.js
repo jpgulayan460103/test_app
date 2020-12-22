@@ -313,27 +313,33 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig}) 
             await RNFS.unlink(`${RNFS.ExternalStorageDirectoryPath}/UCT/Images/${validated_date}/uct-validation-${validated_date}.zip`);
         }
         if(dirExist){
-            makeCsv();
+            let d = new Date();
+            let timeGenerated = `${d.getHours()}-${d.getMinutes()}-${d.getSeconds()}`;
+            makeCsv(timeGenerated);
         }
     }, 250);
 
-    const makeZip = () => {
+    const makeZip = (timeGenerated, count, csvFile) => {
         const targetPath = `${RNFS.ExternalStorageDirectoryPath}/UCT/Images/${validated_date}/uct-validation-${validated_date}.zip`;
         const sourcePath = `${RNFS.ExternalStorageDirectoryPath}/UCT/Images/${validated_date}`;
 
         zip(sourcePath, targetPath)
-        .then((path) => {
+        .then(async (path) => {
             console.log(`zip completed at ${path}`)
             setGeneratedReportPath(path);
             setLoading(false);
-            ToastAndroid.show(`Report generated`, ToastAndroid.SHORT);
+            let fileExist = await RNFS.exists(csvFile);
+            if(fileExist){
+                await RNFS.unlink(csvFile);
+            }
+            ToastAndroid.show(`Report generated, ${count} Beneficiaries`, ToastAndroid.SHORT);
         })
         .catch((error) => {
         console.error(error)
         })
     }
 
-    const makeCsv = () => {
+    const makeCsv = async (timeGenerated) => {
         let headerString = '';
         headerString += `region,`;
         headerString += `province_name,`;
@@ -359,6 +365,9 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig}) 
         headerString += `updated_birthday,`;
         headerString += `updated_sex,`;
         headerString += `updated_psgc,`;
+        headerString += `updated_purok,`;
+        headerString += `contact_number,`;
+        headerString += `mothers_name,`;
         headerString += `status,`;
         headerString += `status_reason,`;
         headerString += `rel_hh,`;
@@ -368,9 +377,17 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig}) 
         headerString += `validated_extname,`;
         headerString += `validated_birthday,`;
         headerString += `validated_sex,`;
-        headerString += `validated_date`;
+        headerString += `validated_date,`;
+        headerString += `user_id,`;
+        headerString += `image_photo,`;
+        headerString += `image_valid_id,`;
+        headerString += `image_valid_id_back,`;
+        headerString += `image_house,`;
+        headerString += `image_birth,`;
+        headerString += `image_others`;
         headerString += '\n';
-        let rowString = validatedBeneficiaries.map(item => {
+        let validated = validatedBeneficiaries.filter(item => item.selected == true);
+        let rowString = validated.map(item => {
             let string = "";
             string += `"${item.region}",`
             string += `"${item.province_name}",`
@@ -396,6 +413,9 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig}) 
             string += `"${item.updated_birthday}",`
             string += `"${item.updated_sex}",`
             string += `"${item.updated_psgc}",`
+            string += `"${item.updated_purok}",`
+            string += `"${item.contact_number}",`
+            string += `"${item.mothers_name}",`
             string += `"${item.status}",`
             string += `"${item.status_reason}",`
             string += `"${item.rel_hh}",`
@@ -406,16 +426,27 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig}) 
             string += `"${item.validated_birthday}",`
             string += `"${item.validated_sex}",`
             string += `"${item.validated_date}",`
+            string += `"${user.user.id}",`
+            string += `"${item.image_photo}",`
+            string += `"${item.image_valid_id}",`
+            string += `"${item.image_valid_id_back}",`
+            string += `"${item.image_house}",`
+            string += `"${item.image_birth}",`
+            string += `"${item.image_others}",`
             string += '\n';
             return string;
         }).join('');
         const csvString = `${headerString}${rowString}`;
-
         const pathToWrite = `${RNFS.ExternalStorageDirectoryPath}/UCT/Images/${validated_date}/uct-validation-${validated_date}.csv`;
+
+        let fileExist = await RNFS.exists(pathToWrite);
+        if(fileExist){
+            await RNFS.unlink(pathToWrite);
+        }
         RNFetchBlob.fs.writeFile(pathToWrite, csvString, 'utf8')
         .then(() => {
             console.log(`wrote file ${pathToWrite}`);
-            makeZip();
+            makeZip(timeGenerated, validated.length, pathToWrite);
         })
         .catch(error => console.error(error));
     }
@@ -522,13 +553,17 @@ const ReportDaily = ({navigation, route, db, client, user, setUser, appConfig}) 
                 <Text>Uploading Progress: {uploadingProgess} {loadingPercentage}</Text>
             ) : <></> }
             <View style={{flexDirection: "row"}}>
-                <View style={{flex: 1}}>
+                { !_isEmpty(user) ? 
+                
+                    <View style={{flex: 1}}>
                     { generatedReportPath == "" ? (
                         <Button onPress={() => {generateReport()}} disabled={loading}>{loading ? "Generating Report" : "Generate Report"} </Button>
                     ) : (
                         <Button onPress={() => {shareFile()}}>Share File</Button>
                     ) }
                 </View>
+                : <></>
+                }
                 <View style={{flex: 1}}>
                     <Button status={_isEmpty(user) ? "danger" : "info"} onPress={() => {
                         if(_isEmpty(user)){
