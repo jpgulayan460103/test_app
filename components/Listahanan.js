@@ -11,6 +11,7 @@ import _isEmpty  from 'lodash/isEmpty'
 import _forEach  from 'lodash/forEach'
 import Login from './Login'
 import ImgToBase64 from 'react-native-image-base64';
+import ClearCache from 'react-native-clear-cache';
 
 const width = Dimensions.get('window').width;
 const height = Dimensions.get('window').height;
@@ -87,7 +88,9 @@ const Listahanan = ({navigation, client, setUser, user}) => {
     const [searchString, setSearchString] = useState("");
 
     useEffect(() => {
-        // getAddressFilters();
+        ClearCache.clearAppCache(data => {
+            console.log(data);
+        });
         return () => {
             
         };

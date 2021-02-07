@@ -23,6 +23,7 @@ import VersionInfo from 'react-native-version-info';
 import axios from 'axios';
 import RNExitApp from 'react-native-exit-app';
 import ImgToBase64 from 'react-native-image-base64';
+import ClearCache from 'react-native-clear-cache';
 
 const width = Dimensions.get('window').width; 
 
@@ -199,7 +200,10 @@ function App() {
     });
     let appVersionSplit = VersionInfo.appVersion.split('.');
     let mainVersion = appVersionSplit[0];
-    setAppMainVersion(mainVersion)
+    setAppMainVersion(mainVersion);
+    ClearCache.clearAppCache(data => {
+      console.log(data);
+    });
     return () => {
       
     };
