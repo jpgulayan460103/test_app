@@ -97,13 +97,17 @@ const ListahananInformation = ({navigation, route, setBeneficiary, client, user}
                 </View>
                 <Text>HHID: {beneficiaryData.uct_id}</Text>
                 <Text>Name: {beneficiaryData.full_name}</Text>
+                <Text>Updated Name: {beneficiaryData.information?.first_name} {beneficiaryData.information?.first_name} {beneficiaryData.information?.middle_name} {beneficiaryData.information?.last_name} {beneficiaryData.information?.ext_name}</Text>
                 <Text>Province: {beneficiaryData.province_name}</Text>
                 <Text>City: {beneficiaryData.city_name}</Text>
                 <Text>Barangay: {beneficiaryData.brgy_name}</Text>
                 <Text>Birthday: {beneficiaryData.birth_date}</Text>
+                <Text>Updated Birthday: {beneficiaryData.information?.birth_date}</Text>
+                <Text>GIS Form Status: {beneficiaryData.information && beneficiaryData.information.has_gis ? "Encoded GIS" : "Unencoded GIS"}</Text>
+                <Text>LBP Form Status: {beneficiaryData.landbank_form ? "Encoded LBP" : "Unencoded LBP"}</Text>
                 {/* <Text>Picture: {image_photo}</Text> */}
                 {/* <Text>Signature: {image_signature}</Text> */}
-                { beneficiaryData.information && beneficiaryData.information.has_gis ? 
+                { beneficiaryData.information ? 
                     <Button onPress={() => {
                         navigation.navigate("Listahanan Camera", {beneficiary});
                     }}>ADD IMAGES</Button>
