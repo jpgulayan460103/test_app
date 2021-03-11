@@ -1,5 +1,5 @@
 /* eslint-disable no-console */
-import React, { useMemo, useEffect, useState } from 'react';
+import React, { useMemo, useEffect, useState, useRef } from 'react';
 import Marker from "react-native-image-marker"
 import {
   StyleSheet,
@@ -10,7 +10,8 @@ import {
   Dimensions,
   Platform,
   ToastAndroid,
-  Alert
+  Alert,
+  Button
 } from 'react-native';
 // eslint-disable-next-line
 import { RNCamera } from 'react-native-camera';
@@ -23,6 +24,7 @@ import RNFS from 'react-native-fs';
 import { Icon } from '@ui-kitten/components';
 import _debounce from 'lodash/debounce'
 import LocationServicesDialogBox from "react-native-android-location-services-dialog-box";
+import { CropView } from 'react-native-image-crop-tools';
 
 const landmarkSize = 2;
 
@@ -172,7 +174,10 @@ const renderBarcode = ({ bounds = {}, data, type }) => (
 );
 
 export const CameraScreen = ({navigation, route, setBeneficiary}) => {
+  const cropViewRef = useRef();
   const { beneficiary } = route.params;
+  const [hasPictureTaken, setHasPictureTaken] = useState(false);
+  const [pictureTaken, setPictureTaken] = useState("");
   const [lastPosition, setLastPosition] = useState({
     longitude: "",
     latitude: "",
@@ -302,9 +307,16 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
         let markedImage = await waterMark(data, label, lastPosition)
         let fileExists = await RNFS.exists(data.uri);
         if(fileExists){
-          RNFS.unlink(data.uri);
+          // console.log(markedImage);
+          // console.log(data.uri);
+          setPictureTaken(data.uri);
+          // RNFS.unlink(data.uri);
         }
-        navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: markedImage, capturedImageType: type});
+        if(type == "image_photo"){
+          setHasPictureTaken(true);
+        }else{
+          navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: markedImage, capturedImageType: type});
+        }
       }else{
         console.log("err");
       }
@@ -317,7 +329,7 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
     }
   }, 150);
 
-  return (
+  const camView = (
     <View style={styles.container}>
       <RNCamera
         ref={cameraRef}
@@ -484,9 +496,56 @@ export const CameraScreen = ({navigation, route, setBeneficiary}) => {
       </RNCamera>
     </View>
   );
+
+  const cropView = (
+    <View>
+      <View style={{flexDirection: "row", justifyContent: "center"}}>
+
+      <View style={{flex: 1, padding: 5}}>
+        <Button
+            title={"Crop Photo"}
+            onPress={() => {
+              cropViewRef.current.saveImage(true,90);
+            }}
+          />
+      </View>
+      <View style={{flex: 1, padding: 5}}>
+        <Button
+          color="red"
+            title="RETAKE PICTURE"
+            onPress={() => {
+              // deletePicture();
+              setHasPictureTaken(false);
+            }}
+          />
+      </View>
+      </View>
+    <CropView
+        sourceUrl={pictureTaken}
+        style={styles.image}
+        ref={cropViewRef}
+        onImageCrop={async (res) => {
+          // console.log(res.uri);
+          // let markedImage = await waterMark(res, pictureType)
+          // navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: markedImage, capturedImageType: pictureType});
+          navigation.navigate("Image Preview", {isViewOnly: false, capturedImage: res.uri, capturedImageType: "image_photo"});
+        }}
+        // keepAspectRatio
+        // aspectRatio={{width: 16, height: 9}}
+      />
+    </View>
+  );
+
+  return hasPictureTaken ? cropView : camView;
 };
 
 const styles = StyleSheet.create({
+  image: {
+    width: "100%",
+    height: "94%",
+    resizeMode: "stretch",
+    // position: "absolute"
+  },
   container: {
     flex: 1,
     paddingTop: Platform.OS === 'ios' ? 20 : 10,
@@ -573,6 +632,10 @@ const styles = StyleSheet.create({
     position: 'absolute',
     textAlign: 'center',
     backgroundColor: 'transparent',
+  },
+  cropView: {
+    flex: 1,
+    backgroundColor: 'red'
   },
 });
 
