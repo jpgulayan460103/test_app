@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { View, PermissionsAndroid, StyleSheet, Alert, ToastAndroid, Dimensions, SafeAreaView, Image, TouchableWithoutFeedback, Modal } from 'react-native';
+import { View, PermissionsAndroid, StyleSheet, Alert, ToastAndroid, Dimensions, SafeAreaView, Image, TouchableWithoutFeedback, Modal, ScrollView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import CamSample from './components/CamSample';
@@ -134,6 +134,86 @@ function HomeScreen({ navigation, validPermissions, appConfig, setActivationAppV
             } }>Exit Application</Button>
           </Layout>
       )}
+      <Text category="h3" style={{textAlign: "right", marginTop: -30, paddingBottom: 10, paddingRight: 20}} onLongPress={() => { setActivationAppVisible(true) }}>Field Office {appConfig.region}</Text>
+      <Text style={{textAlign: "right", padding: 5}}>v{VersionInfo.appVersion}</Text>
+    </Layout>
+  );
+}
+
+
+function MainMenu({ navigation, validPermissions, appConfig, setActivationAppVisible }) {
+  return (
+    <Layout style={{ flex: 1 }}>
+      <Divider />
+      <Layout style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        {/* <Button onPress={() => navigation.navigate('Camera')}>Go to Details</Button> */}
+        <Image
+          style={styles.tinyLogo}
+          source={require('./assets/images/logo.png')}
+          />
+        
+      </Layout>
+      {/* <Text category="h2" style={{textAlign: "center"}}>For Validation Activity</Text> */}
+      <Divider />
+      <Layout style={{ flex: 1, alignItems: 'center', flexDirection: "row", padding: 10 }}>
+        <ScrollView horizontal style={{paddingBottom: 20}}>
+          <TouchableWithoutFeedback  onPress={() => {
+              navigation.navigate('Home')
+          }}>
+          <View style={{
+                borderColor: "rgba(255,255,255,0.4)",
+                borderStyle: "dotted",
+                borderRadius: 40,
+                borderWidth: 3,
+                padding: 10,
+                marginRight: 10,
+          }}>
+            <Text style={{textAlignVertical:"center", textAlign: "center"}}>Validation</Text>
+            <Icon
+              style={styles.icon}
+              fill='#8F9BB3'
+              name='camera'
+            />
+          </View>
+          </TouchableWithoutFeedback>
+          <TouchableWithoutFeedback  onPress={() => navigation.navigate('Listahanan Home')}>
+            <View style={{
+                  borderColor: "rgba(255,255,255,0.4)",
+                  borderStyle: "dotted",
+                  borderRadius: 40,
+                  borderWidth: 3,
+                  padding: 10,
+                  marginRight: 10,
+            }}>
+              <Text style={{textAlignVertical:"center", textAlign: "center"}}>Listahanan</Text>
+              <Icon
+                style={styles.icon}
+                fill='#8F9BB3'
+                name='people'
+              />
+            </View>
+          </TouchableWithoutFeedback >
+          <TouchableWithoutFeedback  onPress={() => {
+            navigation.navigate('Reports')
+          }}>
+          <View style={{
+                  borderColor: "rgba(255,255,255,0.4)",
+                  borderStyle: "dotted",
+                  borderRadius: 40,
+                  borderWidth: 3,
+                  padding: 10,
+            }}>
+              <Text style={{textAlignVertical:"center", textAlign: "center"}}>Cash Card Notification</Text>
+              <Icon
+                style={styles.icon}
+                fill='#8F9BB3'
+                name='email'
+              />
+          </View>
+          </TouchableWithoutFeedback>
+        </ScrollView>
+      </Layout>
+        
       <Text category="h3" style={{textAlign: "right", marginTop: -30, paddingBottom: 10, paddingRight: 20}} onLongPress={() => { setActivationAppVisible(true) }}>Field Office {appConfig.region}</Text>
       <Text style={{textAlign: "right", padding: 5}}>v{VersionInfo.appVersion}</Text>
     </Layout>
@@ -662,11 +742,23 @@ function App() {
     <ApplicationProvider {...eva} theme={eva.dark}>
         <NavigationContainer>
           <Stack.Navigator>
-            { appMainVersion != 2 ? <Stack.Screen name="Home" options={{headerShown: false}} >
-              {props => <HomeScreen {...props} validPermissions={validPermissions} appConfig={appConfig} />}
-            </Stack.Screen> : <Stack.Screen name="Listahanan Home" options={{headerShown: false}} >
-                {props => <Listahanan {...props} client={client} setUser={setUser} user={user} />}
-              </Stack.Screen> }
+            { appMainVersion == 1 ? <Stack.Screen name="Home" options={{headerShown: false}} >
+              {props => <HomeScreen {...props} validPermissions={validPermissions} appConfig={appConfig} setActivationAppVisible={setActivationAppVisible} />}
+            </Stack.Screen> : <></> }
+            { appMainVersion == 2 ? <Stack.Screen name="Listahanan Home" options={{headerShown: false}} >
+              {props => <Listahanan {...props} client={client} setUser={setUser} user={user} />}
+            </Stack.Screen> : <></> }
+
+            { appMainVersion == 3 ? <Stack.Screen name="Home" options={{headerShown: false}} >
+              {props => <HomeScreen {...props} validPermissions={validPermissions} appConfig={appConfig} setActivationAppVisible={setActivationAppVisible} />}
+            </Stack.Screen> : <></> }
+            { appMainVersion == 3 ? <Stack.Screen name="Listahanan Home" options={{headerShown: false}} >
+              {props => <Listahanan {...props} client={client} setUser={setUser} user={user} />}
+            </Stack.Screen> : <></> }
+
+            <Stack.Screen name="Menu" options={{headerShown: false}} >
+              {props => <MainMenu {...props}  appConfig={appConfig} />}
+            </Stack.Screen>
             <Stack.Screen name="Camera" options={{headerShown: false}}>
               {props => <CamSample {...props} setBeneficiary={setBeneficiary} />}
             </Stack.Screen>

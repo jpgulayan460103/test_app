@@ -91,6 +91,9 @@ const Listahanan = ({navigation, client, setUser, user}) => {
         ClearCache.clearAppCache(data => {
             console.log(data);
         });
+        if(!_isEmpty(user)){
+            setVisible(false);
+        }
         return () => {
             
         };
