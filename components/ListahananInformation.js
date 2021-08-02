@@ -19,6 +19,7 @@ const ListahananInformation = ({navigation, route, setBeneficiary, client, user}
     var rand = Math.random();
     useEffect(() => {
         setBeneficiary(beneficiary);
+        console.log(beneficiary);
         setBeneficiaryData(beneficiary);
         rand = Math.random();
         setrandString(rand)
@@ -47,7 +48,7 @@ const ListahananInformation = ({navigation, route, setBeneficiary, client, user}
         clonedBeneficiary.information.scanned_attachments = result.data.beneficiary.information.scanned_attachments;
         clonedBeneficiary.information.scanned_file = result.data.beneficiary.information.scanned_file;
         // console.log(clonedBeneficiary.information.scanned_attachments);
-        console.log(clonedBeneficiary.information.scanned_file);
+        // console.log(clonedBeneficiary.information.scanned_file);
         setBeneficiaryData(clonedBeneficiary);
         setRefreshing(false);
         rand = Math.random();
@@ -95,16 +96,20 @@ const ListahananInformation = ({navigation, route, setBeneficiary, client, user}
                     </TouchableHighlight>
                     </View>
                 </View>
-                <Text>HHID: {beneficiaryData.uct_id}</Text>
-                <Text>Name: {beneficiaryData.full_name}</Text>
-                <Text>Updated Name: {beneficiaryData.information?.first_name} {beneficiaryData.information?.first_name} {beneficiaryData.information?.middle_name} {beneficiaryData.information?.last_name} {beneficiaryData.information?.ext_name}</Text>
-                <Text>Province: {beneficiaryData.province_name}</Text>
-                <Text>City: {beneficiaryData.city_name}</Text>
-                <Text>Barangay: {beneficiaryData.brgy_name}</Text>
-                <Text>Birthday: {beneficiaryData.birth_date}</Text>
-                <Text>Updated Birthday: {beneficiaryData.information?.birth_date}</Text>
-                <Text>GIS Form Status: {beneficiaryData.information && beneficiaryData.information.has_gis ? "Encoded GIS" : "Unencoded GIS"}</Text>
-                <Text>LBP Form Status: {beneficiaryData.landbank_form ? "Encoded LBP" : "Unencoded LBP"}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>HHID:</Text> {beneficiaryData.uct_id}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>Name:</Text> {beneficiaryData.full_name}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>Updated Name:</Text> {beneficiaryData.information?.first_name} {beneficiaryData.information?.first_name} {beneficiaryData.information?.middle_name} {beneficiaryData.information?.last_name} {beneficiaryData.information?.ext_name}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>Province:</Text> {beneficiaryData.province_name}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>City:</Text> {beneficiaryData.city_name}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>Barangay:</Text> {beneficiaryData.brgy_name}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>Birthday:</Text> {beneficiaryData.birth_date}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>Updated Birthday:</Text> {beneficiaryData.information?.birth_date}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>GIS Form Status:</Text> {beneficiaryData.information && beneficiaryData.information.has_gis ? "Encoded GIS" : "Unencoded GIS"}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>LBP Form Status:</Text> {beneficiaryData.landbank_form ? "Encoded LBP" : "Unencoded LBP"}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>2018 Claim Status:</Text> {beneficiaryData.payrolls?.data[0]?.is_claimed}</Text>
+                { beneficiaryData.payrolls?.data[0]?.is_claimed == "no" ? <Text><Text style={{fontWeight: "bold"}}>Reason:</Text> { beneficiaryData.payrolls?.data[0]?.not_claimed_reason.reason }</Text> : <></> }
+                <Text><Text style={{fontWeight: "bold"}}>2018 Claim Status:</Text> {beneficiaryData.payrolls?.data[1]?.is_claimed}</Text>
+                { beneficiaryData.payrolls?.data[1]?.is_claimed == "no" ? <Text><Text style={{fontWeight: "bold"}}>Reason:</Text> { beneficiaryData.payrolls?.data[1]?.not_claimed_reason.reason }</Text> : <></> }
                 {/* <Text>Picture: {image_photo}</Text> */}
                 {/* <Text>Signature: {image_signature}</Text> */}
                 { beneficiaryData.information ? 

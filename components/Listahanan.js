@@ -61,8 +61,8 @@ const styles = StyleSheet.create({
 });
 
 
-const Listahanan = ({navigation, client, setUser, user}) => {
-
+const Listahanan = ({navigation, client, setUser, user, route}) => {
+    const { search } = route.params;
     const [loading, setLoading] = useState(false);
     const [uploading, setUploading] = useState(false);
     const [visible, setVisible] = useState(true);
@@ -88,6 +88,8 @@ const Listahanan = ({navigation, client, setUser, user}) => {
     const [searchString, setSearchString] = useState("");
 
     useEffect(() => {
+        console.log(route.params);
+        setSearchString(search)
         ClearCache.clearAppCache(data => {
             console.log(data);
         });
@@ -181,7 +183,7 @@ const Listahanan = ({navigation, client, setUser, user}) => {
             console.log(client.defaults.baseURL);
             setLoginLoading(true);
             let userLogin = await client.post('/api/login', data);
-            console.log(userLogin);
+            // console.log(userLogin);
             setUser(userLogin.data);
             setLoginLoading(false);
             setUserLoginError({

@@ -1,0 +1,98 @@
+import React, {useEffect, useState} from 'react';
+import { StyleSheet, TouchableHighlight, View, ToastAndroid, TouchableOpacity } from 'react-native';
+import { Layout, Text, Icon, List, ListItem, Button, IndexPath, Select, SelectItem, Divider, Input } from '@ui-kitten/components';
+import Qrscanner from './Qrscanner'
+import { isEmpty } from 'lodash';
+
+
+const Notification = ({navigation, reportDates, db}) => {
+    const [showCam, setShowCam] = useState(true);
+    const [scannedValue, setScannedValue] = useState("");
+    const [scannedBeneficiary, setScannedBeneficiary] = useState({});
+
+    //actions
+    const getScannedValue = (value) => {
+        setScannedValue(value);
+        getBeneficiaryData(value);
+    }
+
+    const toggleCamera = () => {
+        if(!showCam){
+            setScannedValue("");
+            setScannedBeneficiary({});
+        }
+        setShowCam(!showCam)
+    }
+
+    const getBeneficiaryData = (hhid) => {
+        setScannedBeneficiary({});
+        setShowCam(!showCam)
+        db.transaction((trans) => {
+          trans.executeSql("select * from cashcard where hhid = ?", [hhid], (trans, results) => {
+            let items = [];
+            let rows = results.rows;
+            if(rows.length != 0){
+              for (let i = 0; i < rows.length; i++) {
+                var item = rows.item(i);
+                items.push(item);
+              }
+              setScannedBeneficiary(items[0])
+            }else{
+            //   ToastAndroid.show("No beneficiaries found.", ToastAndroid.SHORT)
+            }
+            // setProvinces(items);
+          },
+          (error) => {
+            console.log(error);
+          });
+        });
+      }
+    return (
+        <Layout style={{ flex: 1, padding: 10}}>
+            <View style={{ padding: 20, flex: 1, flexDirection: "row", alignItems: 'center' }}>
+                <View style={{flex: 1, alignItems: "center" }}>
+                
+                { showCam ? <Qrscanner getScannedValue={getScannedValue} /> : <></> }
+
+                { !showCam ? <Button onPress={() => toggleCamera()}>
+                    Scan QRCode
+                  </Button>: <></> }
+                
+                </View>
+            </View>
+            <View style={{flex: 1}}>
+                <Text><Text style={{fontWeight: "bold"}}>QR CODE:</Text> {scannedValue}</Text>
+                { !isEmpty(scannedBeneficiary) ? (
+                <>
+                <Text><Text style={{fontWeight: "bold"}}>Last Name:</Text> {scannedBeneficiary.last_name}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>First Name:</Text> {scannedBeneficiary.first_name}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>Middle Name:</Text> {scannedBeneficiary.middle_name}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>Birth Date:</Text> {scannedBeneficiary.birthday}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>Mothers Name:</Text> {scannedBeneficiary.last_name}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>Mobile Number:</Text> {scannedBeneficiary.mobile}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>Province:</Text> {scannedBeneficiary.province}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>City:</Text> {scannedBeneficiary.city}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>Barangay:</Text> {scannedBeneficiary.barangay}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>Branch:</Text> {scannedBeneficiary.branch_name}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>Card Number:</Text> {scannedBeneficiary.card_number}</Text>
+                </>
+                ) : <></> }
+                
+            </View>
+            { !isEmpty(scannedBeneficiary) ? (
+            <View style={{flex: 1, alignItems: 'center', justifyContent: 'space-evenly', flexDirection: "row", marginTop: 10}}>
+              <Button status="danger" onPress={() => toggleCamera()}>
+                Tag as Claimed
+              </Button>
+              <Button status="info" onPress={() => navigation.navigate('Listahanan Home', {search: scannedBeneficiary.hhid})}>
+                View Listahanan Data
+              </Button>
+            </View>
+            ) : <></> }
+            
+        </Layout>
+    );
+}
+
+
+export default Notification;

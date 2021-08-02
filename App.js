@@ -1,5 +1,5 @@
 import React, {useState, useEffect} from 'react';
-import { View, PermissionsAndroid, StyleSheet, Alert, ToastAndroid, Dimensions, SafeAreaView, Image, TouchableWithoutFeedback, Modal, ScrollView } from 'react-native';
+import { View, PermissionsAndroid, StyleSheet, Alert, ToastAndroid, Dimensions, SafeAreaView, Image, TouchableWithoutFeedback, Modal, ScrollView, TouchableOpacity } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import CamSample from './components/CamSample';
@@ -24,6 +24,7 @@ import axios from 'axios';
 import RNExitApp from 'react-native-exit-app';
 import ImgToBase64 from 'react-native-image-base64';
 import ClearCache from 'react-native-clear-cache';
+import Notification from './components/Notification';
 
 const width = Dimensions.get('window').width; 
 
@@ -166,7 +167,7 @@ function MainMenu({ navigation, validPermissions, appConfig, setActivationAppVis
                 borderRadius: 40,
                 borderWidth: 3,
                 padding: 10,
-                marginRight: 10,
+                marginRight: (width * 0.02),
           }}>
             <Text style={{textAlignVertical:"center", textAlign: "center"}}>Validation</Text>
             <Icon
@@ -183,7 +184,7 @@ function MainMenu({ navigation, validPermissions, appConfig, setActivationAppVis
                   borderRadius: 40,
                   borderWidth: 3,
                   padding: 10,
-                  marginRight: 10,
+                  marginRight: (width * 0.02),
             }}>
               <Text style={{textAlignVertical:"center", textAlign: "center"}}>Listahanan</Text>
               <Icon
@@ -194,7 +195,7 @@ function MainMenu({ navigation, validPermissions, appConfig, setActivationAppVis
             </View>
           </TouchableWithoutFeedback >
           <TouchableWithoutFeedback  onPress={() => {
-            navigation.navigate('Reports')
+            navigation.navigate('Qrscanner')
           }}>
           <View style={{
                   borderColor: "rgba(255,255,255,0.4)",
@@ -203,11 +204,11 @@ function MainMenu({ navigation, validPermissions, appConfig, setActivationAppVis
                   borderWidth: 3,
                   padding: 10,
             }}>
-              <Text style={{textAlignVertical:"center", textAlign: "center"}}>Cash Card Notification</Text>
+              <Text style={{textAlignVertical:"center", textAlign: "center"}}>Cash Card</Text>
               <Icon
                 style={styles.icon}
                 fill='#8F9BB3'
-                name='email'
+                name='credit-card-outline'
               />
           </View>
           </TouchableWithoutFeedback>
@@ -734,7 +735,6 @@ function App() {
         break;
     }
   }
-
   
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -799,6 +799,9 @@ function App() {
             </Stack.Screen>
             <Stack.Screen name="Daily Report"  options={{headerShown: false}}>
               {props => <ReportDaily {...props} db={db} client={client} setUser={setUser} user={user} db={db} appConfig={appConfig} />}
+            </Stack.Screen>
+            <Stack.Screen name="Qrscanner" options={{headerShown: false}}>
+              {props => <Notification {...props} db={db} />}
             </Stack.Screen>
           </Stack.Navigator>
         </NavigationContainer>
