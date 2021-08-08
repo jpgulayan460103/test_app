@@ -24,6 +24,20 @@ const Notification = ({navigation, reportDates, db}) => {
         setShowCam(!showCam)
     }
 
+    const tagBeneficiary = () => {
+      let d = new Date;
+      d = d.toLocaleDateString();
+      db.transaction((trans) => {
+        trans.executeSql("update cashcard set is_claimed = 1, date_scanned = ? where hhid = ?", [d, scannedBeneficiary.hhid], (trans, results) => {
+          toggleCamera();
+          ToastAndroid.show("Successfully tagged as claimed", ToastAndroid.SHORT);
+        },
+        (error) => {
+          console.log(error);
+        });
+      });
+    }
+
     const getBeneficiaryData = (hhid) => {
         setScannedBeneficiary({});
         setShowCam(!showCam)
@@ -49,14 +63,12 @@ const Notification = ({navigation, reportDates, db}) => {
       }
     return (
         <Layout style={{ flex: 1, padding: 10}}>
-            <View style={{ padding: 20, flex: 1, flexDirection: "row", alignItems: 'center' }}>
+            <View style={{ padding: 20, flex: 0.5, flexDirection: "row", alignItems: 'center' }}>
                 <View style={{flex: 1, alignItems: "center" }}>
                 
                 { showCam ? <Qrscanner getScannedValue={getScannedValue} /> : <></> }
 
-                { !showCam ? <Button onPress={() => toggleCamera()}>
-                    Scan QRCode
-                  </Button>: <></> }
+                
                 
                 </View>
             </View>
@@ -75,20 +87,31 @@ const Notification = ({navigation, reportDates, db}) => {
                 <Text><Text style={{fontWeight: "bold"}}>Barangay:</Text> {scannedBeneficiary.barangay}</Text>
                 <Text><Text style={{fontWeight: "bold"}}>Branch:</Text> {scannedBeneficiary.branch_name}</Text>
                 <Text><Text style={{fontWeight: "bold"}}>Card Number:</Text> {scannedBeneficiary.card_number}</Text>
+                { scannedBeneficiary.is_claimed == 1 ? <Text><Text style={{fontWeight: "bold"}}>Date Scanned:</Text> {scannedBeneficiary.date_scanned}</Text> : <></> }
+
                 </>
                 ) : <></> }
                 
             </View>
             { !isEmpty(scannedBeneficiary) ? (
-            <View style={{flex: 1, alignItems: 'center', justifyContent: 'space-evenly', flexDirection: "row", marginTop: 10}}>
-              <Button status="danger" onPress={() => toggleCamera()}>
-                Tag as Claimed
+            <View style={{flex: 0.2, alignItems: 'center', justifyContent: 'space-evenly', flexDirection: "row", marginTop: 10}}>
+              <Button status="danger" disabled={scannedBeneficiary?.is_claimed == 1} onPress={() => tagBeneficiary()} style={{width: 140}}>
+                { scannedBeneficiary?.is_claimed == 1 ? "Claimed" : "Tag as Claimed"}
               </Button>
-              <Button status="info" onPress={() => navigation.navigate('Listahanan Home', {search: scannedBeneficiary.hhid})}>
+              <Button status="info" onPress={() => navigation.navigate('Listahanan Home', {search: scannedBeneficiary.hhid})}  style={{width: 180}}>
                 View Listahanan Data
               </Button>
             </View>
             ) : <></> }
+
+            <View style={{flex: 0.2, alignItems: 'center', justifyContent: 'space-evenly', flexDirection: "row", marginTop: 10}}>
+              { !showCam ? <Button onPress={() => toggleCamera()}  style={{width: 140}}>
+                  Scan QRCode
+                </Button>: <></> }
+              <Button status="info" onPress={() => navigation.navigate('Cashcardclaimed')}  style={{width: 180}}>
+                Claimed Cashcard
+              </Button>
+            </View>
             
         </Layout>
     );

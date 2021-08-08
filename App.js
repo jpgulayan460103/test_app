@@ -25,6 +25,7 @@ import RNExitApp from 'react-native-exit-app';
 import ImgToBase64 from 'react-native-image-base64';
 import ClearCache from 'react-native-clear-cache';
 import Notification from './components/Notification';
+import Cashcardclaimed from './components/Cashcardclaimed';
 
 const width = Dimensions.get('window').width; 
 
@@ -69,6 +70,10 @@ const styles = StyleSheet.create({
   logo: {
     width: 66,
     height: 58,
+  },
+  iconHome: {
+    width: width * 0.24,
+    height: width * 0.24,
   },
   icon: {
     width: width * 0.4,
@@ -156,63 +161,61 @@ function MainMenu({ navigation, validPermissions, appConfig, setActivationAppVis
       </Layout>
       {/* <Text category="h2" style={{textAlign: "center"}}>For Validation Activity</Text> */}
       <Divider />
-      <Layout style={{ flex: 1, alignItems: 'center', flexDirection: "row", padding: 10 }}>
-        <ScrollView horizontal style={{paddingBottom: 20}}>
-          <TouchableWithoutFeedback  onPress={() => {
+      <Layout style={{ flex: 1, alignItems: 'center', justifyContent: "space-evenly", flexDirection: "row", padding: 10 }}>
+      <TouchableWithoutFeedback  onPress={() => {
               navigation.navigate('Home')
           }}>
           <View style={{
                 borderColor: "rgba(255,255,255,0.4)",
                 borderStyle: "dotted",
-                borderRadius: 40,
+                borderRadius: 20,
                 borderWidth: 3,
                 padding: 10,
                 marginRight: (width * 0.02),
           }}>
             <Text style={{textAlignVertical:"center", textAlign: "center"}}>Validation</Text>
             <Icon
-              style={styles.icon}
+              style={styles.iconHome}
               fill='#8F9BB3'
               name='camera'
             />
           </View>
           </TouchableWithoutFeedback>
-          <TouchableWithoutFeedback  onPress={() => navigation.navigate('Listahanan Home')}>
+          <TouchableWithoutFeedback  onPress={() => navigation.navigate('Listahanan Home', {search: null} )}>
             <View style={{
                   borderColor: "rgba(255,255,255,0.4)",
                   borderStyle: "dotted",
-                  borderRadius: 40,
+                  borderRadius: 20,
                   borderWidth: 3,
                   padding: 10,
                   marginRight: (width * 0.02),
             }}>
               <Text style={{textAlignVertical:"center", textAlign: "center"}}>Listahanan</Text>
               <Icon
-                style={styles.icon}
+                style={styles.iconHome}
                 fill='#8F9BB3'
                 name='people'
               />
             </View>
           </TouchableWithoutFeedback >
           <TouchableWithoutFeedback  onPress={() => {
-            navigation.navigate('Qrscanner')
+            navigation.navigate('Cashcardclaimed')
           }}>
           <View style={{
                   borderColor: "rgba(255,255,255,0.4)",
                   borderStyle: "dotted",
-                  borderRadius: 40,
+                  borderRadius: 20,
                   borderWidth: 3,
                   padding: 10,
             }}>
               <Text style={{textAlignVertical:"center", textAlign: "center"}}>Cash Card</Text>
               <Icon
-                style={styles.icon}
+                style={styles.iconHome}
                 fill='#8F9BB3'
                 name='credit-card-outline'
               />
           </View>
           </TouchableWithoutFeedback>
-        </ScrollView>
       </Layout>
         
       <Text category="h3" style={{textAlign: "right", marginTop: -30, paddingBottom: 10, paddingRight: 20}} onLongPress={() => { setActivationAppVisible(true) }}>Field Office {appConfig.region}</Text>
@@ -802,6 +805,9 @@ function App() {
             </Stack.Screen>
             <Stack.Screen name="Qrscanner" options={{headerShown: false}}>
               {props => <Notification {...props} db={db} />}
+            </Stack.Screen>
+            <Stack.Screen name="Cashcardclaimed" options={{title: "Claimed Cashcard"}}>
+              {props => <Cashcardclaimed {...props} db={db} />}
             </Stack.Screen>
           </Stack.Navigator>
         </NavigationContainer>
