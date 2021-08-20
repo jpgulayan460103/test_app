@@ -26,6 +26,8 @@ import ImgToBase64 from 'react-native-image-base64';
 import ClearCache from 'react-native-clear-cache';
 import Notification from './components/Notification';
 import Cashcardclaimed from './components/Cashcardclaimed';
+import ReportCashcard from './components/ReportCashcard';
+import ReportCashcardDaily from './components/ReportCashcardDaily';
 
 const width = Dimensions.get('window').width; 
 
@@ -99,7 +101,7 @@ function HomeScreen({ navigation, validPermissions, appConfig, setActivationAppV
       // {validPermissions ? (
         <Layout style={{ flex: 1, alignItems: 'center', justifyContent: 'space-evenly', flexDirection: "row" }}>
         <TouchableWithoutFeedback  onPress={() => {
-          navigation.navigate('Reports')
+          navigation.navigate('Validation Reports')
         }}>
         <View style={{
                 borderColor: "rgba(255,255,255,0.4)",
@@ -112,7 +114,7 @@ function HomeScreen({ navigation, validPermissions, appConfig, setActivationAppV
             <Icon
             style={styles.icon}
             fill='#8F9BB3'
-            name='calendar-outline'
+            name='calendar'
           />
           </View>
           </TouchableWithoutFeedback>
@@ -129,6 +131,90 @@ function HomeScreen({ navigation, validPermissions, appConfig, setActivationAppV
               style={styles.icon}
               fill='#8F9BB3'
               name='people'
+            />
+            </View>
+          </TouchableWithoutFeedback >
+        </Layout>
+      ) : (
+        <Layout style={{ flex: 1, alignItems: 'center', justifyContent: "center" }}>
+            <Button onPress={() => {
+                RNExitApp.exitApp();
+            } }>Exit Application</Button>
+          </Layout>
+      )}
+      <Text category="h3" style={{textAlign: "right", marginTop: -30, paddingBottom: 10, paddingRight: 20}} onLongPress={() => { setActivationAppVisible(true) }}>Field Office {appConfig.region}</Text>
+      <Text style={{textAlign: "right", padding: 5}}>v{VersionInfo.appVersion}</Text>
+    </Layout>
+  );
+}
+
+
+function CashcardHome({ navigation, validPermissions, appConfig, setActivationAppVisible }) {
+  return (
+    <Layout style={{ flex: 1 }}>
+      <Divider />
+      <Layout style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+        {/* <Button onPress={() => navigation.navigate('Camera')}>Go to Details</Button> */}
+        <Image
+          style={styles.tinyLogo}
+          source={require('./assets/images/logo.png')}
+          />
+        
+      </Layout>
+      <Text category="h2" style={{textAlign: "center"}}>For Cashcard Activity</Text>
+      <Divider />
+      {validPermissions && appConfig.is_activated == 1 ? (
+      // {validPermissions ? (
+      <Layout style={{ flex: 1, alignItems: 'center', justifyContent: "space-evenly", flexDirection: "row", padding: 10 }}>
+        <TouchableWithoutFeedback  onPress={() => {
+          navigation.navigate('Cashcard Reports')
+        }}>
+        <View style={{
+              borderColor: "rgba(255,255,255,0.4)",
+              borderStyle: "dotted",
+              borderRadius: 20,
+              borderWidth: 3,
+              padding: 10,
+              marginRight: (width * 0.02),
+          }}>
+            <Text style={{textAlignVertical:"center", textAlign: "center"}}>Reports</Text>
+            <Icon
+            style={styles.iconHome}
+            fill='#8F9BB3'
+            name='calendar-outline'
+          />
+          </View>
+          </TouchableWithoutFeedback>
+          <TouchableWithoutFeedback  onPress={() => navigation.navigate('Cashcardclaimed', {typeView: "unclaimed"} )}>
+            <View style={{
+                borderColor: "rgba(255,255,255,0.4)",
+                borderStyle: "dotted",
+                borderRadius: 20,
+                borderWidth: 3,
+                padding: 10,
+                marginRight: (width * 0.02),
+            }}>
+              <Text style={{textAlignVertical:"center", textAlign: "center"}}>Beneficiaries</Text>
+              <Icon
+              style={styles.iconHome}
+              fill='#8F9BB3'
+              name='people-outline'
+            />
+            </View>
+          </TouchableWithoutFeedback >
+          <TouchableWithoutFeedback  onPress={() => navigation.navigate('Qrscanner')}>
+            <View style={{
+                borderColor: "rgba(255,255,255,0.4)",
+                borderStyle: "dotted",
+                borderRadius: 20,
+                borderWidth: 3,
+                padding: 10,
+            }}>
+              <Text style={{textAlignVertical:"center", textAlign: "center"}}>Scan Form</Text>
+              <Icon
+              style={styles.iconHome}
+              fill='#8F9BB3'
+              name='camera-outline'
             />
             </View>
           </TouchableWithoutFeedback >
@@ -194,12 +280,12 @@ function MainMenu({ navigation, validPermissions, appConfig, setActivationAppVis
               <Icon
                 style={styles.iconHome}
                 fill='#8F9BB3'
-                name='people'
+                name='archive-outline'
               />
             </View>
           </TouchableWithoutFeedback >
           <TouchableWithoutFeedback  onPress={() => {
-            navigation.navigate('Cashcardclaimed')
+            navigation.navigate('CashcardHome')
           }}>
           <View style={{
                   borderColor: "rgba(255,255,255,0.4)",
@@ -265,6 +351,7 @@ function App() {
   const [selectedType, setSelectedType] = useState(null);
   const [validPermissions, setValidPermissions] = useState(false);
   const [reportDates, setReportDates] = useState([]);
+  const [ccReportDates, setCcReportDates] = useState([]);
   const [appConfig, setAppConfig] = useState({});
   const [user, setUser] = useState({});
   const [activationAppVisible, setActivationAppVisible] = useState(false);
@@ -738,6 +825,29 @@ function App() {
         break;
     }
   }
+
+
+  const getCcReportDates = () => {
+    setCcReportDates([]);
+    db.transaction((trans) => {
+      let sql = "";
+      sql += `sum(case when is_uploaded = 1 then 1 else 0 end) count_updated, `;
+      sql += `count(hhid) as count_hhid, `;
+      trans.executeSql(`select ${sql} date_scanned from cashcard where is_claimed = 1 group by date_scanned order by date_scanned`, [], (trans, results) => {
+        let items = [];
+        let rows = results.rows;
+        for (let i = 0; i < rows.length; i++) {
+          var item = rows.item(i);
+          items.push(item);
+        }
+        setCcReportDates(items);
+        console.log(items);
+      },
+      (error) => {
+        console.log(error);
+      });
+    });
+  }
   
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -797,17 +907,26 @@ function App() {
             <Stack.Screen name="Image Preview" initialParams={{ isViewOnly: true }} options={{headerShown: false}}>
               {props => <ImageView {...props} pictureTaken={pictureTaken} savePicture={savePicture} deletePicture={deletePicture} />}
             </Stack.Screen>
-            <Stack.Screen name="Reports">
+            <Stack.Screen name="Validation Reports">
               {props => <Reports {...props} reportDates={reportDates} getReportDates={getReportDates} />}
             </Stack.Screen>
             <Stack.Screen name="Daily Report"  options={{headerShown: false}}>
               {props => <ReportDaily {...props} db={db} client={client} setUser={setUser} user={user} db={db} appConfig={appConfig} />}
             </Stack.Screen>
-            <Stack.Screen name="Qrscanner" options={{headerShown: false}}>
+            <Stack.Screen name="Qrscanner" options={{headerShown: false}} initialParams={{ beneficiary: {} }}>
               {props => <Notification {...props} db={db} />}
             </Stack.Screen>
-            <Stack.Screen name="Cashcardclaimed" options={{title: "Claimed Cashcard"}}>
+            <Stack.Screen name="Cashcardclaimed" initialParams={{ typeView: "unclaimed" }}>
               {props => <Cashcardclaimed {...props} db={db} />}
+            </Stack.Screen>
+            <Stack.Screen name="CashcardHome" options={{headerShown: false}} >
+              {props => <CashcardHome {...props}  validPermissions={validPermissions} appConfig={appConfig} setActivationAppVisible={setActivationAppVisible} />}
+            </Stack.Screen>
+            <Stack.Screen name="Cashcard Reports">
+              {props => <ReportCashcard {...props} reportDates={ccReportDates} getReportDates={getCcReportDates} />}
+            </Stack.Screen>
+            <Stack.Screen name="Cashcard Daily Report"  options={{headerShown: false}}>
+              {props => <ReportCashcardDaily {...props} db={db} client={client} setUser={setUser} user={user} db={db} appConfig={appConfig} />}
             </Stack.Screen>
           </Stack.Navigator>
         </NavigationContainer>

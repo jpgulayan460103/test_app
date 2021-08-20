@@ -1,5 +1,5 @@
 import React, {useEffect, useState} from 'react';
-import { StyleSheet, TouchableHighlight, View, Dimensions, RefreshControl, Alert } from 'react-native';
+import { StyleSheet, TouchableHighlight, View, Dimensions, RefreshControl, Alert, TouchableOpacity } from 'react-native';
 import { Layout, Text, Icon, List, ListItem, Button, IndexPath, Select, SelectItem, Divider, Input } from '@ui-kitten/components';
 import RNFetchBlob from 'rn-fetch-blob'
 
@@ -15,16 +15,43 @@ const styles = StyleSheet.create({
 
 const listWidth = Dimensions.get('window').width;
 
-const Cashcardclaimed = ({navigation, db}) => {
+const Cashcardclaimed = ({navigation, db, route}) => {
+
+    const { typeView } = route.params;
+
     const [refreshing, setRefreshing] = useState(false);
     const [claimedBeneficiaries, setClaimedBeneficiaries] = useState([]);
+    const [searchString, setSearchString] = useState("");
+
     useEffect(() => {
+
+        navigation.setOptions({
+            title: typeView == "unclaimed" ? "Beneficiaries" : "Claimed Cashcards",
+          });
+        setClaimedBeneficiaries([])
         getClaimed();
-    }, []);
+    }, [typeView]);
 
     const getClaimed = () => {
+        let is_claimed = 1;
+        let order_by = "order by datetime_claimed desc";
+        if(typeView == "unclaimed"){
+            is_claimed = 0;
+            order_by = "order by city asc";
+        }
+        let sql = `select * from cashcard where is_claimed = ${is_claimed}`;
+        if(searchString != ""){
+            let value = searchString.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            let keywords = value.split(" ");
+            sql += ` and`;
+            let mappedKeywords = keywords.map(item => {
+                return `full_name like '%${item.trim()}%'`;
+            });
+            let keywordQuery = mappedKeywords.join(" and ");
+            sql += ` ${keywordQuery}`;
+        }
         db.transaction((trans) => {
-            trans.executeSql("select * from cashcard where is_claimed = 1 limit 20", [], (trans, results) => {
+            trans.executeSql(`${sql} ${order_by} limit 20`, [], (trans, results) => {
               let items = [];
               let rows = results.rows;
               for (let i = 0; i < rows.length; i++) {
@@ -41,7 +68,7 @@ const Cashcardclaimed = ({navigation, db}) => {
 
     const undoTagging = (hhid) => {
         db.transaction((trans) => {
-            trans.executeSql("update cashcard set is_claimed = 0 and date_scanned = null where hhid = ?", [hhid], (trans, results) => {
+            trans.executeSql("update cashcard set is_claimed = 0, date_scanned = null, datetime_claimed = null where hhid = ?", [hhid], (trans, results) => {
               let items = [];
               let rows = results.rows;
               for (let i = 0; i < rows.length; i++) {
@@ -101,7 +128,24 @@ const Cashcardclaimed = ({navigation, db}) => {
                     <Text category='c1' style={{textAlign: "center", fontSize: 14}}>
                         {item.date_scanned}
                     </Text>
-                    <Text category='c1' style={{textAlign: "center", fontSize: 14}}>
+                    { typeView == "unclaimed" ? (
+                        <Text category='c1' style={{textAlign: "center", fontSize: 14}}>
+                            <Button
+                                size='tiny'
+                                status="primary"
+                                onPress={() => {
+                                    navigation.navigate("Qrscanner", {beneficiary: item});
+                                }
+                            }>
+                                <Icon
+                                    style={styles.icon}
+                                    fill='#FFFFFF'
+                                    name='person-done'
+                                />
+                            </Button>
+                        </Text>
+                    ) : (
+                        <Text category='c1' style={{textAlign: "center", fontSize: 14}}>
                         <Button
                             size='tiny'
                             status="danger"
@@ -125,15 +169,40 @@ const Cashcardclaimed = ({navigation, db}) => {
                             />
                         </Button>
                     </Text>
+
+                    ) }
                 </View>
             </View>
         </View>
         </TouchableHighlight>
     );
+
+
+    const renderIcon = (props) => (
+        <TouchableOpacity onPress={() => {
+            // console.log(searchString);
+            getClaimed()
+        }}>
+          <Icon {...props} name="search"/>
+        </TouchableOpacity>
+      );
     
 
     return (
         <Layout style={{flex: 1}}>
+            <View style={{padding: 10}}>
+            
+            <Input
+                    value={searchString}
+                    label='Search'
+                    placeholder='Enter Name'
+                    accessoryRight={renderIcon}
+                    onChangeText={nextValue => {
+                        // console.log(nextValue);
+                        setSearchString(nextValue);
+                    }}
+            />
+            </View>
             <View style={
                 {
                     width:"100%",
@@ -158,7 +227,7 @@ const Cashcardclaimed = ({navigation, db}) => {
                     </View>
                     <View style={{flex: 0.4}}>
                         <Text category='c1' style={{textAlign: "center",fontWeight: "bold", fontSize: 14}}>
-                            Date Scanned
+                            { typeView == "unclaimed" ? "" : "Date Scanned" }
                         </Text>
                     </View>
                 </View>
@@ -175,12 +244,12 @@ const Cashcardclaimed = ({navigation, db}) => {
             }
             />
             <Text style={{textAlign: "center"}}>Pull down to refresh</Text>
-            <Button
+            {/* <Button
                 onPress={() => {
                     navigation.navigate("Qrscanner");
                     // setBeneficiary(item);
                 }
-            }>Scan cashcard form</Button>
+            }>Scan cashcard form</Button> */}
             
         </Layout>
     );

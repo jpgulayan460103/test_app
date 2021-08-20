@@ -1,16 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import { StyleSheet, ToastAndroid, View, Dimensions, Modal, TouchableOpacity, RefreshControl, ActivityIndicator } from 'react-native';
-import { Layout, Text, List, Button, Divider, Card, Select, SelectItem, Input, Icon } from '@ui-kitten/components';
-import RNFetchBlob from 'rn-fetch-blob'
-import Share from 'react-native-share';
-import { zip } from 'react-native-zip-archive'
-import RNFS from 'react-native-fs';
+import { StyleSheet, ToastAndroid, View, Dimensions, Modal, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { Layout, Text, List, Button, Divider, Select, SelectItem, Input, Icon } from '@ui-kitten/components';
 import _debounce  from 'lodash/debounce'
 import _cloneDeep  from 'lodash/cloneDeep'
 import _isEmpty  from 'lodash/isEmpty'
 import _forEach  from 'lodash/forEach'
 import Login from './Login'
-import ImgToBase64 from 'react-native-image-base64';
 import ClearCache from 'react-native-clear-cache';
 
 const width = Dimensions.get('window').width;

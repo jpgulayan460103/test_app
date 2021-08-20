@@ -5,10 +5,19 @@ import Qrscanner from './Qrscanner'
 import { isEmpty } from 'lodash';
 
 
-const Notification = ({navigation, reportDates, db}) => {
+const Notification = ({navigation, reportDates, db, route}) => {
+
+    const { beneficiary } = route.params;
     const [showCam, setShowCam] = useState(true);
     const [scannedValue, setScannedValue] = useState("");
     const [scannedBeneficiary, setScannedBeneficiary] = useState({});
+
+    useEffect(() => {
+      if(!isEmpty(beneficiary)){
+        setScannedBeneficiary(beneficiary);
+        setShowCam(false);
+      }
+    }, []);
 
     //actions
     const getScannedValue = (value) => {
@@ -26,9 +35,10 @@ const Notification = ({navigation, reportDates, db}) => {
 
     const tagBeneficiary = () => {
       let d = new Date;
-      d = d.toLocaleDateString();
+      let datetime_claimed = d.getTime();
+      let date_scanned = d.toLocaleDateString();
       db.transaction((trans) => {
-        trans.executeSql("update cashcard set is_claimed = 1, date_scanned = ? where hhid = ?", [d, scannedBeneficiary.hhid], (trans, results) => {
+        trans.executeSql("update cashcard set is_claimed = 1, date_scanned = ?, datetime_claimed = ? where hhid = ?", [date_scanned, datetime_claimed, scannedBeneficiary.hhid], (trans, results) => {
           toggleCamera();
           ToastAndroid.show("Successfully tagged as claimed", ToastAndroid.SHORT);
         },
@@ -76,6 +86,7 @@ const Notification = ({navigation, reportDates, db}) => {
                 <Text><Text style={{fontWeight: "bold"}}>QR CODE:</Text> {scannedValue}</Text>
                 { !isEmpty(scannedBeneficiary) ? (
                 <>
+                <Text><Text style={{fontWeight: "bold"}}>HHID:</Text> {scannedBeneficiary.hhid}</Text>
                 <Text><Text style={{fontWeight: "bold"}}>Last Name:</Text> {scannedBeneficiary.last_name}</Text>
                 <Text><Text style={{fontWeight: "bold"}}>First Name:</Text> {scannedBeneficiary.first_name}</Text>
                 <Text><Text style={{fontWeight: "bold"}}>Middle Name:</Text> {scannedBeneficiary.middle_name}</Text>
@@ -108,7 +119,7 @@ const Notification = ({navigation, reportDates, db}) => {
               { !showCam ? <Button onPress={() => toggleCamera()}  style={{width: 140}}>
                   Scan QRCode
                 </Button>: <></> }
-              <Button status="info" onPress={() => navigation.navigate('Cashcardclaimed')}  style={{width: 180}}>
+              <Button status="info" onPress={() => navigation.navigate('Cashcardclaimed', {typeView: "claimed"})}  style={{width: 180}}>
                 Claimed Cashcard
               </Button>
             </View>

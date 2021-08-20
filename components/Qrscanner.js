@@ -10,36 +10,16 @@ const Qrscanner = ({ initialProps, getScannedValue }) => {
   const [
     { 
       cameraRef,
-      type,
-      flash,
       autoFocus,
       focusDepth,
-      zoom,
-      whiteBalance,
       autoFocusPoint,
       drawFocusRingPosition,
-      barcodes,
       ratio,
-      cameraState,
-      isRecording,
-      faces,
-      textBlocks,
      },
     {
-      toggleFacing,
-      toggleFlash,
-      toggleAutoFocus,
-      setFocusDepth,
-      toggleWB,
       touchToFocus,
-      toggleCameraState,
       facesDetected,
       textRecognized,
-      barcodeRecognized,
-      zoomIn,
-      zoomOut,
-      setIsRecording,
-      takePicture,
     },
   ] = useCamera(initialProps);
 
@@ -79,7 +59,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "94%",
     resizeMode: "stretch",
-    // position: "absolute"
   },
   container: {
     flex: 1,
