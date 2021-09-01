@@ -1,10 +1,15 @@
 import React from 'react';
-import { View, TouchableOpacity, TouchableWithoutFeedback, Text, StyleSheet } from 'react-native';
+import { View, TouchableOpacity, TouchableWithoutFeedback, Dimensions, StyleSheet } from 'react-native';
 import { RNCamera } from 'react-native-camera';
 import { useCamera } from 'react-native-camera-hooks';
+import BarcodeMask from 'react-native-barcode-mask';
 import { isEmpty } from 'lodash';
 
+const width = Dimensions.get('window').width;
+const height = Dimensions.get('window').height;
+
 const landmarkSize = 2;
+
 
 const Qrscanner = ({ initialProps, getScannedValue }) => {
   const [
@@ -15,6 +20,7 @@ const Qrscanner = ({ initialProps, getScannedValue }) => {
       autoFocusPoint,
       drawFocusRingPosition,
       ratio,
+      barcodes
      },
     {
       touchToFocus,
@@ -27,27 +33,51 @@ const Qrscanner = ({ initialProps, getScannedValue }) => {
     getScannedValue(barcode.data);
   }
 
+  const renderBarcodes = (barcodes = []) => (
+    <View style={styles.facesContainer} pointerEvents="none">
+      {barcodes.map(renderBarcode)}
+    </View>
+  );
+  
+  const renderBarcode = ({ bounds = {}, data, type }) => (
+    <React.Fragment key={data + bounds.origin.x}>
+      <View
+        style={[
+          styles.text,
+          {
+            ...bounds.size,
+            left: bounds.origin.x,
+            top: bounds.origin.y,
+          },
+        ]}>
+        <Text style={[styles.textBlock]}>{`${data} ${type}`}</Text>
+      </View>
+    </React.Fragment>
+  );
+  
+
   return (
     <View style={{ flex: 1 }}>
       <RNCamera
         ref={cameraRef}
         captureAudio={false}
         autoFocus={autoFocus}
-        autoFocusPointOfInterest={autoFocusPoint.normalized}
+        autoFocusPointOfInterest={{ x: 0.5, y: 0.5 }}
         ratio={ratio}
         focusDepth={focusDepth}
-        style={{ height: 200, width: 200, overflow: "hidden" }}
-        onTextRecognized={textRecognized}
+        style={{ height: height, width: width, overflow: "hidden" }}
+        // onTextRecognized={textRecognized}
         onFacesDetected={facesDetected}
         onBarCodeRead={(e) => readBarcode(e)}
         type={RNCamera.Constants.Type.back}
       >
       <View style={StyleSheet.absoluteFill}>
           <View style={[styles.autoFocusBox, drawFocusRingPosition]} />
-          <TouchableWithoutFeedback onPress={touchToFocus}>
+          <TouchableWithoutFeedback>
             <View style={{ flex: 1 }} />
           </TouchableWithoutFeedback>
         </View>
+        { renderBarcodes(barcodes) }
       </RNCamera>
     </View>
   );
@@ -82,10 +112,11 @@ const styles = StyleSheet.create({
   },
   autoFocusBox: {
     position: 'absolute',
-    height: 64,
-    width: 64,
+    height: 120,
+    width: 120,
     borderRadius: 12,
     borderWidth: 2,
+    marginTop: -30,
     borderColor: 'white',
     opacity: 0.4,
   },

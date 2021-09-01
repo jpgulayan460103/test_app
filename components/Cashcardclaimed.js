@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useRef} from 'react';
 import { StyleSheet, TouchableHighlight, View, Dimensions, RefreshControl, Alert, TouchableOpacity } from 'react-native';
 import { Layout, Text, Icon, List, ListItem, Button, IndexPath, Select, SelectItem, Divider, Input } from '@ui-kitten/components';
 import RNFetchBlob from 'rn-fetch-blob'
@@ -13,10 +13,12 @@ const styles = StyleSheet.create({
       },
 });
 
+
 const listWidth = Dimensions.get('window').width;
 
 const Cashcardclaimed = ({navigation, db, route}) => {
 
+    const search_ref = useRef();
     const { typeView } = route.params;
 
     const [refreshing, setRefreshing] = useState(false);
@@ -41,15 +43,22 @@ const Cashcardclaimed = ({navigation, db, route}) => {
         }
         let sql = `select * from cashcard where is_claimed = ${is_claimed}`;
         if(searchString != ""){
-            let value = searchString.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            let keywords = value.split(" ");
-            sql += ` and`;
-            let mappedKeywords = keywords.map(item => {
-                return `full_name like '%${item.trim()}%'`;
-            });
-            let keywordQuery = mappedKeywords.join(" and ");
-            sql += ` ${keywordQuery}`;
+            let validateNumber = /^[0-9_-]+$/;
+            // console.log(validateNumber.test(searchString));
+            if(validateNumber.test(searchString)){
+                sql += ` and hhid like '%${searchString}%'`;
+            }else{
+                let value = searchString.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                let keywords = value.split(" ");
+                sql += ` and`;
+                let mappedKeywords = keywords.map(item => {
+                    return `full_name like '%${item.trim()}%'`;
+                });
+                let keywordQuery = mappedKeywords.join(" and ");
+                sql += ` ${keywordQuery}`;
+            }
         }
+        // console.log(sql);
         db.transaction((trans) => {
             trans.executeSql(`${sql} ${order_by} limit 20`, [], (trans, results) => {
               let items = [];
@@ -109,6 +118,9 @@ const Cashcardclaimed = ({navigation, db, route}) => {
                     </Text>
                     <Text category='c1' style={{fontWeight: "bold", fontSize: 14}}>
                         {item.middle_name}
+                    </Text>
+                    <Text category='c1' style={{fontWeight: "bold", fontSize: 14}}>
+                        {item.sa_account}
                     </Text>
                 </View>
             
@@ -193,6 +205,7 @@ const Cashcardclaimed = ({navigation, db, route}) => {
             <View style={{padding: 10}}>
             
             <Input
+                    ref={search_ref}
                     value={searchString}
                     label='Search'
                     placeholder='Enter Name'
@@ -201,6 +214,8 @@ const Cashcardclaimed = ({navigation, db, route}) => {
                         // console.log(nextValue);
                         setSearchString(nextValue);
                     }}
+                    onEndEditing={() => {getClaimed()}}
+                    returnKeyType="search"
             />
             </View>
             <View style={

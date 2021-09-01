@@ -28,6 +28,7 @@ import Notification from './components/Notification';
 import Cashcardclaimed from './components/Cashcardclaimed';
 import ReportCashcard from './components/ReportCashcard';
 import ReportCashcardDaily from './components/ReportCashcardDaily';
+import Cam from './components/Cam';
 
 const width = Dimensions.get('window').width; 
 
