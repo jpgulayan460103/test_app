@@ -43,12 +43,13 @@ const Cashcardclaimed = ({navigation, db, route}) => {
         }
         let sql = `select * from cashcard where is_claimed = ${is_claimed}`;
         if(searchString != ""){
-            let validateNumber = /^[0-9_-]+$/;
-            // console.log(validateNumber.test(searchString));
-            if(validateNumber.test(searchString)){
-                sql += ` and hhid like '%${searchString}%'`;
+            let searchStringTrimmed = searchString.trim().toUpperCase();
+            let validateNumber = /^(UCT)[0-9_-]+$/;
+            // console.log(validateNumber.test(searchStringTrimmed));
+            if(validateNumber.test(searchStringTrimmed)){
+                sql += ` and hhid like '%${searchStringTrimmed}%'`;
             }else{
-                let value = searchString.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                let value = searchStringTrimmed.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 let keywords = value.split(" ");
                 sql += ` and`;
                 let mappedKeywords = keywords.map(item => {
@@ -67,6 +68,7 @@ const Cashcardclaimed = ({navigation, db, route}) => {
                 var item = rows.item(i);
                 items.push(item);
               }
+            //   console.log(items);
               setClaimedBeneficiaries(items);
             },
             (error) => {

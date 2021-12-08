@@ -22,7 +22,6 @@ const Notification = ({navigation, reportDates, db, route}) => {
     //actions
     const getScannedValue = (value) => {
         setScannedValue(value);
-        setShowCam(!showCam)
         getBeneficiaryData(value);
     }
 
@@ -51,6 +50,7 @@ const Notification = ({navigation, reportDates, db, route}) => {
 
     const getBeneficiaryData = (hhid) => {
         setScannedBeneficiary({});
+        setShowCam(!showCam)
         db.transaction((trans) => {
           trans.executeSql("select * from cashcard where hhid = ?", [hhid], (trans, results) => {
             let items = [];
@@ -73,7 +73,7 @@ const Notification = ({navigation, reportDates, db, route}) => {
       }
     return (
         <Layout style={{ flex: 1, padding: 10}}>
-            <View style={{ padding: 20, flex: 0.5, flexDirection: "row", alignItems: 'center' }}>
+            <View style={{ padding: 20, flex: 0.2, flexDirection: "row", alignItems: 'center' }}>
                 <View style={{flex: 1, alignItems: "center" }}>
                 
                 { showCam ? <Qrscanner getScannedValue={getScannedValue} /> : <></> }
@@ -83,9 +83,10 @@ const Notification = ({navigation, reportDates, db, route}) => {
                 </View>
             </View>
             <View style={{flex: 1}}>
-                <Text><Text style={{fontWeight: "bold"}}>QR CODE:</Text> {scannedValue}</Text>
+                
                 { !isEmpty(scannedBeneficiary) ? (
                 <>
+                <Text style={{fontSize: 24}}>{scannedBeneficiary.full_name}</Text>
                 <Text><Text style={{fontWeight: "bold"}}>HHID:</Text> {scannedBeneficiary.hhid}</Text>
                 <Text><Text style={{fontWeight: "bold"}}>Last Name:</Text> {scannedBeneficiary.last_name}</Text>
                 <Text><Text style={{fontWeight: "bold"}}>First Name:</Text> {scannedBeneficiary.first_name}</Text>
@@ -97,11 +98,14 @@ const Notification = ({navigation, reportDates, db, route}) => {
                 <Text><Text style={{fontWeight: "bold"}}>City:</Text> {scannedBeneficiary.city}</Text>
                 <Text><Text style={{fontWeight: "bold"}}>Barangay:</Text> {scannedBeneficiary.barangay}</Text>
                 <Text><Text style={{fontWeight: "bold"}}>Branch:</Text> {scannedBeneficiary.branch_name}</Text>
-                {/* <Text><Text style={{fontWeight: "bold"}}>Card Number:</Text> {scannedBeneficiary.card_number}</Text> */}
+                <Text><Text style={{fontWeight: "bold"}}>Card Number:</Text> {scannedBeneficiary.card_number}</Text>
+                <Text><Text style={{fontWeight: "bold"}}>Batch Number:</Text> {scannedBeneficiary.cc_batch}</Text>
                 { scannedBeneficiary.is_claimed == 1 ? <Text><Text style={{fontWeight: "bold"}}>Date Scanned:</Text> {scannedBeneficiary.date_scanned}</Text> : <></> }
 
                 </>
-                ) : <></> }
+                ) : <>
+                <Text><Text style={{fontWeight: "bold"}}>QR CODE:</Text> {scannedValue}</Text>
+                </> }
                 
             </View>
             { !isEmpty(scannedBeneficiary) ? (
@@ -109,8 +113,8 @@ const Notification = ({navigation, reportDates, db, route}) => {
               <Button status="danger" disabled={scannedBeneficiary?.is_claimed == 1} onPress={() => tagBeneficiary()} style={{width: 140}}>
                 { scannedBeneficiary?.is_claimed == 1 ? "Claimed" : "Tag as Claimed"}
               </Button>
-              <Button status="info" onPress={() => navigation.navigate('Listahanan Home', {search: scannedBeneficiary.hhid})}  style={{width: 180}}>
-                View Listahanan Data
+              <Button status="info" onPress={() => navigation.navigate('Listahanan Home', {search: scannedBeneficiary.hhid})}  style={{width: 180}}  disabled={scannedBeneficiary?.uct_type == 1}>
+                { scannedBeneficiary?.uct_type == 1 ? "Social Pension" : "Listahanan" }
               </Button>
             </View>
             ) : <></> }

@@ -168,7 +168,7 @@ const ReportCashcardDaily = ({navigation, route, db, client, user, setUser, appC
     const getBeneficiaries = ({city, barangay, province, count_hhid}) => {
         return new Promise((resolve, reject) => db.transaction(tx => {
             db.transaction((trans) => {
-                let sql = "select * from cashcard where city = ? and barangay = ? and province = ? and date_scanned = ?";
+                let sql = "select * from cashcard where city = ? and barangay = ? and province = ? and date_scanned = ? order by datetime_claimed desc";
                 trans.executeSql(sql, [city,barangay,province,date_scanned], (trans, results) => {
                     let items = [];
                     let rows = results.rows;
@@ -195,7 +195,7 @@ const ReportCashcardDaily = ({navigation, route, db, client, user, setUser, appC
         headerString += `city,`;
         headerString += `barangay,`;
         headerString += `province,`;
-        headerString += `date_scanned,`;
+        headerString += `datetime_claimed,`;
         headerString += '\n';
         let scanned = scannedSummary.filter(item => item.selected == true);
         setLoading(false);
@@ -215,7 +215,7 @@ const ReportCashcardDaily = ({navigation, route, db, client, user, setUser, appC
                 string += `"${item.city}",`
                 string += `"${item.barangay}",`
                 string += `"${item.province}",`
-                string += `"${item.date_scanned}",`
+                string += `"${item.datetime_claimed}",`
                 string += '\n';
                 return string;
             }).join('');
@@ -417,17 +417,13 @@ const ReportCashcardDaily = ({navigation, route, db, client, user, setUser, appC
                 <Text>Uploading {uploadedBarangay} Progress: {uploadingProgess} {loadingPercentage}</Text>
             ) : <></> }
             <View style={{flexDirection: "row"}}>
-                { !_isEmpty(user) ? 
-                
-                    <View style={{flex: 1}}>
+                <View style={{flex: 1}}>
                     { generatedReportPath == "" ? (
                         <Button onPress={() => {generateReport()}} disabled={loading}>{loading ? "Generating Report" : "Generate Report"} </Button>
                     ) : (
                         <Button onPress={() => {shareFile()}}>Share File</Button>
                     ) }
                     </View>
-                : <></>
-                }
                 <View style={{flex: 1}}>
                     <Button status={_isEmpty(user) ? "danger" : "info"} onPress={() => {
                         if(_isEmpty(user)){
